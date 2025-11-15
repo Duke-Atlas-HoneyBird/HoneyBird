@@ -116,8 +116,9 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: AppTheme.fabElevation,
           label: const Text('Post'),
           icon: const Icon(Icons.create),
+          heroTag: 'createPostFAB',
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }
