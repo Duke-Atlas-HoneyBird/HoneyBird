@@ -1,0 +1,13 @@
+# Data Sources
+
+This directory contains data source implementations for the infrastructure layer.
+
+## Firebase Data Sources
+- `firebase_user_data_source.dart` - User data operations with Firestore
+- `firebase_post_data_source.dart` - Post data operations with Firestore
+
+## Local Data Sources
+- `local_preference_data_source.dart` - User preferences with SharedPreferences
+- `local_task_data_source.dart` - Task management with SharedPreferences
+
+All data sources follow the abstract interface pattern for testability and maintainability.

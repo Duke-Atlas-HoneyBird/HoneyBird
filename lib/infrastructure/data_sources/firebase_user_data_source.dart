@@ -1,0 +1,107 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../core/error/exceptions.dart';
+import '../../core/utils/constants.dart';
+import '../models/user_model.dart';
+
+/// Abstract interface for Firebase user data operations
+abstract class FirebaseUserDataSource {
+  /// Retrieves a user from Firestore by user ID
+  Future<UserModel> getUser(String userId);
+
+  /// Creates a new user in Firestore
+  Future<UserModel> createUser(UserModel user);
+
+  /// Updates an existing user in Firestore
+  Future<UserModel> updateUser(UserModel user);
+
+  /// Deletes a user from Firestore
+  Future<void> deleteUser(String userId);
+}
+
+/// Implementation of FirebaseUserDataSource using Cloud Firestore
+class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
+  final FirebaseFirestore firestore;
+
+  FirebaseUserDataSourceImpl({required this.firestore});
+
+  @override
+  Future<UserModel> getUser(String userId) async {
+    try {
+      final doc = await firestore
+          .collection(FirebaseCollections.users)
+          .doc(userId)
+          .get();
+
+      if (!doc.exists) {
+        throw ServerException('User not found with ID: $userId');
+      }
+
+      final data = doc.data();
+      if (data == null) {
+        throw ServerException('User data is null for ID: $userId');
+      }
+
+      return UserModel.fromJson(data);
+    } on FirebaseException catch (e) {
+      throw ServerException('Firebase error: ${e.message ?? e.code}');
+    } catch (e) {
+      throw ServerException('Failed to get user: $e');
+    }
+  }
+
+  @override
+  Future<UserModel> createUser(UserModel user) async {
+    try {
+      final docRef = firestore.collection(FirebaseCollections.users).doc();
+      final userWithId = UserModel(
+        id: docRef.id,
+        userName: user.userName,
+        userBio: user.userBio,
+        userBioLink: user.userBioLink,
+        userUID: user.userUID,
+        userEmail: user.userEmail,
+      );
+
+      await docRef.set(userWithId.toJson());
+      return userWithId;
+    } on FirebaseException catch (e) {
+      throw ServerException('Firebase error: ${e.message ?? e.code}');
+    } catch (e) {
+      throw ServerException('Failed to create user: $e');
+    }
+  }
+
+  @override
+  Future<UserModel> updateUser(UserModel user) async {
+    try {
+      if (user.id == null) {
+        throw ServerException('Cannot update user without ID');
+      }
+
+      await firestore
+          .collection(FirebaseCollections.users)
+          .doc(user.id)
+          .update(user.toJson());
+
+      return user;
+    } on FirebaseException catch (e) {
+      throw ServerException('Firebase error: ${e.message ?? e.code}');
+    } catch (e) {
+      throw ServerException('Failed to update user: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteUser(String userId) async {
+    try {
+      await firestore
+          .collection(FirebaseCollections.users)
+          .doc(userId)
+          .delete();
+    } on FirebaseException catch (e) {
+      throw ServerException('Firebase error: ${e.message ?? e.code}');
+    } catch (e) {
+      throw ServerException('Failed to delete user: $e');
+    }
+  }
+}

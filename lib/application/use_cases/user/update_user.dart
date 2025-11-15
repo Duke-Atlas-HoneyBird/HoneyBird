@@ -1,0 +1,14 @@
+import 'package:dartz/dartz.dart';
+import '../../../core/error/failures.dart';
+import '../../../domain/entities/user.dart';
+import '../../../domain/repositories/user_repository.dart';
+
+class UpdateUser {
+  final UserRepository repository;
+
+  UpdateUser(this.repository);
+
+  Future<Either<Failure, User>> call(User user) {
+    return repository.updateUser(user);
+  }
+}
