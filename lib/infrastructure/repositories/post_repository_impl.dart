@@ -15,7 +15,30 @@ class PostRepositoryImpl implements PostRepository {
   @override
   Future<Either<Failure, List<Post>>> getPosts() async {
     try {
-      final postModels = await dataSource.getPosts();
+      // final postModels = await dataSource.getPosts();
+      final postModels = [
+        Post(
+          id: '1',
+          text: 'Hello, world!',
+          publishedDate: DateTime.now(),
+          userName: 'John Doe',
+          userUID: '123',
+        ),
+        Post(
+          id: '2',
+          text: 'Hello, world!',
+          publishedDate: DateTime.now(),
+          userName: 'John Doe',
+          userUID: '123',
+        ),
+        Post(
+          id: '3',
+          text: 'Hello, world!',
+          publishedDate: DateTime.now(),
+          userName: 'John Doe',
+          userUID: '123',
+        ),
+      ];
       return Right(postModels);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

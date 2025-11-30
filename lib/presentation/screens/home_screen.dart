@@ -114,8 +114,8 @@ class _HomeScreenState extends State<HomeScreen> {
             _navigateToPostCreation();
           },
           elevation: AppTheme.fabElevation,
-          label: const Text('Post'),
-          icon: const Icon(Icons.create),
+          label: const Text('Create'),
+          icon: const Icon(Icons.add_outlined),
           heroTag: 'createPostFAB',
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -206,19 +206,19 @@ class _HomeScreenState extends State<HomeScreen> {
         // Navigate to Favorites screen
         SnackBarUtils.showInfo(context, 'Favorites screen - Coming soon!');
         // TODO: Uncomment when FavoritesScreen is implemented
-        // Navigator.pushNamed(context, '/favorites');
+        Navigator.pushNamed(context, '/favorites');
         break;
       case 2:
         // Navigate to Profile screen
         SnackBarUtils.showInfo(context, 'Profile screen - Coming soon!');
         // TODO: Uncomment when ProfileScreen is implemented
-        // Navigator.pushNamed(context, '/profile');
+        Navigator.pushNamed(context, '/profile');
         break;
       case 3:
         // Navigate to Messages screen
         SnackBarUtils.showInfo(context, 'Messages screen - Coming soon!');
         // TODO: Uncomment when MessagesScreen is implemented
-        // Navigator.pushNamed(context, '/messages');
+        Navigator.pushNamed(context, '/messages');
         break;
     }
   }
