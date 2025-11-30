@@ -1,0 +1,142 @@
+name: Build on Tag
+
+on:
+  push:
+    tags:
+      - '*'  # Triggers on any tag push
+
+jobs:
+  check-tag:
+    name: Check if tag is on develop
+    runs-on: ubuntu-latest
+    outputs:
+      is_on_develop: ${{ steps.check.outputs.is_on_develop }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history to check branch
+
+      - name: Fetch develop branch
+        run: git fetch origin develop
+
+      - name: Check if tag is on develop branch
+        id: check
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TAG_COMMIT=$(git rev-parse $TAG_NAME)
+          if git branch -r --contains $TAG_COMMIT | grep -q "origin/develop"; then
+            echo "is_on_develop=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG_NAME is on develop branch"
+          else
+            echo "is_on_develop=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG_NAME is not on develop branch, skipping build"
+          fi
+
+  build-android:
+    name: Build Android
+    needs: check-tag
+    if: needs.check-tag.outputs.is_on_develop == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Build Android App Bundle
+        run: flutter build appbundle --release
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Upload Android App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-appbundle
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+  build-ios:
+    name: Build iOS
+    needs: check-tag
+    if: needs.check-tag.outputs.is_on_develop == 'true'
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
+
+      - name: Upload iOS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: build/ios/iphoneos/Runner.app
+          retention-days: 30
+
+  build-web:
+    name: Build Web
+    needs: check-tag
+    if: needs.check-tag.outputs.is_on_develop == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build Web
+        run: flutter build web --release
+
+      - name: Upload Web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web
+          retention-days: 30
