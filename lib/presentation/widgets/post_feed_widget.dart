@@ -67,11 +67,7 @@ class _PostFeedWidgetState extends State<PostFeedWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final feedHeight = screenHeight * 0.4; // ~40% of screen height
-
     return SizedBox(
-      height: feedHeight,
       child: FutureBuilder(
         future: _postsFuture,
         builder: (context, snapshot) {

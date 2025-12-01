@@ -28,7 +28,7 @@ class AppTheme {
   // Component styling constants
   static const double cardElevation = 2.0;
   static const double cardBorderRadius = 12.0;
-  static const double buttonBorderRadius = 8.0;
+  static const double buttonBorderRadius = 16.0;
   static const double fabSize = 56.0;
   static const double fabElevation = 6.0;
   static const double iconSize = 24.0;

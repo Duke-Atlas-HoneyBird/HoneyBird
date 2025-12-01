@@ -16,6 +16,8 @@ class BottomNavigationWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final icons = [Icons.home, Icons.favorite, Icons.person, Icons.message];
+    final labels = ['Home', 'Favorites', 'Profile', 'Messages'];
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.cardBackground,
@@ -27,39 +29,59 @@ class BottomNavigationWidget extends StatelessWidget {
           ),
         ],
       ),
-      child: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: (index) {
-          HapticFeedback.selectionClick();
-          onTabSelected(index);
-        },
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: AppTheme.selectedTab,
-        unselectedItemColor: AppTheme.unselectedTab,
-        selectedLabelStyle: AppTheme.bodyMedium.copyWith(
-          fontWeight: FontWeight.w600,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        child: Row(
+          children: List.generate(icons.length, (index) {
+            final isActive = index == currentIndex;
+            return Expanded(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    onTabSelected(index);
+                  },
+                  borderRadius: BorderRadius.circular(32),
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  splashColor: AppTheme.selectedTab.withOpacity(0.12),
+                  highlightColor: Colors.transparent,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 6.0),
+                    decoration: BoxDecoration(
+                      color: isActive ? AppTheme.selectedTab.withOpacity(0.14) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          icons[index],
+                          color: isActive ? AppTheme.selectedTab : AppTheme.unselectedTab,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          labels[index],
+                          style: isActive
+                              ? AppTheme.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.selectedTab,
+                                )
+                              : AppTheme.bodyMedium.copyWith(
+                                  color: AppTheme.unselectedTab,
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
         ),
-        unselectedLabelStyle: AppTheme.bodyMedium,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message),
-            label: 'Messages',
-          ),
-        ],
       ),
     );
   }
