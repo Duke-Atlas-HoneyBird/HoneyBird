@@ -193,6 +193,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleTabSelected(int index) {
+    // Don't update state if already on the selected tab
+    if (_currentTabIndex == index) {
+      return;
+    }
+
     setState(() {
       _currentTabIndex = index;
     });
@@ -204,21 +209,15 @@ class _HomeScreenState extends State<HomeScreen> {
         break;
       case 1:
         // Navigate to Favorites screen
-        SnackBarUtils.showInfo(context, 'Favorites screen - Coming soon!');
-        // TODO: Uncomment when FavoritesScreen is implemented
-        Navigator.pushNamed(context, '/favorites');
+        Navigator.pushReplacementNamed(context, '/favorites');
         break;
       case 2:
-        // Navigate to Profile screen
-        SnackBarUtils.showInfo(context, 'Profile screen - Coming soon!');
-        // TODO: Uncomment when ProfileScreen is implemented
-        Navigator.pushNamed(context, '/profile');
+        // Navigate to Account screen
+        Navigator.pushReplacementNamed(context, '/account');
         break;
       case 3:
         // Navigate to Messages screen
-        SnackBarUtils.showInfo(context, 'Messages screen - Coming soon!');
-        // TODO: Uncomment when MessagesScreen is implemented
-        Navigator.pushNamed(context, '/messages');
+        Navigator.pushReplacementNamed(context, '/messages');
         break;
     }
   }
@@ -233,11 +232,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleSideMenuNavigation(String route) {
-    SnackBarUtils.showInfo(
-      context,
-      '${route.replaceAll('/', '').toUpperCase()} screen - Coming soon!',
-    );
-    // TODO: Uncomment when side menu screens are implemented
-    // Navigator.pushNamed(context, route);
+    Navigator.pushNamed(context, route);
   }
 }

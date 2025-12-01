@@ -10,10 +10,14 @@ import '../../infrastructure/repositories/post_repository_impl.dart';
 import '../../infrastructure/repositories/task_repository_impl.dart';
 import '../../infrastructure/repositories/user_preference_repository_impl.dart';
 import '../../infrastructure/repositories/user_repository_impl.dart';
+import '../../infrastructure/repositories/message_repository_impl.dart';
+import '../../infrastructure/repositories/favorite_repository_impl.dart';
 import '../../domain/repositories/post_repository.dart';
 import '../../domain/repositories/task_repository.dart';
 import '../../domain/repositories/user_preference_repository.dart';
 import '../../domain/repositories/user_repository.dart';
+import '../../domain/repositories/message_repository.dart';
+import '../../domain/repositories/favorite_repository.dart';
 import '../../application/use_cases/user/create_user.dart';
 import '../../application/use_cases/user/delete_user.dart';
 import '../../application/use_cases/user/get_user.dart';
@@ -69,6 +73,12 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<TaskRepository>(
     () => TaskRepositoryImpl(dataSource: sl()),
+  );
+  sl.registerLazySingleton<MessageRepository>(
+    () => MessageRepositoryImpl(),
+  );
+  sl.registerLazySingleton<FavoriteRepository>(
+    () => FavoriteRepositoryImpl(),
   );
   
   // Use cases - User

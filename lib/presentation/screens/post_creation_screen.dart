@@ -7,7 +7,7 @@ import '../../domain/entities/post.dart';
 import '../theme/app_theme.dart';
 
 /// Screen for creating new posts
-/// 
+///
 /// Allows users to enter post text and optionally add an image.
 /// Validates input and submits to backend via CreatePost use case.
 /// Includes haptic feedback on button interactions.
@@ -22,7 +22,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
   final TextEditingController _textController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
-  
+
   // Use case injected via GetIt
   late final CreatePost _createPost;
 
@@ -41,7 +41,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
   /// Validate and submit the post
   Future<void> _handleSubmit() async {
     HapticFeedback.mediumImpact();
-    
+
     // Validate form
     if (!_formKey.currentState!.validate()) {
       HapticFeedback.heavyImpact(); // Error feedback
@@ -153,16 +153,19 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: AppTheme.spacingM),
-                  
+
                   // Image picker button (optional - placeholder for now)
                   OutlinedButton.icon(
-                    onPressed: _isLoading ? null : () {
-                      HapticFeedback.lightImpact();
-                      // TODO: Implement image picker
-                      SnackBarUtils.showInfo(context, 'Image picker coming soon!');
-                    },
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            HapticFeedback.lightImpact();
+                            // TODO: Implement image picker
+                            SnackBarUtils.showInfo(
+                                context, 'Image picker coming soon!');
+                          },
                     icon: const Icon(Icons.image),
                     label: const Text('Add Image (Optional)'),
                     style: OutlinedButton.styleFrom(
@@ -171,19 +174,26 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                       padding: const EdgeInsets.symmetric(
                         vertical: AppTheme.spacingM,
                       ),
-                      minimumSize: const Size.fromHeight(48), // Proper touch target
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.buttonBorderRadius,
+                        ),
+                      ),
+                      minimumSize:
+                          const Size.fromHeight(48), // Proper touch target
                     ),
                   ),
-                  
+
                   const SizedBox(height: AppTheme.spacingM),
-                  
-                  // Submit button
+
+                  // Submit button (matches primary button style from Home screen)
                   ElevatedButton(
                     onPressed: _isLoading ? null : _handleSubmit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accentPink,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingL,
                         vertical: AppTheme.spacingM,
                       ),
                       shape: RoundedRectangleBorder(
@@ -191,7 +201,8 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                           AppTheme.buttonBorderRadius,
                         ),
                       ),
-                      minimumSize: const Size.fromHeight(48), // Proper touch target
+                      minimumSize:
+                          const Size.fromHeight(48), // Proper touch target
                     ),
                     child: _isLoading
                         ? const SizedBox(
@@ -204,9 +215,19 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                               ),
                             ),
                           )
-                        : const Text(
-                            'Post',
-                            style: AppTheme.labelLarge,
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Post',
+                                style: AppTheme.labelLarge.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: AppTheme.spacingS),
+                              const Icon(Icons.send),
+                            ],
                           ),
                   ),
                 ],

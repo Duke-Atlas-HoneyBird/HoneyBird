@@ -5,7 +5,6 @@ import 'core/di/injection.dart' as di;
 import 'presentation/theme/app_theme.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/favorites_screen.dart';
-import 'presentation/screens/profile_screen.dart';
 import 'presentation/screens/messages_screen.dart';
 import 'presentation/screens/account_screen.dart';
 import 'presentation/screens/manage_screen.dart';
@@ -42,7 +41,6 @@ class HoneyBirdApp extends StatelessWidget {
       routes: {
         '/home': (context) => const HomeScreen(),
         '/favorites': (context) => const FavoritesScreen(),
-        '/profile': (context) => const ProfileScreen(),
         '/messages': (context) => const MessagesScreen(),
         '/account': (context) => const AccountScreen(),
         '/manage': (context) => const ManageScreen(),
