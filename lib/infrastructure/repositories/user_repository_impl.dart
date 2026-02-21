@@ -8,15 +8,16 @@ import '../models/user_model.dart';
 
 /// Implementation of UserRepository that uses Firebase as the data source
 class UserRepositoryImpl implements UserRepository {
-  final FirebaseUserDataSource dataSource;
+  final FirebaseUserDataSource _firebaseDataSource;
 
-  UserRepositoryImpl({required this.dataSource});
+  UserRepositoryImpl({required FirebaseUserDataSource firebaseDataSource})
+      : _firebaseDataSource = firebaseDataSource;
 
   @override
   Future<Either<Failure, User>> getUser(String userId) async {
     try {
-      final userModel = await dataSource.getUser(userId);
-      return Right(userModel);
+      final userModel = await _firebaseDataSource.getUser(userId);
+      return Right(userModel.toDomain());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -28,8 +29,8 @@ class UserRepositoryImpl implements UserRepository {
   Future<Either<Failure, User>> createUser(User user) async {
     try {
       final userModel = UserModel.fromEntity(user);
-      final createdUser = await dataSource.createUser(userModel);
-      return Right(createdUser);
+      final createdUser = await _firebaseDataSource.createUser(userModel);
+      return Right(createdUser.toDomain());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -41,8 +42,8 @@ class UserRepositoryImpl implements UserRepository {
   Future<Either<Failure, User>> updateUser(User user) async {
     try {
       final userModel = UserModel.fromEntity(user);
-      final updatedUser = await dataSource.updateUser(userModel);
-      return Right(updatedUser);
+      final updatedUser = await _firebaseDataSource.updateUser(userModel);
+      return Right(updatedUser.toDomain());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -53,7 +54,7 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<Either<Failure, void>> deleteUser(String userId) async {
     try {
-      await dataSource.deleteUser(userId);
+      await _firebaseDataSource.deleteUser(userId);
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

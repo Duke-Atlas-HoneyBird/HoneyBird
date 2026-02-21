@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_theme.dart';
+import '../theme/colours.dart';
+import '../theme/spacing.dart';
+import '../theme/border_radius.dart';
+import '../theme/text_styles.dart';
 
 /// A custom search bar widget with rounded styling and clear functionality
 /// Includes haptic feedback on clear action
@@ -45,53 +48,53 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingM,
-        vertical: AppTheme.spacingS,
+        horizontal: spacingM,
+        vertical: spacingS,
       ),
       child: TextField(
         controller: _controller,
         onChanged: widget.onSearch,
         decoration: InputDecoration(
           hintText: widget.placeholder,
-          hintStyle: AppTheme.bodyMedium.copyWith(
-            color: AppTheme.textSecondary,
+          hintStyle: bodyMedium.copyWith(
+            color: textSecondary,
           ),
           prefixIcon: const Icon(
             Icons.search,
-            color: AppTheme.textSecondary,
+            color: textSecondary,
           ),
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(
                     Icons.clear,
-                    color: AppTheme.textSecondary,
+                    color: textSecondary,
                   ),
                   onPressed: _clearSearch,
                 )
               : null,
           filled: true,
-          fillColor: AppTheme.cardBackground,
+          fillColor: cardBackground,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+            borderRadius: BorderRadius.circular(cardBorderRadius),
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+            borderRadius: BorderRadius.circular(cardBorderRadius),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+            borderRadius: BorderRadius.circular(cardBorderRadius),
             borderSide: const BorderSide(
-              color: AppTheme.primaryPurple,
+              color: primaryPurple,
               width: 2.0,
             ),
           ),
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingM,
-            vertical: AppTheme.spacingM,
+            horizontal: spacingM,
+            vertical: spacingM,
           ),
         ),
-        style: AppTheme.bodyLarge,
+        style: bodyLarge,
       ),
     );
   }

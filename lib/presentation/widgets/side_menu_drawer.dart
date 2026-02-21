@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_theme.dart';
+import '../theme/spacing.dart';
+import '../theme/text_styles.dart';
+import '../theme/constants.dart';
 
 /// A side menu drawer that slides in from the right with navigation options
 /// Includes haptic feedback on menu item selection
@@ -16,34 +18,32 @@ class SideMenuDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       child: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
-        ),
+        color: Theme.of(context).colorScheme.background,
         child: SafeArea(
           child: Column(
             children: [
               // Header
               Container(
-                padding: const EdgeInsets.all(AppTheme.spacingL),
+                padding: const EdgeInsets.all(spacingL),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.menu,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onBackground,
                       size: 32,
                     ),
-                    const SizedBox(width: AppTheme.spacingM),
+                    const SizedBox(width: spacingM),
                     Text(
                       'Menu',
-                      style: AppTheme.headlineMedium.copyWith(
-                        color: Colors.white,
+                      style: headlineMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onBackground,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Divider(
-                color: Colors.white24,
+              Divider(
+                color: Theme.of(context).dividerColor,
                 thickness: 1,
               ),
               
@@ -77,10 +77,10 @@ class SideMenuDrawer extends StatelessWidget {
               
               // Footer
               Padding(
-                padding: const EdgeInsets.all(AppTheme.spacingL),
+                padding: const EdgeInsets.all(spacingL),
                 child: Text(
                   'HoneyBird v2.0.0',
-                  style: AppTheme.bodyMedium.copyWith(
+                  style: bodyMedium.copyWith(
                     color: Colors.white70,
                   ),
                 ),
@@ -101,13 +101,13 @@ class SideMenuDrawer extends StatelessWidget {
     return ListTile(
       leading: Icon(
         icon,
-        color: Colors.white,
-        size: AppTheme.iconSize,
+        color: Theme.of(context).colorScheme.onBackground,
+        size: iconSize,
       ),
       title: Text(
         title,
-        style: AppTheme.bodyLarge.copyWith(
-          color: Colors.white,
+        style: bodyLarge.copyWith(
+          color: Theme.of(context).colorScheme.onBackground,
         ),
       ),
       onTap: () {
@@ -115,8 +115,8 @@ class SideMenuDrawer extends StatelessWidget {
         Navigator.pop(context); // Close drawer
         onNavigate(route);
       },
-      hoverColor: Colors.white12,
-      splashColor: Colors.white24,
+      hoverColor: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+      splashColor: Theme.of(context).dividerColor.withValues(alpha: 0.2),
       minVerticalPadding: 16.0, // Ensure proper touch target height
     );
   }

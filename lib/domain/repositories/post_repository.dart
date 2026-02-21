@@ -8,6 +8,6 @@ abstract class PostRepository {
   Future<Either<Failure, Post>> createPost(Post post);
   Future<Either<Failure, Post>> updatePost(Post post);
   Future<Either<Failure, void>> deletePost(String postId);
-  Future<Either<Failure, Post>> upvotePost(String postId, String userId);
-  Future<Either<Failure, Post>> downvotePost(String postId, String userId);
+  /// Toggle star (like) for a post.
+  Future<Either<Failure, Post>> likePost(String postId, String userId);
 }

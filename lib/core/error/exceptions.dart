@@ -1,19 +1,25 @@
-/// Base exception class for infrastructure layer errors
-class ServerException implements Exception {
+/// Base class for all exceptions in the infrastructure layer
+abstract class AppException implements Exception {
   final String message;
-
-  ServerException(this.message);
-
-  @override
-  String toString() => 'ServerException: $message';
+  const AppException(this.message);
 }
 
-/// Exception for local storage/cache errors
-class CacheException implements Exception {
-  final String message;
+/// Exception thrown when server operations fail
+class ServerException extends AppException {
+  const ServerException(super.message);
+}
 
-  CacheException(this.message);
+/// Exception thrown when cache operations fail
+class CacheException extends AppException {
+  const CacheException(super.message);
+}
 
-  @override
-  String toString() => 'CacheException: $message';
+/// Exception thrown when network operations fail
+class NetworkException extends AppException {
+  const NetworkException(super.message);
+}
+
+/// Exception thrown when validation fails
+class ValidationException extends AppException {
+  const ValidationException(super.message);
 }

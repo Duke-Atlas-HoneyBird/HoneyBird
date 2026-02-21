@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/message.dart';
-import '../theme/app_theme.dart';
+import '../theme/colours.dart';
+import '../theme/spacing.dart';
+import '../theme/border_radius.dart';
+import '../theme/text_styles.dart';
 
 /// Widget for displaying a message bubble in a conversation
 class MessageBubble extends StatelessWidget {
@@ -19,18 +22,16 @@ class MessageBubble extends StatelessWidget {
       alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingM,
-          vertical: AppTheme.spacingXs,
+          horizontal: spacingM,
+          vertical: spacingXs,
         ),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingM,
-          vertical: AppTheme.spacingS,
+          horizontal: spacingM,
+          vertical: spacingS,
         ),
         decoration: BoxDecoration(
-          color: isCurrentUser
-              ? AppTheme.accentPink
-              : AppTheme.cardBackground,
-          borderRadius: BorderRadius.circular(16),
+          color: isCurrentUser ? accentPink : cardBackground,
+          borderRadius: BorderRadius.circular(cardBorderRadius),
         ),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
@@ -40,18 +41,17 @@ class MessageBubble extends StatelessWidget {
           children: [
             Text(
               message.content,
-              style: TextStyle(
-                color: isCurrentUser ? Colors.white : AppTheme.textPrimary,
-                fontSize: 14,
+              style: bodyMedium.copyWith(
+                color: isCurrentUser ? Colors.white : textPrimary,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: spacingXs),
             Text(
               _formatTime(message.timestamp),
-              style: TextStyle(
+              style: bodyMedium.copyWith(
                 color: isCurrentUser
                     ? Colors.white.withValues(alpha: 0.7)
-                    : AppTheme.textSecondary,
+                    : textSecondary,
                 fontSize: 10,
               ),
             ),

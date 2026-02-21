@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../theme/app_theme.dart';
+import 'package:honey_bird/application/use_cases/post/like_post.dart';
+import 'package:honey_bird/core/di/injection.dart';
+import 'package:honey_bird/domain/repositories/favorite_repository.dart';
+import 'package:honey_bird/domain/repositories/post_repository.dart';
+import 'package:honey_bird/presentation/state/auth/auth_bloc.dart';
+import 'package:honey_bird/presentation/state/auth/auth_state.dart';
+import '../theme/colours.dart';
+import '../theme/spacing.dart';
+import '../theme/text_styles.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../state/timeline/timeline_bloc.dart';
 import '../state/timeline/timeline_event.dart';
@@ -17,27 +25,39 @@ class TimelineScreen extends StatefulWidget {
 
 class _TimelineScreenState extends State<TimelineScreen> {
   final ScrollController _scrollController = ScrollController();
-  late final TimelineBloc _timelineBloc;
   int _currentTabIndex = 0;
+  bool _hasRequestedLoad = false;
 
   @override
   void initState() {
     super.initState();
-    _timelineBloc = TimelineBloc()..add(const LoadTimelinePosts());
     _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasRequestedLoad) {
+      _hasRequestedLoad = true;
+      context.read<TimelineBloc>().add(const LoadTimelinePosts());
+    }
+  }
+
+  @override
+  void deactivate() {
+    _hasRequestedLoad = false;
+    super.deactivate();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    _timelineBloc.close();
     super.dispose();
   }
 
-
   void _onScroll() {
     if (_isBottom) {
-      _timelineBloc.add(const LoadMoreTimelinePosts());
+      context.read<TimelineBloc>().add(const LoadMoreTimelinePosts());
     }
   }
 
@@ -75,29 +95,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _timelineBloc,
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
-        ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: backgroundGradient,
+      ),
+      child: Scaffold(
           appBar: AppBar(
-            title: const Text(
-              'Timeline',
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.transparent,
+            title: const Text('Timeline'),
             elevation: 0,
-            iconTheme: const IconThemeData(color: Colors.white),
+            iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
           ),
           body: BlocBuilder<TimelineBloc, TimelineState>(
             builder: (context, state) {
               if (state is TimelineLoading) {
-                return const Center(
+                return Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onBackground),
                   ),
                 );
               }
@@ -105,7 +118,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               if (state is TimelineError) {
                 return Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacingL),
+                    padding: const EdgeInsets.all(spacingL),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -114,32 +127,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           size: 64,
                           color: Colors.white,
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
+                        const SizedBox(height: spacingM),
                         Text(
                           'Error',
-                          style: AppTheme.headlineMedium.copyWith(
+                          style: headlineMedium.copyWith(
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: AppTheme.spacingS),
+                        const SizedBox(height: spacingS),
                         Text(
                           state.message,
-                          style: AppTheme.bodyLarge.copyWith(
-                            color: Colors.white.withValues(alpha: 0.8),
+                          style: bodyLarge.copyWith(
+                            color: Colors.white.withOpacity(0.8),
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
+                        const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            _timelineBloc.add(const LoadTimelinePosts());
+                            context.read<TimelineBloc>().add(const LoadTimelinePosts());
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.accentPink,
+                            backgroundColor: accentPink,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: AppTheme.spacingL,
-                              vertical: AppTheme.spacingM,
+                              horizontal: spacingL,
+                              vertical: spacingM,
                             ),
                           ),
                           child: const Text('Retry'),
@@ -159,20 +172,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         Icon(
                           Icons.timeline_outlined,
                           size: 64,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: Colors.white.withOpacity(0.7),
                         ),
-                        const SizedBox(height: AppTheme.spacingL),
+                        const SizedBox(height: spacingL),
                         Text(
                           'No posts yet',
-                          style: AppTheme.headlineMedium.copyWith(
+                          style: headlineMedium.copyWith(
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
+                        const SizedBox(height: spacingM),
                         Text(
                           'Your timeline will appear here',
-                          style: AppTheme.bodyLarge.copyWith(
-                            color: Colors.white.withValues(alpha: 0.8),
+                          style: bodyLarge.copyWith(
+                            color: Colors.white.withOpacity(0.8),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -183,10 +196,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    _timelineBloc.add(const RefreshTimelinePosts());
+                     context.read<TimelineBloc>().add(const RefreshTimelinePosts());
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
-                  color: AppTheme.accentPink,
+                  color: accentPink,
                   child: ListView.builder(
                     controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -195,7 +208,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       if (index == state.posts.length) {
                         if (state.isLoadingMore) {
                           return const Padding(
-                            padding: EdgeInsets.all(AppTheme.spacingM),
+                            padding: EdgeInsets.all(spacingM),
                             child: Center(
                               child: CircularProgressIndicator(),
                             ),
@@ -203,28 +216,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         }
                         if (!state.hasMore) {
                           return Padding(
-                            padding: const EdgeInsets.all(AppTheme.spacingM),
+                            padding: const EdgeInsets.all(spacingM),
                             child: Center(
-                              child: Text(
-                                'No more posts to load',
-                                style: AppTheme.bodyMedium.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.7),
+                                child: Text(
+                                  'No more posts to load',
+                                  style: bodyMedium.copyWith(
+                                    color: Colors.white.withOpacity(0.7),
+                                  ),
                                 ),
-                              ),
                             ),
                           );
                         }
                       }
 
                       final post = state.posts[index];
+                      final currentUserUID = context.read<AuthBloc>().state is AuthAuthenticated
+                          ? (context.read<AuthBloc>().state as AuthAuthenticated).user.uid
+                          : null;
                       return PostCard(
                         post: post,
-                        onUpvote: () {
-                          // Handle upvote
-                        },
-                        onDownvote: () {
-                          // Handle downvote
-                        },
+                        onLike: () => _handleLike(context, post.id, currentUserUID, post.likeIDs.contains(currentUserUID) ?? false),
+                        currentUserUID: currentUserUID,
                       );
                     },
                   ),
@@ -243,7 +255,31 @@ class _TimelineScreenState extends State<TimelineScreen> {
             onTabSelected: _handleTabSelected,
           ),
         ),
-      ),
     );
+  }
+
+  Future<void> _handleLike(
+    BuildContext context,
+    String postId,
+    String? currentUserUID,
+    bool isCurrentlyLiked,
+  ) async { 
+    if (currentUserUID == null) return;
+
+    final result = await sl<LikePost>().call(postId, currentUserUID);
+    result.fold(
+      (_) {},
+      (updatedPost) async {
+        final repo = sl<FavoriteRepository>();
+        if (updatedPost.likeIDs.contains(currentUserUID)) {
+          await repo.addToFavorites(postId, currentUserUID);
+        } else {
+          await repo.removeFromFavorites(postId, currentUserUID);
+        }
+        if (!context.mounted) return;
+        context.read<TimelineBloc>().add(UpdateTimelinePost(updatedPost));
+      },
+    );
+  
   }
 }

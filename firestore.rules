@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Posts collection: Anyone can read, anyone can create (for seeding), only owner can update/delete
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAuthenticated(); // Simplified for now to allow seeder to update if needed
+    }
+
+    // Users collection: Anyone can read, anyone can write (for seeding)
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Favorites collection: Anyone can read/write (for seeding)
+    match /favorites/{userId} {
+      allow read, write: if true;
+    }
+
+    // Preferences collection: Anyone can read/write (for seeding/preferences)
+    match /preferences/{userId} {
+      allow read, write: if true;
+    }
+
+    // Tasks collection: Anyone can read/write (for seeding/tasks)
+    match /tasks/{taskId} {
+      allow read, write: if true;
+    }
+    
+    // Conversations collection: Anyone can read/write (for seeding)
+    match /conversations/{conversationId} {
+      allow read, write: if true;
+      
+      match /messages/{messageId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}

@@ -10,45 +10,57 @@ abstract class ManageEvent extends Equatable {
 
 /// Event to load tasks
 class LoadTasks extends ManageEvent {
-  const LoadTasks();
+  final String userUID;
+  const LoadTasks(this.userUID);
+
+  @override
+  List<Object?> get props => [userUID];
 }
 
 /// Event to add a new task
 class AddTask extends ManageEvent {
   final String title;
+  final String userUID;
 
-  const AddTask(this.title);
+  const AddTask({required this.title, required this.userUID});
 
   @override
-  List<Object?> get props => [title];
+  List<Object?> get props => [title, userUID];
 }
 
 /// Event to update task status
 class UpdateTaskStatus extends ManageEvent {
   final String taskId;
   final String status; // 'todo', 'working', 'completed'
+  final String userUID;
 
   const UpdateTaskStatus({
     required this.taskId,
     required this.status,
+    required this.userUID,
   });
 
   @override
-  List<Object?> get props => [taskId, status];
+  List<Object?> get props => [taskId, status, userUID];
 }
 
 /// Event to delete a task
 class DeleteTask extends ManageEvent {
   final String taskId;
+  final String userUID;
 
-  const DeleteTask(this.taskId);
+  const DeleteTask({required this.taskId, required this.userUID});
 
   @override
-  List<Object?> get props => [taskId];
+  List<Object?> get props => [taskId, userUID];
 }
 
 /// Event to refresh tasks
 class RefreshTasks extends ManageEvent {
-  const RefreshTasks();
+  final String userUID;
+  const RefreshTasks(this.userUID);
+
+  @override
+  List<Object?> get props => [userUID];
 }
 

@@ -5,7 +5,7 @@ import '../../domain/entities/user.dart';
 /// Extends the domain User entity and adds JSON serialization capabilities
 /// for Firebase Firestore integration.
 class UserModel extends User {
-  const UserModel({
+  UserModel({
     super.id,
     required super.userName,
     required super.userBio,
@@ -47,6 +47,18 @@ class UserModel extends User {
       userBioLink: user.userBioLink,
       userUID: user.userUID,
       userEmail: user.userEmail,
+    );
+  }
+
+  /// Converts this UserModel to a domain User entity.
+  User toDomain() {
+    return User(
+      id: id,
+      userName: userName,
+      userBio: userBio,
+      userBioLink: userBioLink,
+      userUID: userUID,
+      userEmail: userEmail,
     );
   }
 }

@@ -20,29 +20,27 @@ abstract class FirebasePostDataSource {
   /// Deletes a post from Firestore
   Future<void> deletePost(String postId);
 
-  /// Adds a user ID to the upvote list of a post
-  Future<PostModel> upvotePost(String postId, String userId);
-
-  /// Adds a user ID to the downvote list of a post
-  Future<PostModel> downvotePost(String postId, String userId);
+  /// Toggles like (star) for a post: adds userId to likeIDs if not present, removes if present.
+  Future<PostModel> likePost(String postId, String userId);
 }
 
 /// Implementation of FirebasePostDataSource using Cloud Firestore
 class FirebasePostDataSourceImpl implements FirebasePostDataSource {
-  final FirebaseFirestore firestore;
+  final FirebaseFirestore _firestore;
 
-  FirebasePostDataSourceImpl({required this.firestore});
+  FirebasePostDataSourceImpl({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<List<PostModel>> getPosts() async {
     try {
-      final querySnapshot = await firestore
+      final querySnapshot = await _firestore
           .collection(FirebaseCollections.posts)
           .orderBy('publishedDate', descending: true)
           .get();
 
       return querySnapshot.docs
-          .map((doc) => PostModel.fromJson(doc.data()))
+          .map((doc) => PostModel.fromJson({...doc.data(), 'id': doc.id}))
           .toList();
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
@@ -54,7 +52,7 @@ class FirebasePostDataSourceImpl implements FirebasePostDataSource {
   @override
   Future<PostModel> getPost(String postId) async {
     try {
-      final doc = await firestore
+      final doc = await _firestore
           .collection(FirebaseCollections.posts)
           .doc(postId)
           .get();
@@ -68,7 +66,7 @@ class FirebasePostDataSourceImpl implements FirebasePostDataSource {
         throw ServerException('Post data is null for ID: $postId');
       }
 
-      return PostModel.fromJson(data);
+      return PostModel.fromJson({...data, 'id': doc.id});
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
@@ -79,15 +77,16 @@ class FirebasePostDataSourceImpl implements FirebasePostDataSource {
   @override
   Future<PostModel> createPost(PostModel post) async {
     try {
-      final docRef = firestore.collection(FirebaseCollections.posts).doc();
+      final docRef = _firestore.collection(FirebaseCollections.posts).doc();
       final postWithId = PostModel(
         id: docRef.id,
         text: post.text,
         imageURL: post.imageURL,
         imageReferenceID: post.imageReferenceID,
+        videoURL: post.videoURL,
+        videoReferenceID: post.videoReferenceID,
         publishedDate: post.publishedDate,
-        upvoteIDs: post.upvoteIDs,
-        downvoteIDs: post.downvoteIDs,
+        likeIDs: post.likeIDs,
         userName: post.userName,
         userUID: post.userUID,
       );
@@ -108,7 +107,7 @@ class FirebasePostDataSourceImpl implements FirebasePostDataSource {
         throw ServerException('Cannot update post without ID');
       }
 
-      await firestore
+      await _firestore
           .collection(FirebaseCollections.posts)
           .doc(post.id)
           .update(post.toJson());
@@ -124,7 +123,7 @@ class FirebasePostDataSourceImpl implements FirebasePostDataSource {
   @override
   Future<void> deletePost(String postId) async {
     try {
-      await firestore
+      await _firestore
           .collection(FirebaseCollections.posts)
           .doc(postId)
           .delete();
@@ -136,13 +135,13 @@ class FirebasePostDataSourceImpl implements FirebasePostDataSource {
   }
 
   @override
-  Future<PostModel> upvotePost(String postId, String userId) async {
+  Future<PostModel> likePost(String postId, String userId) async {
     try {
-      final docRef = firestore
+      final docRef = _firestore
           .collection(FirebaseCollections.posts)
           .doc(postId);
 
-      await firestore.runTransaction((transaction) async {
+      await _firestore.runTransaction((transaction) async {
         final snapshot = await transaction.get(docRef);
 
         if (!snapshot.exists) {
@@ -154,74 +153,24 @@ class FirebasePostDataSourceImpl implements FirebasePostDataSource {
           throw ServerException('Post data is null for ID: $postId');
         }
 
-        final upvoteIDs = List<String>.from(data['upvoteIDs'] as List? ?? []);
-        final downvoteIDs = List<String>.from(data['downvoteIDs'] as List? ?? []);
-
-        // Remove from downvotes if present
-        downvoteIDs.remove(userId);
-
-        // Add to upvotes if not already present
-        if (!upvoteIDs.contains(userId)) {
-          upvoteIDs.add(userId);
+        var likeIDs = List<String>.from(data['likeIDs'] as List? ?? []);
+        if (data['likeIDs'] == null && data['upvoteIDs'] != null) {
+          likeIDs = List<String>.from(data['upvoteIDs'] as List? ?? []);
+        }
+        if (likeIDs.contains(userId)) {
+          likeIDs.remove(userId);
+        } else {
+          likeIDs.add(userId);
         }
 
-        transaction.update(docRef, {
-          'upvoteIDs': upvoteIDs,
-          'downvoteIDs': downvoteIDs,
-        });
+        transaction.update(docRef, {'likeIDs': likeIDs});
       });
 
-      // Fetch and return the updated post
       return await getPost(postId);
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
-      throw ServerException('Failed to upvote post: $e');
-    }
-  }
-
-  @override
-  Future<PostModel> downvotePost(String postId, String userId) async {
-    try {
-      final docRef = firestore
-          .collection(FirebaseCollections.posts)
-          .doc(postId);
-
-      await firestore.runTransaction((transaction) async {
-        final snapshot = await transaction.get(docRef);
-
-        if (!snapshot.exists) {
-          throw ServerException('Post not found with ID: $postId');
-        }
-
-        final data = snapshot.data();
-        if (data == null) {
-          throw ServerException('Post data is null for ID: $postId');
-        }
-
-        final upvoteIDs = List<String>.from(data['upvoteIDs'] as List? ?? []);
-        final downvoteIDs = List<String>.from(data['downvoteIDs'] as List? ?? []);
-
-        // Remove from upvotes if present
-        upvoteIDs.remove(userId);
-
-        // Add to downvotes if not already present
-        if (!downvoteIDs.contains(userId)) {
-          downvoteIDs.add(userId);
-        }
-
-        transaction.update(docRef, {
-          'upvoteIDs': upvoteIDs,
-          'downvoteIDs': downvoteIDs,
-        });
-      });
-
-      // Fetch and return the updated post
-      return await getPost(postId);
-    } on FirebaseException catch (e) {
-      throw ServerException('Firebase error: ${e.message ?? e.code}');
-    } catch (e) {
-      throw ServerException('Failed to downvote post: $e');
+      throw ServerException('Failed to like post: $e');
     }
   }
 }

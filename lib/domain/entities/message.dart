@@ -1,10 +1,11 @@
 import 'package:equatable/equatable.dart';
+import '../../core/utils/uuid_utils.dart';
 
 /// Domain entity representing a message in the system.
 /// 
 /// This entity is immutable and uses value equality for comparison.
 class Message extends Equatable {
-  final String? id;
+  final String id;
   final String senderUID;
   final String senderName;
   final String receiverUID;
@@ -13,8 +14,8 @@ class Message extends Equatable {
   final DateTime timestamp;
   final bool isRead;
 
-  const Message({
-    this.id,
+  Message({
+    String? id,
     required this.senderUID,
     required this.senderName,
     required this.receiverUID,
@@ -22,7 +23,7 @@ class Message extends Equatable {
     required this.content,
     required this.timestamp,
     this.isRead = false,
-  });
+  }) : id = id ?? UuidUtils.generate();
 
   @override
   List<Object?> get props => [
@@ -39,25 +40,28 @@ class Message extends Equatable {
 
 /// Domain entity representing a conversation between users.
 class Conversation extends Equatable {
-  final String? id;
+  final String id;
   final String participant1UID;
   final String participant1Name;
   final String participant2UID;
   final String participant2Name;
+  final List<String> participants;
   final Message? lastMessage;
   final DateTime lastUpdated;
   final int unreadCount;
 
-  const Conversation({
-    this.id,
+  Conversation({
+    String? id,
     required this.participant1UID,
     required this.participant1Name,
     required this.participant2UID,
     required this.participant2Name,
+    List<String>? participants,
     this.lastMessage,
     required this.lastUpdated,
     this.unreadCount = 0,
-  });
+  })  : id = id ?? UuidUtils.generate(),
+        participants = participants ?? [participant1UID, participant2UID];
 
   @override
   List<Object?> get props => [
@@ -66,6 +70,7 @@ class Conversation extends Equatable {
         participant1Name,
         participant2UID,
         participant2Name,
+        participants,
         lastMessage,
         lastUpdated,
         unreadCount,

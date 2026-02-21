@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
+import '../theme/colours.dart';
+import '../theme/spacing.dart';
+import '../theme/text_styles.dart';
+import '../theme/constants.dart';
 
 /// A custom bottom navigation bar with four tabs
 /// Includes haptic feedback on tab selection
@@ -20,14 +24,7 @@ class BottomNavigationWidget extends StatelessWidget {
     final labels = ['Home', 'Favorites', 'Profile', 'Messages'];
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        color: cardBackground,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -42,36 +39,36 @@ class BottomNavigationWidget extends StatelessWidget {
                     HapticFeedback.selectionClick();
                     onTabSelected(index);
                   },
-                  borderRadius: BorderRadius.circular(32),
+                  borderRadius: BorderRadius.circular(16),
                   customBorder: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  splashColor: AppTheme.selectedTab.withOpacity(0.12),
+                  splashColor: selectedTab.withValues(alpha: 0.12),
                   highlightColor: Colors.transparent,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 6.0),
                     decoration: BoxDecoration(
-                      color: isActive ? AppTheme.selectedTab.withOpacity(0.14) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(32),
+                      color: isActive ? selectedTab.withValues(alpha: 0.14) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           icons[index],
-                          color: isActive ? AppTheme.selectedTab : AppTheme.unselectedTab,
+                          color: isActive ? selectedTab : unselectedTab,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: spacingXs),
                         Text(
                           labels[index],
                           style: isActive
-                              ? AppTheme.bodyMedium.copyWith(
+                              ? bodyMedium.copyWith(
                                   fontWeight: FontWeight.w600,
-                                  color: AppTheme.selectedTab,
+                                  color: selectedTab,
                                 )
-                              : AppTheme.bodyMedium.copyWith(
-                                  color: AppTheme.unselectedTab,
+                              : bodyMedium.copyWith(
+                                  color: unselectedTab,
                                 ),
                         ),
                       ],

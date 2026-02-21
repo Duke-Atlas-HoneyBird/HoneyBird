@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../theme/app_theme.dart';
+import '../theme/colours.dart';
+import '../theme/text_styles.dart';
+import '../theme/spacing.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../state/account/account_bloc.dart';
 import '../state/account/account_event.dart';
 import '../state/account/account_state.dart';
+
+import '../../core/di/injection.dart';
+import '../state/auth/auth_bloc.dart';
+import '../state/auth/auth_state.dart';
 
 /// Account screen for managing user account settings
 class AccountScreen extends StatefulWidget {
@@ -15,7 +21,8 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  int _currentTabIndex = 2; // Account is index 2
+  int _currentTabIndex = 2;
+  bool _hasRequestedLoad = false;
 
   void _handleTabSelected(int index) {
     if (_currentTabIndex == index) {
@@ -43,30 +50,45 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasRequestedLoad) {
+      _hasRequestedLoad = true;
+      final authState = context.read<AuthBloc>().state;
+      final userUID = authState is AuthAuthenticated ? authState.user.uid : '';
+      context.read<AccountBloc>().add(LoadAccountData(userUID));
+    }
+  }
+
+  @override
+  void deactivate() {
+    _hasRequestedLoad = false;
+    super.deactivate();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AccountBloc()..add(const LoadAccountData()),
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
-        ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
+    final authState = context.read<AuthBloc>().state;
+    String userUID = '';
+    if (authState is AuthAuthenticated) {
+      userUID = authState.user.uid;
+    }
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: backgroundGradient,
+      ),
+      child: Scaffold(
           appBar: AppBar(
-            title: const Text(
-              'Account',
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.transparent,
+            title: const Text('Account'),
             elevation: 0,
-            iconTheme: const IconThemeData(color: Colors.white),
           ),
           body: BlocBuilder<AccountBloc, AccountState>(
             builder: (context, state) {
               if (state is AccountLoading) {
-                return const Center(
+                return Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onBackground),
                   ),
                 );
               }
@@ -74,7 +96,7 @@ class _AccountScreenState extends State<AccountScreen> {
               if (state is AccountError) {
                 return Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacingL),
+                    padding: const EdgeInsets.all(spacingL),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -83,32 +105,34 @@ class _AccountScreenState extends State<AccountScreen> {
                           size: 64,
                           color: Colors.white,
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
+                        const SizedBox(height: spacingM),
                         Text(
                           'Error',
-                          style: AppTheme.headlineMedium.copyWith(
+                          style: headlineMedium.copyWith(
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: AppTheme.spacingS),
+                        const SizedBox(height: spacingS),
                         Text(
                           state.message,
-                          style: AppTheme.bodyLarge.copyWith(
-                            color: Colors.white.withValues(alpha: 0.8),
+                          style: bodyLarge.copyWith(
+                            color: Colors.white.withOpacity(0.8),
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
+                        const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            context.read<AccountBloc>().add(const LoadAccountData());
+                            context
+                                .read<AccountBloc>()
+                                .add(LoadAccountData(userUID));
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.accentPink,
+                            backgroundColor: accentPink,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: AppTheme.spacingL,
-                              vertical: AppTheme.spacingM,
+                              horizontal: spacingL,
+                              vertical: spacingM,
                             ),
                           ),
                           child: const Text('Retry'),
@@ -120,20 +144,24 @@ class _AccountScreenState extends State<AccountScreen> {
               }
 
               if (state is AccountLoaded || state is AccountSaving) {
-                final user = state is AccountSaving ? state.user : (state as AccountLoaded).user;
-                final preferences = state is AccountSaving ? state.preferences : (state as AccountLoaded).preferences;
+                final user = state is AccountSaving
+                    ? state.user
+                    : (state as AccountLoaded).user;
+                final preferences = state is AccountSaving
+                    ? state.preferences
+                    : (state as AccountLoaded).preferences;
                 final isSaving = state is AccountSaving;
 
                 return SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacingM),
+                    padding: const EdgeInsets.all(spacingM),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // User Profile Section
                         Card(
                           child: Padding(
-                            padding: const EdgeInsets.all(AppTheme.spacingM),
+                            padding: const EdgeInsets.all(spacingM),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -141,7 +169,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                   children: [
                                     CircleAvatar(
                                       radius: 40,
-                                      backgroundColor: AppTheme.primaryPurple,
+                                      backgroundColor: primaryPurple,
                                       child: Text(
                                         user.userName.isNotEmpty
                                             ? user.userName[0].toUpperCase()
@@ -153,41 +181,42 @@ class _AccountScreenState extends State<AccountScreen> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: AppTheme.spacingM),
+                                    const SizedBox(width: spacingM),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             user.userName,
-                                            style: AppTheme.headlineMedium,
+                                            style: headlineMedium,
                                           ),
-                                          const SizedBox(height: AppTheme.spacingXs),
+                                          const SizedBox(height: spacingXs),
                                           Text(
                                             user.userEmail,
-                                            style: AppTheme.bodyMedium,
+                                            style: bodyMedium,
                                           ),
                                         ],
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: AppTheme.spacingM),
+                                const SizedBox(height: spacingM),
                                 Text(
                                   'Bio',
-                                  style: AppTheme.labelLarge,
+                                  style: labelLarge,
                                 ),
-                                const SizedBox(height: AppTheme.spacingXs),
+                                const SizedBox(height: spacingXs),
                                 Text(
                                   user.userBio,
-                                  style: AppTheme.bodyLarge,
+                                  style: bodyLarge,
                                 ),
                                 if (user.userBioLink.isNotEmpty) ...[
-                                  const SizedBox(height: AppTheme.spacingS),
+                                  const SizedBox(height: spacingS),
                                   Text(
                                     'Link: ${user.userBioLink}',
-                                    style: AppTheme.bodyMedium.copyWith(
-                                      color: AppTheme.primaryPurple,
+                                    style: bodyMedium.copyWith(
+                                      color: primaryPurple,
                                     ),
                                   ),
                                 ],
@@ -195,27 +224,32 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
+                        const SizedBox(height: spacingM),
 
                         // Dietary Preferences Section
                         Card(
                           child: Padding(
-                            padding: const EdgeInsets.all(AppTheme.spacingM),
+                            padding: const EdgeInsets.all(spacingM),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Dietary Preferences',
-                                  style: AppTheme.headlineMedium,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium,
                                 ),
-                                const SizedBox(height: AppTheme.spacingM),
+                                const SizedBox(height: spacingM),
                                 _buildPreferenceChip(
                                   context,
                                   'Vegetarian',
                                   preferences.vegetarian,
                                   (value) {
-                                    final updated = preferences.copyWith(vegetarian: value);
-                                    context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                    final updated =
+                                        preferences.copyWith(vegetarian: value);
+                                    context
+                                        .read<AccountBloc>()
+                                        .add(UpdateUserPreferences(updated));
                                   },
                                 ),
                                 _buildPreferenceChip(
@@ -223,8 +257,11 @@ class _AccountScreenState extends State<AccountScreen> {
                                   'Vegan',
                                   preferences.vegan,
                                   (value) {
-                                    final updated = preferences.copyWith(vegan: value);
-                                    context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                    final updated =
+                                        preferences.copyWith(vegan: value);
+                                    context
+                                        .read<AccountBloc>()
+                                        .add(UpdateUserPreferences(updated));
                                   },
                                 ),
                                 _buildPreferenceChip(
@@ -232,8 +269,11 @@ class _AccountScreenState extends State<AccountScreen> {
                                   'Halaal',
                                   preferences.halaal,
                                   (value) {
-                                    final updated = preferences.copyWith(halaal: value);
-                                    context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                    final updated =
+                                        preferences.copyWith(halaal: value);
+                                    context
+                                        .read<AccountBloc>()
+                                        .add(UpdateUserPreferences(updated));
                                   },
                                 ),
                                 _buildPreferenceChip(
@@ -241,8 +281,11 @@ class _AccountScreenState extends State<AccountScreen> {
                                   'No Pork',
                                   preferences.pork,
                                   (value) {
-                                    final updated = preferences.copyWith(pork: value);
-                                    context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                    final updated =
+                                        preferences.copyWith(pork: value);
+                                    context
+                                        .read<AccountBloc>()
+                                        .add(UpdateUserPreferences(updated));
                                   },
                                 ),
                                 _buildPreferenceChip(
@@ -250,39 +293,46 @@ class _AccountScreenState extends State<AccountScreen> {
                                   'Lactose Free',
                                   preferences.lactose,
                                   (value) {
-                                    final updated = preferences.copyWith(lactose: value);
-                                    context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                    final updated =
+                                        preferences.copyWith(lactose: value);
+                                    context
+                                        .read<AccountBloc>()
+                                        .add(UpdateUserPreferences(updated));
                                   },
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
+                        const SizedBox(height: spacingM),
 
                         // Experience Preferences Section
                         Card(
                           child: Padding(
-                            padding: const EdgeInsets.all(AppTheme.spacingM),
+                            padding: const EdgeInsets.all(spacingM),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Experience Preferences',
-                                  style: AppTheme.headlineMedium,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium,
                                 ),
-                                const SizedBox(height: AppTheme.spacingM),
+                                const SizedBox(height: spacingM),
                                 Wrap(
-                                  spacing: AppTheme.spacingS,
-                                  runSpacing: AppTheme.spacingS,
+                                  spacing: spacingS,
+                                  runSpacing: spacingS,
                                   children: [
                                     _buildPreferenceChip(
                                       context,
                                       'Outdoor',
                                       preferences.outdoor,
                                       (value) {
-                                        final updated = preferences.copyWith(outdoor: value);
-                                        context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                        final updated = preferences.copyWith(
+                                            outdoor: value);
+                                        context.read<AccountBloc>().add(
+                                            UpdateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -290,8 +340,10 @@ class _AccountScreenState extends State<AccountScreen> {
                                       'Wine Tasting',
                                       preferences.wineTasting,
                                       (value) {
-                                        final updated = preferences.copyWith(wineTasting: value);
-                                        context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                        final updated = preferences.copyWith(
+                                            wineTasting: value);
+                                        context.read<AccountBloc>().add(
+                                            UpdateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -299,29 +351,34 @@ class _AccountScreenState extends State<AccountScreen> {
                                       'Wine Farms',
                                       preferences.wineFarms,
                                       (value) {
-                                        final updated = preferences.copyWith(wineFarms: value);
-                                        context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                        final updated = preferences.copyWith(
+                                            wineFarms: value);
+                                        context.read<AccountBloc>().add(
+                                            UpdateUserPreferences(updated));
                                       },
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: AppTheme.spacingM),
-                                const Text(
+                                const SizedBox(height: spacingM),
+                                Text(
                                   'Cuisine Preferences',
-                                  style: AppTheme.labelLarge,
+                                  // labelLarge,
+                                  style: Theme.of(context).textTheme.labelLarge,
                                 ),
-                                const SizedBox(height: AppTheme.spacingS),
+                                const SizedBox(height: spacingS),
                                 Wrap(
-                                  spacing: AppTheme.spacingS,
-                                  runSpacing: AppTheme.spacingS,
+                                  spacing: spacingS,
+                                  runSpacing: spacingS,
                                   children: [
                                     _buildPreferenceChip(
                                       context,
                                       'African',
                                       preferences.african,
                                       (value) {
-                                        final updated = preferences.copyWith(african: value);
-                                        context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                        final updated = preferences.copyWith(
+                                            african: value);
+                                        context.read<AccountBloc>().add(
+                                            UpdateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -329,8 +386,10 @@ class _AccountScreenState extends State<AccountScreen> {
                                       'Italian',
                                       preferences.italian,
                                       (value) {
-                                        final updated = preferences.copyWith(italian: value);
-                                        context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                        final updated = preferences.copyWith(
+                                            italian: value);
+                                        context.read<AccountBloc>().add(
+                                            UpdateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -338,8 +397,10 @@ class _AccountScreenState extends State<AccountScreen> {
                                       'Greek',
                                       preferences.greek,
                                       (value) {
-                                        final updated = preferences.copyWith(greek: value);
-                                        context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                        final updated =
+                                            preferences.copyWith(greek: value);
+                                        context.read<AccountBloc>().add(
+                                            UpdateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -347,8 +408,10 @@ class _AccountScreenState extends State<AccountScreen> {
                                       'Chinese',
                                       preferences.chinese,
                                       (value) {
-                                        final updated = preferences.copyWith(chinese: value);
-                                        context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                        final updated = preferences.copyWith(
+                                            chinese: value);
+                                        context.read<AccountBloc>().add(
+                                            UpdateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -356,8 +419,10 @@ class _AccountScreenState extends State<AccountScreen> {
                                       'Thai',
                                       preferences.thai,
                                       (value) {
-                                        final updated = preferences.copyWith(thai: value);
-                                        context.read<AccountBloc>().add(UpdateUserPreferences(updated));
+                                        final updated =
+                                            preferences.copyWith(thai: value);
+                                        context.read<AccountBloc>().add(
+                                            UpdateUserPreferences(updated));
                                       },
                                     ),
                                   ],
@@ -368,7 +433,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         ),
 
                         if (isSaving) ...[
-                          const SizedBox(height: AppTheme.spacingM),
+                          const SizedBox(height: spacingM),
                           const Center(
                             child: CircularProgressIndicator(),
                           ),
@@ -391,7 +456,7 @@ class _AccountScreenState extends State<AccountScreen> {
             onTabSelected: _handleTabSelected,
           ),
         ),
-      ),
+    
     );
   }
 
@@ -405,10 +470,10 @@ class _AccountScreenState extends State<AccountScreen> {
       label: Text(label),
       selected: value,
       onSelected: onChanged,
-      selectedColor: AppTheme.primaryPurple.withValues(alpha: 0.3),
-      checkmarkColor: AppTheme.primaryPurple,
+      selectedColor: primaryPurple.withOpacity(0.3),
+      checkmarkColor: primaryPurple,
       labelStyle: TextStyle(
-        color: value ? AppTheme.primaryPurple : AppTheme.textSecondary,
+        color: value ? primaryPurple : textSecondary,
         fontWeight: value ? FontWeight.w600 : FontWeight.normal,
       ),
     );

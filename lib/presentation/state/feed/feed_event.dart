@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:honey_bird/domain/entities/post.dart';
 
 /// Base class for Feed events
 abstract class FeedEvent extends Equatable {
@@ -28,3 +29,11 @@ class FilterFeedByCategory extends FeedEvent {
   List<Object?> get props => [category];
 }
 
+class AddOrUpdatePostToFeed extends FeedEvent {
+  final Post post;
+
+  const AddOrUpdatePostToFeed(this.post);
+
+  @override
+  List<Object?> get props => [post];
+}

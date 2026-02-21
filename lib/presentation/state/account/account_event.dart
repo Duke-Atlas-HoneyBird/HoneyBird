@@ -11,7 +11,11 @@ abstract class AccountEvent extends Equatable {
 
 /// Event to load account data
 class LoadAccountData extends AccountEvent {
-  const LoadAccountData();
+  final String userUID;
+  const LoadAccountData(this.userUID);
+
+  @override
+  List<Object?> get props => [userUID];
 }
 
 /// Event to update user preferences

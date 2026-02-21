@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../core/utils/uuid_utils.dart';
 
 /// Domain entity representing user preferences for dietary restrictions and experiences.
 /// 
@@ -25,8 +26,8 @@ class UserPreference extends Equatable {
   final bool chinese;
   final bool thai;
 
-  const UserPreference({
-    required this.id,
+  UserPreference({
+    String? id,
     this.halaal = false,
     this.haram = false,
     this.pork = false,
@@ -41,7 +42,7 @@ class UserPreference extends Equatable {
     this.greek = true,
     this.italian = true,
     this.thai = true,
-  });
+  }) : id = id ?? UuidUtils.generate();
 
   /// Creates a copy of this UserPreference with the given fields replaced with new values.
   UserPreference copyWith({
