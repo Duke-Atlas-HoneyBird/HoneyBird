@@ -1,5 +1,7 @@
 # honey_bird
 
+[![.github/workflows/build-on-tag.yml](https://github.com/simbadombo/HoneyBird/actions/workflows/build-on-tag.yml/badge.svg)](https://github.com/simbadombo/HoneyBird/actions/workflows/build-on-tag.yml)
+
 ### Install Flutter 
   ```bash
   # Download from: https://flutter.dev/docs/get-started/install
