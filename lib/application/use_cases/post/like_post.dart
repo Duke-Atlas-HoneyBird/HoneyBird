@@ -3,12 +3,13 @@ import '../../../core/error/failures.dart';
 import '../../../domain/entities/post.dart';
 import '../../../domain/repositories/post_repository.dart';
 
-class DownvotePost {
+/// Toggles star (like) on a post for the given user.
+class LikePost {
   final PostRepository repository;
 
-  DownvotePost(this.repository);
+  LikePost(this.repository);
 
   Future<Either<Failure, Post>> call(String postId, String userId) {
-    return repository.downvotePost(postId, userId);
+    return repository.likePost(postId, userId);
   }
 }

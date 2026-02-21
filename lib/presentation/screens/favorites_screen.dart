@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../theme/app_theme.dart';
+import '../theme/colours.dart';
+import '../theme/text_styles.dart';
+import '../theme/spacing.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../widgets/post_card.dart';
+import '../state/auth/auth_bloc.dart';
+import '../state/auth/auth_state.dart';
 import '../state/favorites/favorites_bloc.dart';
 import '../state/favorites/favorites_event.dart';
 import '../state/favorites/favorites_state.dart';
-import '../../infrastructure/repositories/favorite_repository_impl.dart';
+import '../../core/di/injection.dart' as di;
+import '../../domain/repositories/favorite_repository.dart';
+import '../../application/use_cases/post/like_post.dart';
 
-/// Favorites screen displaying user's favorited posts
+/// Favorites screen displaying user's starred (favorited) posts — all from API.
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
 
@@ -17,8 +23,8 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  int _currentTabIndex = 1; // Favorites is index 1
-  final String _currentUserUID = 'current_user'; // Dummy user ID
+  int _currentTabIndex = 1;
+  bool _hasRequestedLoad = false;
 
   void _handleTabSelected(int index) {
     if (_currentTabIndex == index) {
@@ -46,33 +52,56 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     }
   }
 
+  String? _currentUserUID(BuildContext context) {
+    final state = context.read<AuthBloc>().state;
+    return state is AuthAuthenticated ? state.user.uid : null;
+  }
+
+  Future<void> _handleUnstar(BuildContext context, String postId, String userUID) async {
+    if (userUID.isEmpty) return;
+    final likePost = di.sl<LikePost>();
+    final favoriteRepository = di.sl<FavoriteRepository>();
+    await likePost(postId, userUID);
+    await favoriteRepository.removeFromFavorites(postId, userUID);
+    if (!context.mounted) return;
+    context.read<FavoritesBloc>().add(RefreshFavoritePosts(userUID));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final userUID = _currentUserUID(context) ?? '';
+    if (!_hasRequestedLoad && userUID.isNotEmpty) {
+      _hasRequestedLoad = true;
+      context.read<FavoritesBloc>().add(LoadFavoritePosts(userUID));
+    }
+  }
+
+  @override
+  void deactivate() {
+    _hasRequestedLoad = false;
+    super.deactivate();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => FavoritesBloc(
-        favoriteRepository: FavoriteRepositoryImpl(),
-      )..add(LoadFavoritePosts(_currentUserUID)),
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
-        ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
+    final userUID = _currentUserUID(context) ?? '';
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: backgroundGradient,
+      ),
+      child: Scaffold(
           appBar: AppBar(
-            title: const Text(
-              'Favorites',
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.transparent,
+            title: const Text('Favorites'),
             elevation: 0,
-            iconTheme: const IconThemeData(color: Colors.white),
+            iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
           ),
           body: BlocBuilder<FavoritesBloc, FavoritesState>(
             builder: (context, state) {
               if (state is FavoritesLoading) {
-                return const Center(
+                return Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onBackground),
                   ),
                 );
               }
@@ -80,7 +109,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               if (state is FavoritesError) {
                 return Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacingL),
+                    padding: const EdgeInsets.all(spacingL),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -89,32 +118,32 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           size: 64,
                           color: Colors.white,
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
+                        const SizedBox(height: spacingM),
                         Text(
                           'Error',
-                          style: AppTheme.headlineMedium.copyWith(
+                          style: headlineMedium.copyWith(
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: AppTheme.spacingS),
+                        const SizedBox(height: spacingS),
                         Text(
                           state.message,
-                          style: AppTheme.bodyLarge.copyWith(
-                            color: Colors.white.withValues(alpha: 0.8),
+                          style: bodyLarge.copyWith(
+                            color: Colors.white.withOpacity(0.8),
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
+                        const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            context.read<FavoritesBloc>().add(LoadFavoritePosts(_currentUserUID));
+                            context.read<FavoritesBloc>().add(LoadFavoritePosts(userUID));
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.accentPink,
+                            backgroundColor: accentPink,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: AppTheme.spacingL,
-                              vertical: AppTheme.spacingM,
+                              horizontal: spacingL,
+                              vertical: spacingM,
                             ),
                           ),
                           child: const Text('Retry'),
@@ -134,20 +163,20 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         Icon(
                           Icons.favorite_border,
                           size: 64,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: Colors.white.withOpacity(0.7),
                         ),
-                        const SizedBox(height: AppTheme.spacingL),
+                        const SizedBox(height: spacingL),
                         Text(
                           'No favorites yet',
-                          style: AppTheme.headlineMedium.copyWith(
+                          style: headlineMedium.copyWith(
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: AppTheme.spacingM),
+                        const SizedBox(height: spacingM),
                         Text(
                           'Posts you favorite will appear here',
-                          style: AppTheme.bodyLarge.copyWith(
-                            color: Colors.white.withValues(alpha: 0.8),
+                          style: bodyLarge.copyWith(
+                            color: Colors.white.withOpacity(0.8),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -158,10 +187,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<FavoritesBloc>().add(RefreshFavoritePosts(_currentUserUID));
+                    context.read<FavoritesBloc>().add(RefreshFavoritePosts(userUID));
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
-                  color: AppTheme.accentPink,
+                  color: accentPink,
                   child: ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: state.posts.length,
@@ -169,12 +198,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       final post = state.posts[index];
                       return PostCard(
                         post: post,
-                        onUpvote: () {
-                          // Handle upvote
-                        },
-                        onDownvote: () {
-                          // Handle downvote
-                        },
+                        onLike: () => _handleUnstar(context, post.id ?? '', userUID),
+                        currentUserUID: userUID.isNotEmpty ? userUID : null,
                       );
                     },
                   ),
@@ -193,7 +218,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             onTabSelected: _handleTabSelected,
           ),
         ),
-      ),
     );
   }
 }

@@ -1,15 +1,26 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
 import '../../../domain/entities/drop_task.dart';
 import '../../../domain/entities/drop_status.dart';
 import 'manage_event.dart';
 import 'manage_state.dart';
+import '../../../application/use_cases/tasks/create_task.dart' as uc;
+import '../../../application/use_cases/tasks/delete_task.dart' as uc;
+import '../../../application/use_cases/tasks/get_tasks.dart' as uc;
+import '../../../application/use_cases/tasks/update_task.dart' as uc;
 
 /// Bloc for managing tasks state and business logic
 class ManageBloc extends Bloc<ManageEvent, ManageState> {
-  final _uuid = const Uuid();
+  final uc.GetTasks getTasks;
+  final uc.CreateTask createTask;
+  final uc.UpdateTask updateTask;
+  final uc.DeleteTask deleteTask;
 
-  ManageBloc() : super(const ManageInitial()) {
+  ManageBloc({
+    required this.getTasks,
+    required this.createTask,
+    required this.updateTask,
+    required this.deleteTask,
+  }) : super(const ManageInitial()) {
     on<LoadTasks>(_onLoadTasks);
     on<AddTask>(_onAddTask);
     on<UpdateTaskStatus>(_onUpdateTaskStatus);
@@ -17,57 +28,16 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
     on<RefreshTasks>(_onRefreshTasks);
   }
 
-  /// Generate dummy tasks
-  List<DropTask> _generateDummyTasks() {
-    return [
-      const DropTask(
-        id: 'task_1',
-        title: 'Review restaurant recommendations',
-        status: DropStatus.todo,
-      ),
-      const DropTask(
-        id: 'task_2',
-        title: 'Update user preferences',
-        status: DropStatus.working,
-      ),
-      const DropTask(
-        id: 'task_3',
-        title: 'Plan weekend wine tasting trip',
-        status: DropStatus.todo,
-      ),
-      const DropTask(
-        id: 'task_4',
-        title: 'Complete profile setup',
-        status: DropStatus.completed,
-      ),
-      const DropTask(
-        id: 'task_5',
-        title: 'Explore new Italian restaurants',
-        status: DropStatus.working,
-      ),
-      const DropTask(
-        id: 'task_6',
-        title: 'Share favorite dining experience',
-        status: DropStatus.todo,
-      ),
-    ];
-  }
-
   Future<void> _onLoadTasks(
     LoadTasks event,
     Emitter<ManageState> emit,
   ) async {
     emit(const ManageLoading());
-    
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    try {
-      final tasks = _generateDummyTasks();
-      emit(ManageLoaded(tasks: tasks));
-    } catch (e) {
-      emit(ManageError('Failed to load tasks: ${e.toString()}'));
-    }
+    final result = await getTasks(event.userUID);
+    result.fold(
+      (failure) => emit(ManageError(failure.message)),
+      (tasks) => emit(ManageLoaded(tasks: tasks)),
+    );
   }
 
   Future<void> _onAddTask(
@@ -76,14 +46,20 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
   ) async {
     final currentState = state;
     if (currentState is ManageLoaded) {
-      final newTask = DropTask(
-        id: _uuid.v4(),
+      final task = DropTask(
         title: event.title,
         status: DropStatus.todo,
+        userUID: event.userUID,
       );
       
-      final updatedTasks = [newTask, ...currentState.tasks];
-      emit(ManageLoaded(tasks: updatedTasks));
+      final result = await createTask(task);
+      result.fold(
+        (failure) => emit(ManageError(failure.message)),
+        (createdTask) {
+          final updatedTasks = [createdTask, ...currentState.tasks];
+          emit(ManageLoaded(tasks: updatedTasks));
+        },
+      );
     }
   }
 
@@ -93,6 +69,9 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
   ) async {
     final currentState = state;
     if (currentState is ManageLoaded) {
+      final taskIndex = currentState.tasks.indexWhere((t) => t.id == event.taskId);
+      if (taskIndex == -1) return;
+
       DropStatus newStatus;
       switch (event.status) {
         case 'working':
@@ -105,18 +84,23 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
           newStatus = DropStatus.todo;
       }
       
-      final updatedTasks = currentState.tasks.map((task) {
-        if (task.id == event.taskId) {
-          return DropTask(
-            id: task.id,
-            title: task.title,
-            status: newStatus,
-          );
-        }
-        return task;
-      }).toList();
-      
-      emit(ManageLoaded(tasks: updatedTasks));
+      final updatedTask = DropTask(
+        id: event.taskId,
+        title: currentState.tasks[taskIndex].title,
+        status: newStatus,
+        userUID: event.userUID,
+      );
+
+      final result = await updateTask(updatedTask);
+      result.fold(
+        (failure) => emit(ManageError(failure.message)),
+        (updated) {
+          final updatedTasks = currentState.tasks.map((task) {
+            return task.id == event.taskId ? updated : task;
+          }).toList();
+          emit(ManageLoaded(tasks: updatedTasks));
+        },
+      );
     }
   }
 
@@ -126,11 +110,16 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
   ) async {
     final currentState = state;
     if (currentState is ManageLoaded) {
-      final updatedTasks = currentState.tasks
-          .where((task) => task.id != event.taskId)
-          .toList();
-      
-      emit(ManageLoaded(tasks: updatedTasks));
+      final result = await deleteTask(event.taskId);
+      result.fold(
+        (failure) => emit(ManageError(failure.message)),
+        (_) {
+          final updatedTasks = currentState.tasks
+              .where((task) => task.id != event.taskId)
+              .toList();
+          emit(ManageLoaded(tasks: updatedTasks));
+        },
+      );
     }
   }
 
@@ -138,21 +127,11 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
     RefreshTasks event,
     Emitter<ManageState> emit,
   ) async {
-    final currentState = state;
-    if (currentState is ManageLoaded) {
-      // Keep current tasks while refreshing
-      emit(ManageLoaded(tasks: currentState.tasks));
-    }
-    
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 400));
-    
-    try {
-      final tasks = _generateDummyTasks();
-      emit(ManageLoaded(tasks: tasks));
-    } catch (e) {
-      emit(ManageError('Failed to refresh tasks: ${e.toString()}'));
-    }
+    final result = await getTasks(event.userUID);
+    result.fold(
+      (failure) => emit(ManageError(failure.message)),
+      (tasks) => emit(ManageLoaded(tasks: tasks)),
+    );
   }
 }
 

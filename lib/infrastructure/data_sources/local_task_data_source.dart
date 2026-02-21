@@ -103,7 +103,7 @@ class LocalTaskDataSourceImpl implements LocalTaskDataSource {
       final success = await sharedPreferences.setString(StorageKeys.tasks, jsonString);
       
       if (!success) {
-        throw CacheException('Failed to save tasks to local storage');
+        throw const CacheException('Failed to save tasks to local storage');
       }
     } catch (e) {
       if (e is CacheException) {

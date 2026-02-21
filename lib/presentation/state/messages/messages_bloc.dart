@@ -48,7 +48,7 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
     final result = await messageRepository.getMessages(event.conversationId);
     
     result.fold(
-      (failure) => emit(const MessagesError('Failed to load messages')),
+      (failure) => emit( MessagesError('Failed to load messages: ${failure.message}')),
       (messages) => emit(MessagesLoaded(
         messages: messages,
         conversationId: event.conversationId,
@@ -60,10 +60,10 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
     SendMessage event,
     Emitter<MessagesState> emit,
   ) async {
-    final result = await messageRepository.sendMessage(event.message);
+    final result = await messageRepository.sendMessage(event.message, conversationId: event.conversationId);
     
     result.fold(
-      (failure) => emit(const MessagesError('Failed to send message')),
+      (failure) => emit(MessagesError('Failed to send message: ${failure.message}')),
       (sentMessage) {
         // Reload messages for the conversation
         if (state is MessagesLoaded) {
@@ -86,7 +86,6 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
     
     // Refresh conversations to update unread count
     if (state is ConversationsLoaded) {
-      final currentState = state as ConversationsLoaded;
       add(RefreshConversations(event.userUID));
     }
   }
@@ -98,7 +97,7 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
     final result = await messageRepository.getConversations(event.userUID);
     
     result.fold(
-      (failure) => emit(const MessagesError('Failed to refresh conversations')),
+      (failure) => emit(MessagesError('Failed to refresh conversations: ${failure.message}')),
       (conversations) async {
         final unreadResult = await messageRepository.getUnreadCount(event.userUID);
         final unreadCount = unreadResult.fold(

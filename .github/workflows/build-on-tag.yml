@@ -5,6 +5,9 @@ on:
     tags:
       - '*'  # Triggers on any tag push
 
+permissions:
+  contents: write  # Required to create releases and upload assets
+
 jobs:
   check-tag:
     name: Check if tag is on develop
@@ -58,6 +61,30 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      - name: Create Firebase / Google config files
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+        run: |
+          [ -f android/app/google-services.json ] || printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          [ -f lib/firebase_options.dart ] || printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
+
+      - name: Create signing keystore and key.properties (optional)
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          [ -f android/app/release.keystore ] || echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+          if [ ! -f android/key.properties ]; then
+            mkdir -p android
+            echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+            echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+            echo "storeFile=app/release.keystore" >> android/key.properties
+          fi
+
       - name: Build Android APK
         run: flutter build apk --release
 
@@ -78,6 +105,35 @@ jobs:
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
 
+  release:
+    name: Create Release and Upload APK
+    needs: [check-tag, build-android]
+    if: needs.check-tag.outputs.is_on_develop == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+
+      - name: Prepare APK for release
+        run: |
+          if [ -f android-apk/build/app/outputs/flutter-apk/app-release.apk ]; then
+            cp android-apk/build/app/outputs/flutter-apk/app-release.apk "honey_bird-${{ github.ref_name }}.apk"
+          else
+            cp android-apk/app-release.apk "honey_bird-${{ github.ref_name }}.apk"
+          fi
+
+      - name: Create Release and Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: honey_bird-${{ github.ref_name }}.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build-ios:
     name: Build iOS
     needs: check-tag
@@ -96,6 +152,14 @@ jobs:
 
       - name: Get Flutter dependencies
         run: flutter pub get
+
+      - name: Create Firebase / Google config files
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+        run: |
+          [ -f ios/GoogleService-Info.plist ] || printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" > ios/GoogleService-Info.plist
+          [ -f lib/firebase_options.dart ] || printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
 
       - name: Install CocoaPods dependencies
         run: |
@@ -130,6 +194,12 @@ jobs:
 
       - name: Get Flutter dependencies
         run: flutter pub get
+
+      - name: Create Firebase config
+        env:
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+        run: |
+          [ -f lib/firebase_options.dart ] || printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
 
       - name: Build Web
         run: flutter build web --release

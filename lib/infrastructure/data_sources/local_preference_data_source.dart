@@ -48,7 +48,7 @@ class LocalPreferenceDataSourceImpl implements LocalPreferenceDataSource {
       final success = await sharedPreferences.setString(key, jsonString);
       
       if (!success) {
-        throw CacheException('Failed to save preferences to local storage');
+        throw const CacheException('Failed to save preferences to local storage');
       }
     } catch (e) {
       if (e is CacheException) {

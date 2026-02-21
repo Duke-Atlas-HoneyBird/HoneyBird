@@ -5,8 +5,8 @@ import '../../domain/entities/user_preference.dart';
 /// Extends the domain UserPreference entity and adds JSON serialization capabilities
 /// for local storage (SharedPreferences) integration.
 class UserPreferenceModel extends UserPreference {
-  const UserPreferenceModel({
-    required super.id,
+  UserPreferenceModel({
+    super.id,
     super.halaal = false,
     super.haram = false,
     super.pork = false,
@@ -26,7 +26,7 @@ class UserPreferenceModel extends UserPreference {
   /// Creates a UserPreferenceModel from a JSON map (local storage).
   factory UserPreferenceModel.fromJson(Map<String, dynamic> json) {
     return UserPreferenceModel(
-      id: json['id'] as String,
+      id: json['id'] as String?,
       halaal: json['halaal'] as bool? ?? false,
       haram: json['haram'] as bool? ?? false,
       pork: json['pork'] as bool? ?? false,

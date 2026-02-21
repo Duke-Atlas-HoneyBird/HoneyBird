@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection.dart';
 import '../../core/utils/snackbar_utils.dart';
 import '../../application/use_cases/post/get_posts.dart';
-import '../../application/use_cases/post/upvote_post.dart';
-import '../../application/use_cases/post/downvote_post.dart';
-import '../theme/app_theme.dart';
+import '../../application/use_cases/post/like_post.dart';
+import '../../domain/repositories/favorite_repository.dart';
+import '../state/auth/auth_bloc.dart';
+import '../state/auth/auth_state.dart';
+import '../theme/colours.dart';
+import '../theme/constants.dart';
+import '../theme/text_styles.dart';
+import '../theme/spacing.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/post_feed_widget.dart';
 import '../widgets/bottom_navigation_widget.dart';
@@ -25,23 +31,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // State variables
   int _currentTabIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isProcessingVote = false;
-  
-  // Use cases injected via GetIt
+  int _feedRefreshKey = 0;
+
   late final GetPosts _getPosts;
-  late final UpvotePost _upvotePost;
-  late final DownvotePost _downvotePost;
+  late final LikePost _likePost;
+  late final FavoriteRepository _favoriteRepository;
 
   @override
   void initState() {
     super.initState();
-    // Inject use cases
     _getPosts = sl<GetPosts>();
-    _upvotePost = sl<UpvotePost>();
-    _downvotePost = sl<DownvotePost>();
+    _likePost = sl<LikePost>();
+    _favoriteRepository = sl<FavoriteRepository>();
   }
 
 
@@ -50,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: AppTheme.backgroundGradient,
+        gradient: backgroundGradient,
       ),
       child: Scaffold(
         key: _scaffoldKey,
@@ -64,8 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
               // Top bar with search and hamburger menu
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingM,
-                  vertical: AppTheme.spacingS,
+                  horizontal: spacingM,
+                  vertical: spacingS,
                 ),
                 child: Row(
                   children: [
@@ -74,11 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         onSearch: _handleSearch,
                       ),
                     ),
-                    const SizedBox(width: AppTheme.spacingS),
+                    const SizedBox(width: spacingS),
                     IconButton(
+                      color: primaryColor,
                       icon: const Icon(
                         Icons.menu,
-                        color: Colors.white,
                         size: 28,
                       ),
                       onPressed: () {
@@ -94,10 +98,19 @@ class _HomeScreenState extends State<HomeScreen> {
               // Post feed in center area
               Expanded(
                 child: Center(
-                  child: PostFeedWidget(
-                    getPosts: _getPosts,
-                    onUpvote: _handleUpvote,
-                    onDownvote: _handleDownvote,
+                  child: BlocBuilder<AuthBloc, AuthState>(
+                    buildWhen: (prev, curr) => curr is AuthAuthenticated || prev is AuthAuthenticated,
+                    builder: (context, authState) {
+                      final currentUserUID = authState is AuthAuthenticated
+                          ? authState.user.uid
+                          : null;
+                      return PostFeedWidget(
+                        key: ValueKey(_feedRefreshKey),
+                        getPosts: _getPosts,
+                        onLike: _handleLike,
+                        currentUserUID: currentUserUID,
+                      );
+                    },
                   ),
                 ),
               ),
@@ -113,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
             HapticFeedback.mediumImpact();
             _navigateToPostCreation();
           },
-          elevation: AppTheme.fabElevation,
+          elevation: fabElevation,
           label: const Text('Create'),
           icon: const Icon(Icons.add_outlined),
           heroTag: 'createPostFAB',
@@ -132,17 +145,17 @@ class _HomeScreenState extends State<HomeScreen> {
     _scaffoldKey.currentState?.openEndDrawer();
   }
 
-  void _handleUpvote(String postId, String userId) async {
-    if (_isProcessingVote) return;
-    
+  void _handleLike(String postId, String userId) async {
+    if (_isProcessingVote || userId.isEmpty) return;
+
     setState(() {
       _isProcessingVote = true;
     });
 
-    final result = await _upvotePost(postId, userId);
-    
+    final result = await _likePost(postId, userId);
+
     if (!mounted) return;
-    
+
     setState(() {
       _isProcessingVote = false;
     });
@@ -151,43 +164,17 @@ class _HomeScreenState extends State<HomeScreen> {
       (failure) {
         SnackBarUtils.showError(
           context,
-          'Failed to upvote post. Please try again.',
+          'Failed to update. Please try again.',
         );
       },
-      (updatedPost) {
-        SnackBarUtils.showSuccess(context, 'Post upvoted!');
-        // Trigger a rebuild to refresh the post feed
-        setState(() {});
-      },
-    );
-  }
-
-  void _handleDownvote(String postId, String userId) async {
-    if (_isProcessingVote) return;
-    
-    setState(() {
-      _isProcessingVote = true;
-    });
-
-    final result = await _downvotePost(postId, userId);
-    
-    if (!mounted) return;
-    
-    setState(() {
-      _isProcessingVote = false;
-    });
-
-    result.fold(
-      (failure) {
-        SnackBarUtils.showError(
-          context,
-          'Failed to downvote post. Please try again.',
-        );
-      },
-      (updatedPost) {
-        SnackBarUtils.showSuccess(context, 'Post downvoted!');
-        // Trigger a rebuild to refresh the post feed
-        setState(() {});
+      (updatedPost) async {
+        if (updatedPost.likeIDs.contains(userId)) {
+          await _favoriteRepository.addToFavorites(postId, userId);
+        } else {
+          await _favoriteRepository.removeFromFavorites(postId, userId);
+        }
+        if (!mounted) return;
+        setState(() => _feedRefreshKey++);
       },
     );
   }

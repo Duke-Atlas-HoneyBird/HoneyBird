@@ -3,12 +3,12 @@ import '../../core/error/exceptions.dart';
 import '../../core/error/failures.dart';
 import '../../domain/entities/user_preference.dart';
 import '../../domain/repositories/user_preference_repository.dart';
-import '../data_sources/local_preference_data_source.dart';
+import '../data_sources/firebase_preference_data_source.dart';
 import '../models/user_preference_model.dart';
 
-/// Implementation of UserPreferenceRepository that uses local storage as the data source
+/// Implementation of UserPreferenceRepository that uses Firestore as the data source
 class UserPreferenceRepositoryImpl implements UserPreferenceRepository {
-  final LocalPreferenceDataSource dataSource;
+  final FirebasePreferenceDataSource dataSource;
 
   UserPreferenceRepositoryImpl({required this.dataSource});
 
@@ -17,10 +17,10 @@ class UserPreferenceRepositoryImpl implements UserPreferenceRepository {
     try {
       final preferenceModel = await dataSource.getPreferences(userId);
       return Right(preferenceModel);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(CacheFailure('Unexpected error occurred: $e'));
+      return Left(ServerFailure('Unexpected error occurred: $e'));
     }
   }
 
@@ -30,10 +30,10 @@ class UserPreferenceRepositoryImpl implements UserPreferenceRepository {
       final preferenceModel = UserPreferenceModel.fromEntity(preferences);
       await dataSource.savePreferences(preferenceModel);
       return const Right(null);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(CacheFailure('Unexpected error occurred: $e'));
+      return Left(ServerFailure('Unexpected error occurred: $e'));
     }
   }
 }

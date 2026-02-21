@@ -8,7 +8,7 @@ class GetTasks {
 
   GetTasks(this.repository);
 
-  Future<Either<Failure, List<DropTask>>> call() {
-    return repository.getTasks();
+  Future<Either<Failure, List<DropTask>>> call(String userUID) {
+    return repository.getTasks(userUID);
   }
 }

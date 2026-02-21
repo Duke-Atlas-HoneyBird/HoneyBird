@@ -1,22 +1,30 @@
-/// Firebase Firestore collection names
+/// Firebase collection names
 class FirebaseCollections {
-  static const String users = 'users';
   static const String posts = 'posts';
+  static const String users = 'users';
+  static const String messages = 'messages';
   static const String tasks = 'tasks';
+  static const String favorites = 'favorites';
+  static const String preferences = 'preferences';
+  static const String conversations = 'conversations';
+}
+
+/// Firebase storage paths
+class FirebaseStoragePaths {
+  static const String postImages = 'post_images';
+  static const String postVideos = 'post_videos';
+  static const String userAvatars = 'user_avatars';
+}
+
+/// App constants
+class AppConstants {
+  static const String appName = 'Honey Bird';
+  static const int postsPerPage = 20;
+  static const int maxImageSizeMB = 5;
 }
 
 /// Local storage keys
 class StorageKeys {
-  static const String userPreferences = 'user_preferences';
   static const String tasks = 'tasks';
-}
-
-/// Error messages
-class ErrorMessages {
-  static const String serverError = 'Server error occurred';
-  static const String cacheError = 'Cache error occurred';
-  static const String networkError = 'Network error occurred';
-  static const String validationError = 'Validation error occurred';
-  static const String notFound = 'Resource not found';
-  static const String unauthorized = 'Unauthorized access';
+  static const String userPreferences = 'user_preferences';
 }

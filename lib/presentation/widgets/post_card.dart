@@ -2,20 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/post.dart';
-import '../theme/app_theme.dart';
+import '../theme/colours.dart';
+import '../theme/spacing.dart';
+import '../theme/border_radius.dart';
+import '../theme/text_styles.dart';
 
-/// A card widget that displays a post with voting functionality
-/// Includes haptic feedback and proper touch targets (48dp minimum)
+/// Aspect ratio for feed images — mobile-first (portrait-friendly, like phone photos).
+const double _feedImageAspectRatio = 4 / 5;
+
+/// A card widget that displays a post with star (like) functionality.
+/// Includes haptic feedback and proper touch targets (48dp minimum).
+/// Image frame is optimized for mobile viewing.
 class PostCard extends StatelessWidget {
   final Post post;
-  final VoidCallback onUpvote;
-  final VoidCallback onDownvote;
+  final VoidCallback onLike;
+  /// Current user's UID — if in [post.likeIDs], star is filled.
+  final String? currentUserUID;
 
   const PostCard({
     super.key,
     required this.post,
-    required this.onUpvote,
-    required this.onDownvote,
+    required this.onLike,
+    this.currentUserUID,
   });
 
   String _formatDate(DateTime date) {
@@ -39,11 +47,11 @@ class PostCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingM,
-        vertical: AppTheme.spacingS,
+        horizontal: spacingM,
+        vertical: spacingS,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.spacingM),
+        padding: const EdgeInsets.all(spacingM),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -52,160 +60,151 @@ class PostCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: AppTheme.primaryPurple,
+                  backgroundColor: primaryPurple,
                   child: Text(
                     post.userName.isNotEmpty ? post.userName[0].toUpperCase() : '?',
-                    style: AppTheme.labelLarge.copyWith(
+                    style: labelLarge.copyWith(
                       color: Colors.white,
                     ),
                   ),
                 ),
-                const SizedBox(width: AppTheme.spacingS),
+                const SizedBox(width: spacingS),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         post.userName,
-                        style: AppTheme.labelLarge,
+                        style: labelLarge,
                       ),
                       Text(
                         _formatDate(post.publishedDate),
-                        style: AppTheme.bodyMedium,
+                        style: bodyMedium,
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.spacingM),
+            const SizedBox(height: spacingM),
             
-            // Post text
-            Text(
-              post.text,
-              style: AppTheme.bodyLarge,
-            ),
+            // Caption (optional)
+            if (post.text.isNotEmpty)
+              Text(
+                post.text,
+                style: bodyLarge,
+              ),
             
-            // Post image (if available)
-            if (post.imageURL != null) ...[
-              const SizedBox(height: AppTheme.spacingM),
+            // Video (if available) — show placeholder; video_player can be added later
+            if (post.videoURL != null) ...[
+              const SizedBox(height: spacingM),
               ClipRRect(
-                borderRadius: BorderRadius.circular(AppTheme.buttonBorderRadius),
-                child: Image.network(
-                  post.imageURL!.toString(),
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 200,
-                      color: AppTheme.textSecondary.withValues(alpha: 0.1),
-                      child: const Center(
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 48,
-                          color: AppTheme.textSecondary,
-                        ),
+                borderRadius: BorderRadius.circular(buttonBorderRadius),
+                child: AspectRatio(
+                  aspectRatio: _feedImageAspectRatio,
+                  child: Container(
+                    color: textSecondary.withOpacity(0.15),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.videocam,
+                            size: 48,
+                            color: textSecondary,
+                          ),
+                          const SizedBox(height: spacingS),
+                          Text(
+                            'Video',
+                            style: bodyMedium.copyWith(color: textSecondary),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      height: 200,
-                      color: AppTheme.textSecondary.withValues(alpha: 0.1),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            // Post image (if available) — mobile-first aspect ratio
+            if (post.imageURL != null) ...[
+              const SizedBox(height: spacingM),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(buttonBorderRadius),
+                child: AspectRatio(
+                  aspectRatio: _feedImageAspectRatio,
+                  child: Image.network(
+                    post.imageURL!.toString(),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: textSecondary.withOpacity(0.1),
+                        child: const Center(
+                          child: Icon(
+                            Icons.broken_image,
+                            size: 48,
+                            color: textSecondary,
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: textSecondary.withOpacity(0.1),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
             
-            const SizedBox(height: AppTheme.spacingM),
+            const SizedBox(height: spacingM),
             
-            // Voting buttons with haptic feedback and proper touch targets (48dp minimum)
+            // Star (like) button — food industry style
             Row(
               children: [
-                // Upvote button
                 InkWell(
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    onUpvote();
+                    onLike();
                   },
-                  borderRadius: BorderRadius.circular(AppTheme.buttonBorderRadius),
+                  borderRadius: BorderRadius.circular(buttonBorderRadius),
                   child: Container(
                     constraints: const BoxConstraints(
-                      minHeight: 48.0, // Minimum touch target
+                      minHeight: 48.0,
                       minWidth: 48.0,
                     ),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacingM,
-                      vertical: AppTheme.spacingM,
+                      horizontal: spacingM,
+                      vertical: spacingM,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.upvoteGreen.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppTheme.buttonBorderRadius),
+                      color: starGold.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(buttonBorderRadius),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.arrow_upward,
-                          color: AppTheme.upvoteGreen,
-                          size: 20,
+                        Icon(
+                          (currentUserUID != null && post.likeIDs.contains(currentUserUID))
+                              ? Icons.star
+                              : Icons.star_border,
+                          color: starGold,
+                          size: 22,
                         ),
-                        const SizedBox(width: AppTheme.spacingXs),
+                        const SizedBox(width: spacingXs),
                         Text(
-                          post.upvoteIDs.length.toString(),
-                          style: AppTheme.labelLarge.copyWith(
-                            color: AppTheme.upvoteGreen,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppTheme.spacingM),
-                
-                // Downvote button
-                InkWell(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    onDownvote();
-                  },
-                  borderRadius: BorderRadius.circular(AppTheme.buttonBorderRadius),
-                  child: Container(
-                    constraints: const BoxConstraints(
-                      minHeight: 48.0, // Minimum touch target
-                      minWidth: 48.0,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacingM,
-                      vertical: AppTheme.spacingM,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.downvoteRed.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppTheme.buttonBorderRadius),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.arrow_downward,
-                          color: AppTheme.downvoteRed,
-                          size: 20,
-                        ),
-                        const SizedBox(width: AppTheme.spacingXs),
-                        Text(
-                          post.downvoteIDs.length.toString(),
-                          style: AppTheme.labelLarge.copyWith(
-                            color: AppTheme.downvoteRed,
+                          post.likeIDs.length.toString(),
+                          style: labelLarge.copyWith(
+                            color: starGold,
                           ),
                         ),
                       ],

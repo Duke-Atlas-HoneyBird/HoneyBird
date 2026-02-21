@@ -3,24 +3,24 @@ import '../../core/error/exceptions.dart';
 import '../../core/error/failures.dart';
 import '../../domain/entities/drop_task.dart';
 import '../../domain/repositories/task_repository.dart';
-import '../data_sources/local_task_data_source.dart';
+import '../data_sources/firebase_task_data_source.dart';
 import '../models/drop_task_model.dart';
 
-/// Implementation of TaskRepository that uses local storage as the data source
+/// Implementation of TaskRepository that uses Firestore as the data source
 class TaskRepositoryImpl implements TaskRepository {
-  final LocalTaskDataSource dataSource;
+  final FirebaseTaskDataSource dataSource;
 
   TaskRepositoryImpl({required this.dataSource});
 
   @override
-  Future<Either<Failure, List<DropTask>>> getTasks() async {
+  Future<Either<Failure, List<DropTask>>> getTasks(String userUID) async {
     try {
-      final taskModels = await dataSource.getTasks();
+      final taskModels = await dataSource.getTasks(userUID);
       return Right(taskModels);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(CacheFailure('Unexpected error occurred: $e'));
+      return Left(ServerFailure('Unexpected error occurred: $e'));
     }
   }
 
@@ -30,10 +30,10 @@ class TaskRepositoryImpl implements TaskRepository {
       final taskModel = DropTaskModel.fromEntity(task);
       final createdTask = await dataSource.createTask(taskModel);
       return Right(createdTask);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(CacheFailure('Unexpected error occurred: $e'));
+      return Left(ServerFailure('Unexpected error occurred: $e'));
     }
   }
 
@@ -43,10 +43,10 @@ class TaskRepositoryImpl implements TaskRepository {
       final taskModel = DropTaskModel.fromEntity(task);
       final updatedTask = await dataSource.updateTask(taskModel);
       return Right(updatedTask);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(CacheFailure('Unexpected error occurred: $e'));
+      return Left(ServerFailure('Unexpected error occurred: $e'));
     }
   }
 
@@ -55,10 +55,10 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       await dataSource.deleteTask(taskId);
       return const Right(null);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(CacheFailure('Unexpected error occurred: $e'));
+      return Left(ServerFailure('Unexpected error occurred: $e'));
     }
   }
 }

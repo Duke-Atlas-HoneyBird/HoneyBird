@@ -1,85 +1,129 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
+import '../../infrastructure/data_sources/firebase_auth_data_source.dart';
 import '../../infrastructure/data_sources/firebase_post_data_source.dart';
+import '../../infrastructure/data_sources/firebase_storage_data_source.dart';
 import '../../infrastructure/data_sources/firebase_user_data_source.dart';
+import '../../infrastructure/data_sources/firebase_favorite_data_source.dart';
+import '../../infrastructure/data_sources/firebase_task_data_source.dart';
+import '../../infrastructure/data_sources/firebase_preference_data_source.dart';
+import '../../infrastructure/data_sources/firebase_message_data_source.dart';
 import '../../infrastructure/data_sources/local_preference_data_source.dart';
 import '../../infrastructure/data_sources/local_task_data_source.dart';
+import '../../infrastructure/repositories/auth_repository_impl.dart';
 import '../../infrastructure/repositories/post_repository_impl.dart';
 import '../../infrastructure/repositories/task_repository_impl.dart';
 import '../../infrastructure/repositories/user_preference_repository_impl.dart';
 import '../../infrastructure/repositories/user_repository_impl.dart';
 import '../../infrastructure/repositories/message_repository_impl.dart';
 import '../../infrastructure/repositories/favorite_repository_impl.dart';
+import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/post_repository.dart';
 import '../../domain/repositories/task_repository.dart';
 import '../../domain/repositories/user_preference_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/repositories/message_repository.dart';
 import '../../domain/repositories/favorite_repository.dart';
+import '../../application/use_cases/auth/sign_in_use_case.dart';
+import '../../application/use_cases/auth/sign_up_use_case.dart';
+import '../../application/use_cases/auth/sign_out_use_case.dart';
 import '../../application/use_cases/user/create_user.dart';
 import '../../application/use_cases/user/delete_user.dart';
 import '../../application/use_cases/user/get_user.dart';
 import '../../application/use_cases/user/update_user.dart';
 import '../../application/use_cases/post/create_post.dart';
 import '../../application/use_cases/post/delete_post.dart';
-import '../../application/use_cases/post/downvote_post.dart';
 import '../../application/use_cases/post/get_post.dart';
 import '../../application/use_cases/post/get_posts.dart';
+import '../../application/use_cases/post/like_post.dart';
 import '../../application/use_cases/post/update_post.dart';
-import '../../application/use_cases/post/upvote_post.dart';
 import '../../application/use_cases/preferences/get_preferences.dart';
 import '../../application/use_cases/preferences/save_preferences.dart';
 import '../../application/use_cases/tasks/create_task.dart';
 import '../../application/use_cases/tasks/delete_task.dart';
 import '../../application/use_cases/tasks/get_tasks.dart';
 import '../../application/use_cases/tasks/update_task.dart';
+import '../../presentation/state/auth/auth_bloc.dart';
+import '../../presentation/state/post/post_bloc.dart';
+import '../../presentation/state/manage/manage_bloc.dart';
+import '../../presentation/state/account/account_bloc.dart';
+import '../../presentation/state/messages/messages_bloc.dart';
 
 final sl = GetIt.instance;
 
 /// Initialize dependency injection
 Future<void> init() async {
   // External dependencies
-  final firestore = FirebaseFirestore.instance;
-  sl.registerLazySingleton<FirebaseFirestore>(() => firestore);
+  sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
+  sl.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
   
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
   
-  // Data sources
-  sl.registerLazySingleton<FirebaseUserDataSource>(
-    () => FirebaseUserDataSourceImpl(firestore: sl()),
+  // Firebase data sources
+  sl.registerLazySingleton<FirebaseAuthDataSource>(
+    () => FirebaseAuthDataSourceImpl(firebaseAuth: sl()),
   );
   sl.registerLazySingleton<FirebasePostDataSource>(
     () => FirebasePostDataSourceImpl(firestore: sl()),
   );
-  sl.registerLazySingleton<LocalPreferenceDataSource>(
-    () => LocalPreferenceDataSourceImpl(sharedPreferences: sl()),
+  sl.registerLazySingleton<FirebaseStorageDataSource>(
+    () => FirebaseStorageDataSourceImpl(storage: FirebaseStorage.instance),
   );
-  sl.registerLazySingleton<LocalTaskDataSource>(
-    () => LocalTaskDataSourceImpl(sharedPreferences: sl()),
+  sl.registerLazySingleton<FirebaseUserDataSource>(
+    () => FirebaseUserDataSourceImpl(firestore: sl()),
+  );
+  sl.registerLazySingleton<FirebaseFavoriteDataSource>(
+    () => FirebaseFavoriteDataSourceImpl(firestore: sl()),
+  );
+  sl.registerLazySingleton<FirebaseTaskDataSource>(
+    () => FirebaseTaskDataSourceImpl(firestore: sl()),
+  );
+  sl.registerLazySingleton<FirebasePreferenceDataSource>(
+    () => FirebasePreferenceDataSourceImpl(firestore: sl()),
+  );
+  sl.registerLazySingleton<FirebaseMessageDataSource>(
+    () => FirebaseMessageDataSourceImpl(firestore: sl()),
   );
   
-  // Repositories
+  sl.registerLazySingleton<LocalPreferenceDataSource>(
+    () => LocalPreferenceDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
+  );
+  sl.registerLazySingleton<LocalTaskDataSource>(
+    () => LocalTaskDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
+  );
+  
+  // Repositories - using Firebase data sources
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(authDataSource: sl()),
+  );
   sl.registerLazySingleton<UserRepository>(
-    () => UserRepositoryImpl(dataSource: sl()),
+    () => UserRepositoryImpl(firebaseDataSource: sl()),
   );
   sl.registerLazySingleton<PostRepository>(
-    () => PostRepositoryImpl(dataSource: sl()),
+    () => PostRepositoryImpl(firebaseDataSource: sl()),
   );
   sl.registerLazySingleton<UserPreferenceRepository>(
-    () => UserPreferenceRepositoryImpl(dataSource: sl()),
+    () => UserPreferenceRepositoryImpl(dataSource: sl<FirebasePreferenceDataSource>()),
   );
   sl.registerLazySingleton<TaskRepository>(
-    () => TaskRepositoryImpl(dataSource: sl()),
+    () => TaskRepositoryImpl(dataSource: sl<FirebaseTaskDataSource>()),
   );
   sl.registerLazySingleton<MessageRepository>(
-    () => MessageRepositoryImpl(),
+    () => MessageRepositoryImpl(dataSource: sl<FirebaseMessageDataSource>()),
   );
   sl.registerLazySingleton<FavoriteRepository>(
-    () => FavoriteRepositoryImpl(),
+    () => FavoriteRepositoryImpl(firebaseDataSource: sl()),
   );
+  
+  // Use cases - Auth
+  sl.registerFactory(() => SignInUseCase(authRepository: sl()));
+  sl.registerFactory(() => SignUpUseCase(authRepository: sl()));
+  sl.registerFactory(() => SignOutUseCase(authRepository: sl()));
   
   // Use cases - User
   sl.registerFactory(() => GetUser(sl()));
@@ -93,8 +137,7 @@ Future<void> init() async {
   sl.registerFactory(() => CreatePost(sl()));
   sl.registerFactory(() => UpdatePost(sl()));
   sl.registerFactory(() => DeletePost(sl()));
-  sl.registerFactory(() => UpvotePost(sl()));
-  sl.registerFactory(() => DownvotePost(sl()));
+  sl.registerFactory(() => LikePost(sl()));
   
   // Use cases - Preferences
   sl.registerFactory(() => GetPreferences(sl()));
@@ -105,4 +148,24 @@ Future<void> init() async {
   sl.registerFactory(() => CreateTask(sl()));
   sl.registerFactory(() => UpdateTask(sl()));
   sl.registerFactory(() => DeleteTask(sl()));
+  
+  // BLoCs
+  sl.registerFactory(() => AuthBloc(authRepository: sl()));
+  sl.registerFactory(() => PostBloc(
+        postRepository: sl(),
+        authRepository: sl(),
+      ));
+  sl.registerFactory(() => ManageBloc(
+        getTasks: sl(),
+        createTask: sl(),
+        updateTask: sl(),
+        deleteTask: sl(),
+      ));
+  sl.registerFactory(() => AccountBloc(
+        userRepository: sl(),
+        preferenceRepository: sl(),
+      ));
+  sl.registerFactory(() => MessagesBloc(
+        messageRepository: sl(),
+      ));
 }

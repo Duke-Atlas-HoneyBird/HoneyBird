@@ -32,11 +32,13 @@ class LoadMessages extends MessagesEvent {
 /// Event to send a message
 class SendMessage extends MessagesEvent {
   final Message message;
+  /// When replying in an existing conversation, pass its id so the message is stored in that thread.
+  final String? conversationId;
 
-  const SendMessage(this.message);
+  const SendMessage(this.message, {this.conversationId});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, conversationId];
 }
 
 /// Event to mark conversation as read

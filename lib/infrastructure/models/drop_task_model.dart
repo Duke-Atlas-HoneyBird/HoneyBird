@@ -6,24 +6,26 @@ import '../../domain/entities/drop_status.dart';
 /// Extends the domain DropTask entity and adds JSON serialization capabilities
 /// with proper enum conversion for DropStatus.
 class DropTaskModel extends DropTask {
-  const DropTaskModel({
-    required super.id,
+  DropTaskModel({
+    super.id,
     required super.title,
     required super.status,
+    required super.userUID,
   });
 
-  /// Creates a DropTaskModel from a JSON map (local storage).
+  /// Creates a DropTaskModel from a JSON map (local storage or Firestore).
   /// 
   /// Converts string to DropStatus enum.
   factory DropTaskModel.fromJson(Map<String, dynamic> json) {
     return DropTaskModel(
-      id: json['id'] as String,
+      id: json['id'] as String?,
       title: json['title'] as String,
       status: _statusFromString(json['status'] as String),
+      userUID: json['userUID'] as String? ?? '',
     );
   }
 
-  /// Converts this DropTaskModel to a JSON map for local storage.
+  /// Converts this DropTaskModel to a JSON map for storage.
   /// 
   /// Converts DropStatus enum to string.
   Map<String, dynamic> toJson() {
@@ -31,6 +33,7 @@ class DropTaskModel extends DropTask {
       'id': id,
       'title': title,
       'status': _statusToString(status),
+      'userUID': userUID,
     };
   }
 
@@ -40,6 +43,7 @@ class DropTaskModel extends DropTask {
       id: task.id,
       title: task.title,
       status: task.status,
+      userUID: task.userUID,
     );
   }
 

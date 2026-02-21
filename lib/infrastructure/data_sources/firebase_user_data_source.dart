@@ -20,14 +20,15 @@ abstract class FirebaseUserDataSource {
 
 /// Implementation of FirebaseUserDataSource using Cloud Firestore
 class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
-  final FirebaseFirestore firestore;
+  final FirebaseFirestore _firestore;
 
-  FirebaseUserDataSourceImpl({required this.firestore});
+  FirebaseUserDataSourceImpl({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<UserModel> getUser(String userId) async {
     try {
-      final doc = await firestore
+      final doc = await _firestore
           .collection(FirebaseCollections.users)
           .doc(userId)
           .get();
@@ -41,7 +42,7 @@ class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
         throw ServerException('User data is null for ID: $userId');
       }
 
-      return UserModel.fromJson(data);
+      return UserModel.fromJson({...data, 'id': doc.id});
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
@@ -52,7 +53,7 @@ class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
   @override
   Future<UserModel> createUser(UserModel user) async {
     try {
-      final docRef = firestore.collection(FirebaseCollections.users).doc();
+      final docRef = _firestore.collection(FirebaseCollections.users).doc();
       final userWithId = UserModel(
         id: docRef.id,
         userName: user.userName,
@@ -78,7 +79,7 @@ class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
         throw ServerException('Cannot update user without ID');
       }
 
-      await firestore
+      await _firestore
           .collection(FirebaseCollections.users)
           .doc(user.id)
           .update(user.toJson());
@@ -94,7 +95,7 @@ class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
   @override
   Future<void> deleteUser(String userId) async {
     try {
-      await firestore
+      await _firestore
           .collection(FirebaseCollections.users)
           .doc(userId)
           .delete();

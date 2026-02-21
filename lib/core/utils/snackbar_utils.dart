@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../presentation/theme/app_theme.dart';
+import '../../presentation/theme/colours.dart';
 
 /// Utility class for displaying SnackBars throughout the app
 class SnackBarUtils {
@@ -12,7 +12,7 @@ class SnackBarUtils {
       ..showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: AppTheme.upvoteGreen,
+          backgroundColor: starGold,
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -28,7 +28,7 @@ class SnackBarUtils {
       ..showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: AppTheme.downvoteRed,
+          backgroundColor: downvoteRed,
           duration: const Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
         ),
@@ -44,7 +44,7 @@ class SnackBarUtils {
       ..showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: AppTheme.primaryPurple,
+          backgroundColor: primaryPurple,
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -67,7 +67,7 @@ class SnackBarUtils {
         SnackBar(
           content: Text(message),
           backgroundColor:
-              isError ? AppTheme.downvoteRed : AppTheme.primaryPurple,
+              isError ? downvoteRed : primaryPurple,
           duration: const Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(

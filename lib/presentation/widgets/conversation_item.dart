@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/message.dart';
-import '../theme/app_theme.dart';
+import '../theme/colours.dart';
+import '../theme/spacing.dart';
+import '../theme/text_styles.dart';
+import '../theme/constants.dart';
+import '../theme/border_radius.dart';
 
 /// Widget for displaying a conversation item in the messages list
 class ConversationItem extends StatelessWidget {
@@ -43,13 +47,13 @@ class ConversationItem extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingM,
-        vertical: AppTheme.spacingS,
+        horizontal: spacingM,
+        vertical: spacingS,
       ),
       child: ListTile(
         leading: CircleAvatar(
           radius: 28,
-          backgroundColor: AppTheme.primaryPurple,
+          backgroundColor: primaryPurple,
           child: Text(
             otherName.isNotEmpty ? otherName[0].toUpperCase() : '?',
             style: const TextStyle(
@@ -64,7 +68,7 @@ class ConversationItem extends StatelessWidget {
             Expanded(
               child: Text(
                 otherName,
-                style: AppTheme.labelLarge.copyWith(
+                style: labelLarge.copyWith(
                   fontWeight: hasUnread ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
@@ -72,8 +76,8 @@ class ConversationItem extends StatelessWidget {
             if (conversation.lastMessage != null)
               Text(
                 _formatTimestamp(conversation.lastMessage!.timestamp),
-                style: AppTheme.bodyMedium.copyWith(
-                  color: AppTheme.textSecondary,
+                style: bodyMedium.copyWith(
+                  color: textSecondary,
                 ),
               ),
           ],
@@ -84,7 +88,7 @@ class ConversationItem extends StatelessWidget {
                   Expanded(
                     child: Text(
                       conversation.lastMessage!.content,
-                      style: AppTheme.bodyMedium.copyWith(
+                      style: bodyMedium.copyWith(
                         fontWeight: hasUnread ? FontWeight.w500 : FontWeight.normal,
                       ),
                       maxLines: 1,
@@ -94,12 +98,12 @@ class ConversationItem extends StatelessWidget {
                   if (hasUnread)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingS,
+                        horizontal: spacingS,
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.accentPink,
-                        borderRadius: BorderRadius.circular(12),
+                        color: accentPink,
+                        borderRadius: BorderRadius.circular(cardBorderRadius),
                       ),
                       child: Text(
                         conversation.unreadCount.toString(),
@@ -109,7 +113,7 @@ class ConversationItem extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
+                      ),
                 ],
               )
             : null,
