@@ -47,8 +47,13 @@ app.*.map.json
 # Firebase / Google services (injected in CI from secrets; generate locally with flutterfire configure)
 .firebaserc
 android/app/google-services.json
-ios/GoogleService-Info.plist
+**/GoogleService-Info.plist
+ios/Runner/GoogleService-Info.plist
 lib/firebase_options.dart
+
+# Firebase rules (can contain security policy; inject in CI or deploy from Console)
+firestore.rules
+storage.rules
 
 # Android release signing (injected in CI from secrets; use key.properties + keystore locally)
 android/key.properties
