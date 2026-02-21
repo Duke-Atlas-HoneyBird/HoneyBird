@@ -19,6 +19,13 @@
 ### Verify Installation
 `flutter doctor -v`
 
+Use the same Flutter version as CI so builds match. CI uses **Flutter 3.41.2** (stable). To match locally:
+```bash
+flutter upgrade 3.41.2
+# or: flutter version 3.41.2
+```
+Then run `flutter doctor -v` and confirm the version.
+
 ### IDE
 - install VS Code
 
@@ -38,4 +45,11 @@ flutter pub get
 ## the run the app
 flutter run
 
+```
+
+###tri
+
+```bash
+VERSION=2.0.6+6
+git add pubspec.yaml && git commit -m "Bump version to $VERSION" && git push origin develop && git tag v$VERSION -m "Release v$VERSION" && git push origin v$VERSION
 ```
