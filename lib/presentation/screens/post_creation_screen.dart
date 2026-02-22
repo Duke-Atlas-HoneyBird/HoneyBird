@@ -96,39 +96,6 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
     });
   }
 
-  Future<void> _showVideoSourcePicker() async {
-    HapticFeedback.lightImpact();
-    if (_isLoading) return;
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.videocam),
-              title: const Text('Record video'),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.video_library),
-              title: const Text('Choose from gallery'),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (source == null || !mounted) return;
-    final picker = ImagePicker();
-    final xFile = await picker.pickVideo(source: source);
-    if (xFile == null || !mounted) return;
-    setState(() {
-      _pickedVideo = File(xFile.path);
-      _pickedImage = null;
-    });
-  }
-
   Future<void> _handleSubmit() async {
     HapticFeedback.mediumImpact();
     if (!_formKey.currentState!.validate()) {
@@ -137,14 +104,14 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
     }
 
     final authState = context.read<AuthBloc>().state;
-    if (authState is! AuthAuthenticated) {
+    if (authState.user == null) {
       SnackBarUtils.showError(context, 'Please sign in to post.');
       return;
     }
 
-    final user = authState.user;
+    final user = authState.user!;
     final userId = user.uid;
-    final userName = user.displayName ?? user.email?.split('@').first ?? 'User';
+    final userName = user.displayName ?? user.email.split('@').first;
 
     setState(() {
       _isLoading = true;
@@ -231,16 +198,97 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Flexible(
-                          child: TextFormField(
-                            controller: _textController,
-                            maxLines: null,
-                            expands: true,
-                            textAlignVertical: TextAlignVertical.top,
-                            decoration: InputDecoration(
+                    child: _pickedImage == null && _pickedVideo == null
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _textController,
+                                  maxLines: null,
+                                  expands: true,
+                                  textAlignVertical: TextAlignVertical.top,
+                                  decoration: InputDecoration(
+                                    hintText: 'Add a caption (optional with media)',
+                                    counterText: '',
+                                    border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(buttonBorderRadius),
+                                      borderSide: BorderSide(
+                                          color: textSecondary.withValues(alpha: 0.3)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(buttonBorderRadius),
+                                      borderSide: BorderSide(
+                                          color: textSecondary.withValues(alpha: 0.3)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(buttonBorderRadius),
+                                      borderSide: const BorderSide(
+                                          color: primaryColor, width: 1.5),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(buttonBorderRadius),
+                                      borderSide: const BorderSide(color: errorColor),
+                                    ),
+                                    disabledBorder: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(buttonBorderRadius),
+                                      borderSide: BorderSide(
+                                          color: textSecondary.withValues(alpha: 0.2)),
+                                    ),
+                                  ),
+                                  style: bodyLarge,
+                                  maxLength: _maxCaptionLength,
+                                  validator: (value) {
+                                    final text = value?.trim() ?? '';
+                                    final hasMedia =
+                                        _pickedImage != null || _pickedVideo != null;
+                                    if (text.isEmpty && !hasMedia) {
+                                      return 'Add some text or a photo/video';
+                                    }
+                                    if (text.isNotEmpty && text.length < 2) {
+                                      return 'Caption must be at least 2 characters';
+                                    }
+                                    if (text.length > _maxCaptionLength) {
+                                      return 'Caption must be under $_maxCaptionLength characters';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: spacingXs),
+                                  child: Text(
+                                    '${_textController.text.length} / $_maxCaptionLength',
+                                    style: bodyMedium.copyWith(
+                                      color: textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: 120,
+                                    maxHeight: MediaQuery.of(context).size.height * 0.35,
+                                  ),
+                                  child: TextFormField(
+                                    controller: _textController,
+                                    maxLines: null,
+                                    minLines: 3,
+                                    textAlignVertical: TextAlignVertical.top,
+                                    decoration: InputDecoration(
                               hintText: 'Add a caption (optional with media)',
                               counterText: '',
                               border: OutlineInputBorder(
@@ -290,8 +338,8 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                               }
                               return null;
                             },
+                            ),
                           ),
-                        ),
                         Align(
                           alignment: Alignment.centerRight,
                           child: Padding(
@@ -372,7 +420,8 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                             label: const Text('Remove video'),
                           ),
                         ],
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: spacingS),
@@ -382,25 +431,6 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                         onPressed: _isLoading ? null : _showImageSourcePicker,
                         icon: const Icon(Icons.image_outlined),
                         label: const Text('Photo'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: primaryColor,
-                          side: BorderSide(color: primaryColor),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: spacingM,
-                            vertical: spacingM,
-                          ),
-                          minimumSize: const Size(0, 48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(buttonBorderRadius),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: spacingS),
-                      OutlinedButton.icon(
-                        onPressed: _isLoading ? null : _showVideoSourcePicker,
-                        icon: const Icon(Icons.videocam_outlined),
-                        label: const Text('Video'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: primaryColor,
                           side: BorderSide(color: primaryColor),

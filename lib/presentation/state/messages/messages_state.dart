@@ -1,59 +1,16 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../domain/entities/message.dart';
 
-/// Base class for Messages states
-abstract class MessagesState extends Equatable {
-  const MessagesState();
+part 'messages_state.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
+@freezed
+class MessagesState with _$MessagesState {
+  const factory MessagesState({
+    @Default(false) bool isLoading,
+    @Default([]) List<Conversation> conversations,
+    @Default(0) int unreadCount,
+    @Default([]) List<Message> messages,
+    @Default('') String conversationId,
+    String? errorMessage,
+  }) = _MessagesState;
 }
-
-/// Initial state
-class MessagesInitial extends MessagesState {
-  const MessagesInitial();
-}
-
-/// Loading state
-class MessagesLoading extends MessagesState {
-  const MessagesLoading();
-}
-
-/// Loaded conversations state
-class ConversationsLoaded extends MessagesState {
-  final List<Conversation> conversations;
-  final int unreadCount;
-
-  const ConversationsLoaded({
-    required this.conversations,
-    this.unreadCount = 0,
-  });
-
-  @override
-  List<Object?> get props => [conversations, unreadCount];
-}
-
-/// Loaded messages state (for a specific conversation)
-class MessagesLoaded extends MessagesState {
-  final List<Message> messages;
-  final String conversationId;
-
-  const MessagesLoaded({
-    required this.messages,
-    required this.conversationId,
-  });
-
-  @override
-  List<Object?> get props => [messages, conversationId];
-}
-
-/// Error state
-class MessagesError extends MessagesState {
-  final String message;
-
-  const MessagesError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
-

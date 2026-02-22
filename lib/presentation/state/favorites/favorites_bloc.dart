@@ -3,11 +3,11 @@ import '../../../domain/repositories/favorite_repository.dart';
 import 'favorites_event.dart';
 import 'favorites_state.dart';
 
-/// Bloc for managing favorites state and business logic
 class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
   final FavoriteRepository favoriteRepository;
 
-  FavoritesBloc({required this.favoriteRepository}) : super(const FavoritesInitial()) {
+  FavoritesBloc({required this.favoriteRepository})
+      : super(const FavoritesState()) {
     on<LoadFavoritePosts>(_onLoadFavoritePosts);
     on<AddToFavorites>(_onAddToFavorites);
     on<RemoveFromFavorites>(_onRemoveFromFavorites);
@@ -18,13 +18,16 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     LoadFavoritePosts event,
     Emitter<FavoritesState> emit,
   ) async {
-    emit(const FavoritesLoading());
-    
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+
     final result = await favoriteRepository.getFavoritePosts(event.userUID);
-    
+
     result.fold(
-      (failure) => emit(const FavoritesError('Failed to load favorite posts')),
-      (posts) => emit(FavoritesLoaded(posts: posts)),
+      (failure) => emit(state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to load favorite posts',
+          posts: [])),
+      (posts) => emit(state.copyWith(isLoading: false, posts: posts)),
     );
   }
 
@@ -32,14 +35,13 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     AddToFavorites event,
     Emitter<FavoritesState> emit,
   ) async {
-    final result = await favoriteRepository.addToFavorites(event.postId, event.userUID);
-    
+    final result = await favoriteRepository.addToFavorites(
+        event.postId, event.userUID);
+
     result.fold(
-      (failure) => emit(const FavoritesError('Failed to add to favorites')),
-      (_) {
-        // Reload favorites
-        add(LoadFavoritePosts(event.userUID));
-      },
+      (failure) => emit(state.copyWith(
+          errorMessage: 'Failed to add to favorites')),
+      (_) => add(FavoritesEvent.loadFavoritePosts(event.userUID)),
     );
   }
 
@@ -47,14 +49,13 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     RemoveFromFavorites event,
     Emitter<FavoritesState> emit,
   ) async {
-    final result = await favoriteRepository.removeFromFavorites(event.postId, event.userUID);
-    
+    final result = await favoriteRepository.removeFromFavorites(
+        event.postId, event.userUID);
+
     result.fold(
-      (failure) => emit(const FavoritesError('Failed to remove from favorites')),
-      (_) {
-        // Reload favorites
-        add(LoadFavoritePosts(event.userUID));
-      },
+      (failure) => emit(state.copyWith(
+          errorMessage: 'Failed to remove from favorites')),
+      (_) => add(FavoritesEvent.loadFavoritePosts(event.userUID)),
     );
   }
 
@@ -62,18 +63,12 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     RefreshFavoritePosts event,
     Emitter<FavoritesState> emit,
   ) async {
-    final currentState = state;
-    if (currentState is FavoritesLoaded) {
-      // Keep current posts while refreshing
-      emit(FavoritesLoaded(posts: currentState.posts));
-    }
-    
     final result = await favoriteRepository.getFavoritePosts(event.userUID);
-    
+
     result.fold(
-      (failure) => emit(const FavoritesError('Failed to refresh favorites')),
-      (posts) => emit(FavoritesLoaded(posts: posts)),
+      (failure) => emit(state.copyWith(
+          errorMessage: 'Failed to refresh favorites')),
+      (posts) => emit(state.copyWith(posts: posts)),
     );
   }
 }
-

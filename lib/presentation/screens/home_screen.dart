@@ -8,12 +8,15 @@ import '../../application/use_cases/post/like_post.dart';
 import '../../domain/repositories/favorite_repository.dart';
 import '../state/auth/auth_bloc.dart';
 import '../state/auth/auth_state.dart';
+import '../state/comment/comment_bloc.dart';
+import '../state/comment_count/comment_count_bloc.dart';
+import '../state/comment_count/comment_count_event.dart';
 import '../theme/colours.dart';
 import '../theme/constants.dart';
-import '../theme/text_styles.dart';
 import '../theme/spacing.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/post_feed_widget.dart';
+import '../widgets/comments_bottom_sheet.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../widgets/side_menu_drawer.dart';
 import 'post_creation_screen.dart';
@@ -39,6 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late final GetPosts _getPosts;
   late final LikePost _likePost;
   late final FavoriteRepository _favoriteRepository;
+  late final CommentBloc _commentBloc;
+  late final CommentCountBloc _commentCountBloc;
 
   @override
   void initState() {
@@ -46,6 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
     _getPosts = sl<GetPosts>();
     _likePost = sl<LikePost>();
     _favoriteRepository = sl<FavoriteRepository>();
+    _commentBloc = sl<CommentBloc>();
+    _commentCountBloc = sl<CommentCountBloc>();
   }
 
 
@@ -95,22 +102,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               
-              // Post feed in center area
+              // Post feed in center area (CommentCountBloc so counts update and UI re-renders)
               Expanded(
                 child: Center(
-                  child: BlocBuilder<AuthBloc, AuthState>(
-                    buildWhen: (prev, curr) => curr is AuthAuthenticated || prev is AuthAuthenticated,
-                    builder: (context, authState) {
-                      final currentUserUID = authState is AuthAuthenticated
-                          ? authState.user.uid
-                          : null;
-                      return PostFeedWidget(
-                        key: ValueKey(_feedRefreshKey),
-                        getPosts: _getPosts,
-                        onLike: _handleLike,
-                        currentUserUID: currentUserUID,
-                      );
-                    },
+                  child: BlocProvider.value(
+                    value: _commentCountBloc,
+                    child: BlocConsumer<AuthBloc, AuthState>(
+                      listener: (context, state) {},
+                      buildWhen: (prev, curr) => prev?.user != curr.user,
+                      builder: (context, authState) {
+                        final currentUserUID = authState.user?.uid;
+                        final currentUserName = authState.user != null
+                            ? (authState.user!.displayName ??
+                                authState.user!.email.split('@').first)
+                            : null;
+                        return PostFeedWidget(
+                          key: ValueKey(_feedRefreshKey),
+                          getPosts: _getPosts,
+                          onLike: _handleLike,
+                          onCommentTap: (postId) => _openComments(
+                            context,
+                            postId: postId,
+                            currentUserUID: currentUserUID,
+                            currentUserName: currentUserName,
+                          ),
+                          currentUserUID: currentUserUID,
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -173,8 +192,8 @@ class _HomeScreenState extends State<HomeScreen> {
         } else {
           await _favoriteRepository.removeFromFavorites(postId, userId);
         }
-        if (!mounted) return;
-        setState(() => _feedRefreshKey++);
+        // if (!mounted) return;
+        // setState(() => _feedRefreshKey++);
       },
     );
   }
@@ -220,5 +239,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleSideMenuNavigation(String route) {
     Navigator.pushNamed(context, route);
+  }
+
+  void _openComments(
+    BuildContext context, {
+    required String postId,
+    String? currentUserUID,
+    String? currentUserName,
+  }) {
+    CommentsBottomSheet.show(
+      context,
+      commentBloc: _commentBloc,
+      postId: postId,
+      currentUserUID: currentUserUID,
+      currentUserName: currentUserName,
+      onCommentCountChanged: (count) {
+        _commentCountBloc.add(
+          CommentCountEvent.countUpdated(postId: postId, count: count),
+        );
+      },
+    );
   }
 }

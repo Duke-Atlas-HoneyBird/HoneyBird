@@ -8,7 +8,6 @@ import '../../../application/use_cases/tasks/delete_task.dart' as uc;
 import '../../../application/use_cases/tasks/get_tasks.dart' as uc;
 import '../../../application/use_cases/tasks/update_task.dart' as uc;
 
-/// Bloc for managing tasks state and business logic
 class ManageBloc extends Bloc<ManageEvent, ManageState> {
   final uc.GetTasks getTasks;
   final uc.CreateTask createTask;
@@ -20,7 +19,7 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
     required this.createTask,
     required this.updateTask,
     required this.deleteTask,
-  }) : super(const ManageInitial()) {
+  }) : super(const ManageState()) {
     on<LoadTasks>(_onLoadTasks);
     on<AddTask>(_onAddTask);
     on<UpdateTaskStatus>(_onUpdateTaskStatus);
@@ -32,11 +31,12 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
     LoadTasks event,
     Emitter<ManageState> emit,
   ) async {
-    emit(const ManageLoading());
+    emit(state.copyWith(isLoading: true, errorMessage: null));
     final result = await getTasks(event.userUID);
     result.fold(
-      (failure) => emit(ManageError(failure.message)),
-      (tasks) => emit(ManageLoaded(tasks: tasks)),
+      (failure) => emit(state.copyWith(
+          isLoading: false, errorMessage: failure.message, tasks: [])),
+      (tasks) => emit(state.copyWith(isLoading: false, tasks: tasks)),
     );
   }
 
@@ -44,83 +44,68 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
     AddTask event,
     Emitter<ManageState> emit,
   ) async {
-    final currentState = state;
-    if (currentState is ManageLoaded) {
-      final task = DropTask(
-        title: event.title,
-        status: DropStatus.todo,
-        userUID: event.userUID,
-      );
-      
-      final result = await createTask(task);
-      result.fold(
-        (failure) => emit(ManageError(failure.message)),
-        (createdTask) {
-          final updatedTasks = [createdTask, ...currentState.tasks];
-          emit(ManageLoaded(tasks: updatedTasks));
-        },
-      );
-    }
+    final task = DropTask(
+      title: event.title,
+      status: DropStatus.todo,
+      userUID: event.userUID,
+    );
+
+    final result = await createTask(task);
+    result.fold(
+      (failure) => emit(state.copyWith(errorMessage: failure.message)),
+      (createdTask) => emit(state.copyWith(
+          tasks: [createdTask, ...state.tasks])),
+    );
   }
 
   Future<void> _onUpdateTaskStatus(
     UpdateTaskStatus event,
     Emitter<ManageState> emit,
   ) async {
-    final currentState = state;
-    if (currentState is ManageLoaded) {
-      final taskIndex = currentState.tasks.indexWhere((t) => t.id == event.taskId);
-      if (taskIndex == -1) return;
+    final taskIndex = state.tasks.indexWhere((t) => t.id == event.taskId);
+    if (taskIndex == -1) return;
 
-      DropStatus newStatus;
-      switch (event.status) {
-        case 'working':
-          newStatus = DropStatus.working;
-          break;
-        case 'completed':
-          newStatus = DropStatus.completed;
-          break;
-        default:
-          newStatus = DropStatus.todo;
-      }
-      
-      final updatedTask = DropTask(
-        id: event.taskId,
-        title: currentState.tasks[taskIndex].title,
-        status: newStatus,
-        userUID: event.userUID,
-      );
-
-      final result = await updateTask(updatedTask);
-      result.fold(
-        (failure) => emit(ManageError(failure.message)),
-        (updated) {
-          final updatedTasks = currentState.tasks.map((task) {
-            return task.id == event.taskId ? updated : task;
-          }).toList();
-          emit(ManageLoaded(tasks: updatedTasks));
-        },
-      );
+    DropStatus newStatus;
+    switch (event.status) {
+      case 'working':
+        newStatus = DropStatus.working;
+        break;
+      case 'completed':
+        newStatus = DropStatus.completed;
+        break;
+      default:
+        newStatus = DropStatus.todo;
     }
+
+    final updatedTask = DropTask(
+      id: event.taskId,
+      title: state.tasks[taskIndex].title,
+      status: newStatus,
+      userUID: event.userUID,
+    );
+
+    final result = await updateTask(updatedTask);
+    result.fold(
+      (failure) => emit(state.copyWith(errorMessage: failure.message)),
+      (updated) {
+        final updatedTasks = state.tasks
+            .map((task) => task.id == event.taskId ? updated : task)
+            .toList();
+        emit(state.copyWith(tasks: updatedTasks));
+      },
+    );
   }
 
   Future<void> _onDeleteTask(
     DeleteTask event,
     Emitter<ManageState> emit,
   ) async {
-    final currentState = state;
-    if (currentState is ManageLoaded) {
-      final result = await deleteTask(event.taskId);
-      result.fold(
-        (failure) => emit(ManageError(failure.message)),
-        (_) {
-          final updatedTasks = currentState.tasks
-              .where((task) => task.id != event.taskId)
-              .toList();
-          emit(ManageLoaded(tasks: updatedTasks));
-        },
-      );
-    }
+    final result = await deleteTask(event.taskId);
+    result.fold(
+      (failure) => emit(state.copyWith(errorMessage: failure.message)),
+      (_) => emit(state.copyWith(
+          tasks: state.tasks.where((t) => t.id != event.taskId).toList())),
+    );
   }
 
   Future<void> _onRefreshTasks(
@@ -129,9 +114,8 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
   ) async {
     final result = await getTasks(event.userUID);
     result.fold(
-      (failure) => emit(ManageError(failure.message)),
-      (tasks) => emit(ManageLoaded(tasks: tasks)),
+      (failure) => emit(state.copyWith(errorMessage: failure.message)),
+      (tasks) => emit(state.copyWith(tasks: tasks)),
     );
   }
 }
-

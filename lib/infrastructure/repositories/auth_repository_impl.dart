@@ -16,6 +16,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final userModel = await _authDataSource.getCurrentUser();
       return Right(userModel?.toDomain());
     } catch (e) {
+      print('[AuthRepositoryImpl] getCurrentUser: ${e.toString()}');
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -32,6 +33,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(userModel.toDomain());
     } catch (e) {
+      print('[AuthRepositoryImpl] signInWithEmailAndPassword: ${e.toString()}');
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -50,6 +52,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(userModel.toDomain());
     } catch (e) {
+      print('[AuthRepositoryImpl] signUpWithEmailAndPassword: ${e.toString()}');
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -60,6 +63,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _authDataSource.signOut();
       return const Right(null);
     } catch (e) {
+      print('[AuthRepositoryImpl] signOut: ${e.toString()}');
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -70,6 +74,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _authDataSource.sendPasswordResetEmail(email);
       return const Right(null);
     } catch (e) {
+      print('[AuthRepositoryImpl] sendPasswordResetEmail: ${e.toString()}');
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -80,6 +85,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _authDataSource.sendEmailVerification();
       return const Right(null);
     } catch (e) {
+      print('[AuthRepositoryImpl] sendEmailVerification: ${e.toString()}');
       return Left(ServerFailure(e.toString()));
     }
   }

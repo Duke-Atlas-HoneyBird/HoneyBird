@@ -14,7 +14,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     required AuthRepository authRepository,
   })  : _postRepository = postRepository,
         _authRepository = authRepository,
-        super(const PostInitial()) {
+        super(const PostState()) {
     on<PostsLoadRequested>(_onPostsLoadRequested);
     on<PostCreateRequested>(_onPostCreateRequested);
     on<PostLikeRequested>(_onPostLikeRequested);
@@ -25,13 +25,14 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     PostsLoadRequested event,
     Emitter<PostState> emit,
   ) async {
-    emit(const PostLoading());
+    emit(state.copyWith(isLoading: true, errorMessage: null));
 
     final result = await _postRepository.getPosts();
 
     result.fold(
-      (failure) => emit(PostError(message: failure.message)),
-      (posts) => emit(PostsLoaded(posts: posts)),
+      (failure) => emit(state.copyWith(
+          isLoading: false, errorMessage: failure.message, posts: [])),
+      (posts) => emit(state.copyWith(isLoading: false, posts: posts)),
     );
   }
 
@@ -39,16 +40,17 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     PostCreateRequested event,
     Emitter<PostState> emit,
   ) async {
-    emit(const PostLoading());
+    emit(state.copyWith(isLoading: true, errorMessage: null));
 
-    // Get current user
     final userResult = await _authRepository.getCurrentUser();
-    
+
     await userResult.fold(
-      (failure) async => emit(PostError(message: 'Authentication required')),
+      (failure) async => emit(state.copyWith(
+          isLoading: false, errorMessage: 'Authentication required')),
       (user) async {
         if (user == null) {
-          emit(const PostError(message: 'User not authenticated'));
+          emit(state.copyWith(
+              isLoading: false, errorMessage: 'User not authenticated'));
           return;
         }
 
@@ -56,15 +58,17 @@ class PostBloc extends Bloc<PostEvent, PostState> {
           text: event.text,
           imageURL: event.imageUrl != null ? Uri.parse(event.imageUrl!) : null,
           publishedDate: DateTime.now(),
-          userName: user.displayName ?? user.email!.split('@').first,
+          userName: user.displayName ?? user.email.split('@').first,
           userUID: user.uid,
         );
 
         final result = await _postRepository.createPost(post);
 
         result.fold(
-          (failure) => emit(PostError(message: failure.message)),
-          (createdPost) => emit(PostCreated(post: createdPost)),
+          (failure) => emit(state.copyWith(
+              isLoading: false, errorMessage: failure.message)),
+          (createdPost) => emit(state.copyWith(
+              isLoading: false, lastCreatedPost: createdPost)),
         );
       },
     );
@@ -77,18 +81,18 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     final userResult = await _authRepository.getCurrentUser();
 
     await userResult.fold(
-      (failure) async => emit(PostError(message: 'Authentication required')),
+      (failure) async => emit(state.copyWith(errorMessage: 'Authentication required')),
       (user) async {
         if (user == null) {
-          emit(const PostError(message: 'User not authenticated'));
+          emit(state.copyWith(errorMessage: 'User not authenticated'));
           return;
         }
 
         final result = await _postRepository.likePost(event.postId, user.uid);
 
         result.fold(
-          (failure) => emit(PostError(message: failure.message)),
-          (updatedPost) => emit(PostUpdated(post: updatedPost)),
+          (failure) => emit(state.copyWith(errorMessage: failure.message)),
+          (updatedPost) => emit(state.copyWith(lastUpdatedPost: updatedPost)),
         );
       },
     );
@@ -98,15 +102,15 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     PostDeleteRequested event,
     Emitter<PostState> emit,
   ) async {
-    emit(const PostLoading());
+    emit(state.copyWith(isLoading: true, errorMessage: null));
 
     final result = await _postRepository.deletePost(event.postId);
 
     result.fold(
-      (failure) => emit(PostError(message: failure.message)),
+      (failure) => emit(state.copyWith(
+          isLoading: false, errorMessage: failure.message)),
       (_) {
-        // Reload posts after deletion
-        add(const PostsLoadRequested());
+        add(const PostEvent.loadRequested());
       },
     );
   }

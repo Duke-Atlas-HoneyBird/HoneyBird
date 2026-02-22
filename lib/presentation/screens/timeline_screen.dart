@@ -57,7 +57,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   void _onScroll() {
     if (_isBottom) {
-      context.read<TimelineBloc>().add(const LoadMoreTimelinePosts());
+      context.read<TimelineBloc>().add(const TimelineEvent.loadMoreTimelinePosts());
     }
   }
 
@@ -105,9 +105,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
             elevation: 0,
             iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
           ),
-          body: BlocBuilder<TimelineBloc, TimelineState>(
+          body: SafeArea(
+            child: BlocConsumer<TimelineBloc, TimelineState>(
+            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
+            listener: (context, state) {
+              if (state.errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.errorMessage!)),
+                );
+              }
+            },
+            buildWhen: (prev, curr) =>
+                prev?.posts != curr.posts ||
+                prev?.isLoading != curr.isLoading ||
+                prev?.errorMessage != curr.errorMessage,
             builder: (context, state) {
-              if (state is TimelineLoading) {
+              if (state.isLoading && state.posts.isEmpty) {
                 return Center(
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onBackground),
@@ -115,7 +128,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 );
               }
 
-              if (state is TimelineError) {
+              if (state.errorMessage != null && state.posts.isEmpty) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(spacingL),
@@ -136,7 +149,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         ),
                         const SizedBox(height: spacingS),
                         Text(
-                          state.message,
+                          state.errorMessage!,
                           style: bodyLarge.copyWith(
                             color: Colors.white.withOpacity(0.8),
                           ),
@@ -145,7 +158,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            context.read<TimelineBloc>().add(const LoadTimelinePosts());
+                            context.read<TimelineBloc>().add(const TimelineEvent.loadTimelinePosts());
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentPink,
@@ -163,7 +176,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 );
               }
 
-              if (state is TimelineLoaded) {
+              if (state.posts.isNotEmpty || !state.isLoading) {
                 if (state.posts.isEmpty) {
                   return Center(
                     child: Column(
@@ -196,46 +209,29 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                     context.read<TimelineBloc>().add(const RefreshTimelinePosts());
+                    context.read<TimelineBloc>().add(const TimelineEvent.refreshTimelinePosts());
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
                   color: accentPink,
                   child: ListView.builder(
                     controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: state.posts.length + (state.isLoadingMore ? 1 : 0) + (state.hasMore ? 0 : 1),
+                    itemCount: state.posts.length + (state.isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == state.posts.length) {
-                        if (state.isLoadingMore) {
-                          return const Padding(
-                            padding: EdgeInsets.all(spacingM),
-                            child: Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
-                        }
-                        if (!state.hasMore) {
-                          return Padding(
-                            padding: const EdgeInsets.all(spacingM),
-                            child: Center(
-                                child: Text(
-                                  'No more posts to load',
-                                  style: bodyMedium.copyWith(
-                                    color: Colors.white.withOpacity(0.7),
-                                  ),
-                                ),
-                            ),
-                          );
-                        }
+                        return const Padding(
+                          padding: EdgeInsets.all(spacingM),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
                       }
 
                       final post = state.posts[index];
-                      final currentUserUID = context.read<AuthBloc>().state is AuthAuthenticated
-                          ? (context.read<AuthBloc>().state as AuthAuthenticated).user.uid
-                          : null;
+                      final currentUserUID = context.read<AuthBloc>().state.user?.uid;
                       return PostCard(
                         post: post,
-                        onLike: () => _handleLike(context, post.id, currentUserUID, post.likeIDs.contains(currentUserUID) ?? false),
+                        onLike: () => _handleLike(context, post.id ?? '', currentUserUID, post.likeIDs.contains(currentUserUID ?? '')),
                         currentUserUID: currentUserUID,
                       );
                     },
@@ -249,6 +245,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
               );
             },
+          ),
           ),
           bottomNavigationBar: BottomNavigationWidget(
             currentIndex: _currentTabIndex,
@@ -277,7 +274,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           await repo.removeFromFavorites(postId, currentUserUID);
         }
         if (!context.mounted) return;
-        context.read<TimelineBloc>().add(UpdateTimelinePost(updatedPost));
+        context.read<TimelineBloc>().add(TimelineEvent.updateTimelinePost(updatedPost));
       },
     );
   

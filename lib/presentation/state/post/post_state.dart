@@ -1,53 +1,15 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../domain/entities/post.dart';
 
-abstract class PostState extends Equatable {
-  const PostState();
+part 'post_state.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
-}
-
-class PostInitial extends PostState {
-  const PostInitial();
-}
-
-class PostLoading extends PostState {
-  const PostLoading();
-}
-
-class PostsLoaded extends PostState {
-  final List<Post> posts;
-
-  const PostsLoaded({required this.posts});
-
-  @override
-  List<Object> get props => [posts];
-}
-
-class PostError extends PostState {
-  final String message;
-
-  const PostError({required this.message});
-
-  @override
-  List<Object> get props => [message];
-}
-
-class PostCreated extends PostState {
-  final Post post;
-
-  const PostCreated({required this.post});
-
-  @override
-  List<Object> get props => [post];
-}
-
-class PostUpdated extends PostState {
-  final Post post;
-
-  const PostUpdated({required this.post});
-
-  @override
-  List<Object> get props => [post];
+@freezed
+class PostState with _$PostState {
+  const factory PostState({
+    @Default(false) bool isLoading,
+    @Default([]) List<Post> posts,
+    String? errorMessage,
+    Post? lastCreatedPost,
+    Post? lastUpdatedPost,
+  }) = _PostState;
 }

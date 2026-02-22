@@ -19,9 +19,11 @@ class UserRepositoryImpl implements UserRepository {
       final userModel = await _firebaseDataSource.getUser(userId);
       return Right(userModel.toDomain());
     } on ServerException catch (e) {
+      print('[UserRepositoryImpl] getUser ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[UserRepositoryImpl] getUser unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -32,9 +34,11 @@ class UserRepositoryImpl implements UserRepository {
       final createdUser = await _firebaseDataSource.createUser(userModel);
       return Right(createdUser.toDomain());
     } on ServerException catch (e) {
+      print('[UserRepositoryImpl] createUser ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[UserRepositoryImpl] createUser unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -45,9 +49,11 @@ class UserRepositoryImpl implements UserRepository {
       final updatedUser = await _firebaseDataSource.updateUser(userModel);
       return Right(updatedUser.toDomain());
     } on ServerException catch (e) {
+      print('[UserRepositoryImpl] updateUser ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[UserRepositoryImpl] updateUser unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -57,9 +63,11 @@ class UserRepositoryImpl implements UserRepository {
       await _firebaseDataSource.deleteUser(userId);
       return const Right(null);
     } on ServerException catch (e) {
+      print('[UserRepositoryImpl] deleteUser ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[UserRepositoryImpl] deleteUser unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 }

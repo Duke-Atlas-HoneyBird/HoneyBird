@@ -1,46 +1,16 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../domain/entities/user_preference.dart';
 
-/// Base class for Account events
-abstract class AccountEvent extends Equatable {
-  const AccountEvent();
+part 'account_event.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
+@freezed
+class AccountEvent with _$AccountEvent {
+  const factory AccountEvent.loadAccountData(String userUID) = LoadAccountData;
+  const factory AccountEvent.updateUserPreferences(UserPreference preferences) =
+      UpdateUserPreferences;
+  const factory AccountEvent.updateUserProfile({
+    required String userName,
+    required String userBio,
+    required String userBioLink,
+  }) = UpdateUserProfile;
 }
-
-/// Event to load account data
-class LoadAccountData extends AccountEvent {
-  final String userUID;
-  const LoadAccountData(this.userUID);
-
-  @override
-  List<Object?> get props => [userUID];
-}
-
-/// Event to update user preferences
-class UpdateUserPreferences extends AccountEvent {
-  final UserPreference preferences;
-
-  const UpdateUserPreferences(this.preferences);
-
-  @override
-  List<Object?> get props => [preferences];
-}
-
-/// Event to update user profile
-class UpdateUserProfile extends AccountEvent {
-  final String userName;
-  final String userBio;
-  final String userBioLink;
-
-  const UpdateUserProfile({
-    required this.userName,
-    required this.userBio,
-    required this.userBioLink,
-  });
-
-  @override
-  List<Object?> get props => [userName, userBio, userBioLink];
-}
-

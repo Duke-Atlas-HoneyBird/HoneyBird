@@ -18,9 +18,11 @@ class TaskRepositoryImpl implements TaskRepository {
       final taskModels = await dataSource.getTasks(userUID);
       return Right(taskModels);
     } on ServerException catch (e) {
+      print('[TaskRepositoryImpl] getTasks ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[TaskRepositoryImpl] getTasks unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -31,9 +33,11 @@ class TaskRepositoryImpl implements TaskRepository {
       final createdTask = await dataSource.createTask(taskModel);
       return Right(createdTask);
     } on ServerException catch (e) {
+      print('[TaskRepositoryImpl] createTask ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[TaskRepositoryImpl] createTask unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -44,9 +48,11 @@ class TaskRepositoryImpl implements TaskRepository {
       final updatedTask = await dataSource.updateTask(taskModel);
       return Right(updatedTask);
     } on ServerException catch (e) {
+      print('[TaskRepositoryImpl] updateTask ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[TaskRepositoryImpl] updateTask unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -56,9 +62,11 @@ class TaskRepositoryImpl implements TaskRepository {
       await dataSource.deleteTask(taskId);
       return const Right(null);
     } on ServerException catch (e) {
+      print('[TaskRepositoryImpl] deleteTask ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[TaskRepositoryImpl] deleteTask unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 }

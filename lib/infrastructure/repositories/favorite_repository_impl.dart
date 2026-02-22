@@ -18,9 +18,11 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
       final postModels = await _firebaseDataSource.getFavoritePosts(userUID);
       return Right(postModels.map((model) => model.toDomain()).toList());
     } on ServerException catch (e) {
+      print('[FavoriteRepositoryImpl] getFavoritePosts ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[FavoriteRepositoryImpl] getFavoritePosts unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -30,9 +32,11 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
       await _firebaseDataSource.addToFavorites(postId, userUID);
       return const Right(null);
     } on ServerException catch (e) {
+      print('[FavoriteRepositoryImpl] addToFavorites ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[FavoriteRepositoryImpl] addToFavorites unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -42,9 +46,11 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
       await _firebaseDataSource.removeFromFavorites(postId, userUID);
       return const Right(null);
     } on ServerException catch (e) {
+      print('[FavoriteRepositoryImpl] removeFromFavorites ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[FavoriteRepositoryImpl] removeFromFavorites unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -54,9 +60,11 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
       final isFavorited = await _firebaseDataSource.isFavorited(postId, userUID);
       return Right(isFavorited);
     } on ServerException catch (e) {
+      print('[FavoriteRepositoryImpl] isFavorited ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[FavoriteRepositoryImpl] isFavorited unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 }

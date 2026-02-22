@@ -5,9 +5,8 @@ import '../../../application/use_cases/post/get_posts.dart';
 import 'timeline_event.dart';
 import 'timeline_state.dart';
 
-/// Bloc for timeline state; loads posts from Firebase (chronological).
 class TimelineBloc extends Bloc<TimelineEvent, TimelineState> {
-  TimelineBloc(this._getPosts) : super(const TimelineInitial()) {
+  TimelineBloc(this._getPosts) : super(const TimelineState()) {
     on<LoadTimelinePosts>(_onLoadTimelinePosts);
     on<RefreshTimelinePosts>(_onRefreshTimelinePosts);
     on<LoadMoreTimelinePosts>(_onLoadMoreTimelinePosts);
@@ -20,14 +19,17 @@ class TimelineBloc extends Bloc<TimelineEvent, TimelineState> {
     LoadTimelinePosts event,
     Emitter<TimelineState> emit,
   ) async {
-    emit(const TimelineLoading());
+    emit(state.copyWith(isLoading: true, errorMessage: null));
 
     final result = await _getPosts();
 
     result.fold(
-      (failure) =>
-          emit(TimelineError('Failed to load timeline: ${failure.message}')),
-      (posts) => emit(TimelineLoaded(posts: posts, hasMore: false)),
+      (failure) => emit(state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to load timeline: ${failure.message}',
+          posts: [])),
+      (posts) => emit(state.copyWith(
+          isLoading: false, posts: posts, hasMore: false)),
     );
   }
 
@@ -35,17 +37,12 @@ class TimelineBloc extends Bloc<TimelineEvent, TimelineState> {
     RefreshTimelinePosts event,
     Emitter<TimelineState> emit,
   ) async {
-    final currentState = state;
-    if (currentState is TimelineLoaded) {
-      emit(currentState);
-    }
-
     final result = await _getPosts();
 
     result.fold(
-      (failure) =>
-          emit(TimelineError('Failed to refresh: ${failure.message}')),
-      (posts) => emit(TimelineLoaded(posts: posts, hasMore: false)),
+      (failure) => emit(state.copyWith(
+          errorMessage: 'Failed to refresh: ${failure.message}')),
+      (posts) => emit(state.copyWith(posts: posts, hasMore: false)),
     );
   }
 
@@ -53,29 +50,23 @@ class TimelineBloc extends Bloc<TimelineEvent, TimelineState> {
     LoadMoreTimelinePosts event,
     Emitter<TimelineState> emit,
   ) async {
-    // Firebase getPosts returns all; pagination can be added later.
-    final currentState = state;
-    if (currentState is TimelineLoaded && currentState.hasMore) {
-      final result = await _getPosts();
-      result.fold(
-        (failure) => emit(TimelineError('Failed to load more: ${failure.message}')),
-        (posts) => emit(currentState.copyWith(
-          posts: posts,
-          hasMore: false,
-          isLoadingMore: false,
-        )),
-      );
-    }
+    if (!state.hasMore) return;
+
+    final result = await _getPosts();
+    result.fold(
+      (failure) => emit(state.copyWith(
+          errorMessage: 'Failed to load more: ${failure.message}',
+          isLoadingMore: false)),
+      (posts) => emit(state.copyWith(
+          posts: posts, hasMore: false, isLoadingMore: false)),
+    );
   }
 
-  FutureOr<void> _onUpdateTimelinePost(UpdateTimelinePost event, Emitter<TimelineState> emit) {
-    final currentState = state;
-    if (currentState is TimelineLoaded) {
-      final updatedPosts = currentState.posts.map((post) {
-        return post.id == event.post.id ? event.post : post;
-      }).toList();
-      emit(currentState.copyWith(posts: updatedPosts));
-    }
+  FutureOr<void> _onUpdateTimelinePost(
+      UpdateTimelinePost event, Emitter<TimelineState> emit) {
+    final updatedPosts = state.posts.map((post) {
+      return post.id == event.post.id ? event.post : post;
+    }).toList();
+    emit(state.copyWith(posts: updatedPosts));
   }
 }
-

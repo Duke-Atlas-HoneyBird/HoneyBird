@@ -1,43 +1,16 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-abstract class PostEvent extends Equatable {
-  const PostEvent();
+part 'post_event.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
-}
-
-class PostsLoadRequested extends PostEvent {
-  const PostsLoadRequested();
-}
-
-class PostCreateRequested extends PostEvent {
-  final String text;
-  final String? imageUrl;
-
-  const PostCreateRequested({
-    required this.text,
-    this.imageUrl,
-  });
-
-  @override
-  List<Object?> get props => [text, imageUrl];
-}
-
-class PostLikeRequested extends PostEvent {
-  final String postId;
-
-  const PostLikeRequested({required this.postId});
-
-  @override
-  List<Object> get props => [postId];
-}
-
-class PostDeleteRequested extends PostEvent {
-  final String postId;
-
-  const PostDeleteRequested({required this.postId});
-
-  @override
-  List<Object> get props => [postId];
+@freezed
+class PostEvent with _$PostEvent {
+  const factory PostEvent.loadRequested() = PostsLoadRequested;
+  const factory PostEvent.createRequested({
+    required String text,
+    String? imageUrl,
+  }) = PostCreateRequested;
+  const factory PostEvent.likeRequested({required String postId}) =
+      PostLikeRequested;
+  const factory PostEvent.deleteRequested({required String postId}) =
+      PostDeleteRequested;
 }

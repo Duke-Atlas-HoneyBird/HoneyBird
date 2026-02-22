@@ -55,8 +55,8 @@ class _AccountScreenState extends State<AccountScreen> {
     if (!_hasRequestedLoad) {
       _hasRequestedLoad = true;
       final authState = context.read<AuthBloc>().state;
-      final userUID = authState is AuthAuthenticated ? authState.user.uid : '';
-      context.read<AccountBloc>().add(LoadAccountData(userUID));
+      final userUID = authState.user?.uid ?? '';
+      context.read<AccountBloc>().add(AccountEvent.loadAccountData(userUID));
     }
   }
 
@@ -69,10 +69,7 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
-    String userUID = '';
-    if (authState is AuthAuthenticated) {
-      userUID = authState.user.uid;
-    }
+    final userUID = authState.user?.uid ?? '';
 
     return Container(
       decoration: const BoxDecoration(
@@ -83,9 +80,24 @@ class _AccountScreenState extends State<AccountScreen> {
             title: const Text('Account'),
             elevation: 0,
           ),
-          body: BlocBuilder<AccountBloc, AccountState>(
+          body: SafeArea(
+            child: BlocConsumer<AccountBloc, AccountState>(
+            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
+            listener: (context, state) {
+              if (state.errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.errorMessage!)),
+                );
+              }
+            },
+            buildWhen: (prev, curr) =>
+                prev?.user != curr.user ||
+                prev?.preferences != curr.preferences ||
+                prev?.isLoading != curr.isLoading ||
+                prev?.isSaving != curr.isSaving ||
+                prev?.errorMessage != curr.errorMessage,
             builder: (context, state) {
-              if (state is AccountLoading) {
+              if (state.isLoading && state.user == null) {
                 return Center(
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onBackground),
@@ -93,7 +105,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 );
               }
 
-              if (state is AccountError) {
+              if (state.errorMessage != null && state.user == null) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(spacingL),
@@ -114,7 +126,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         ),
                         const SizedBox(height: spacingS),
                         Text(
-                          state.message,
+                          state.errorMessage!,
                           style: bodyLarge.copyWith(
                             color: Colors.white.withOpacity(0.8),
                           ),
@@ -125,7 +137,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           onPressed: () {
                             context
                                 .read<AccountBloc>()
-                                .add(LoadAccountData(userUID));
+                                .add(AccountEvent.loadAccountData(userUID));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentPink,
@@ -143,14 +155,10 @@ class _AccountScreenState extends State<AccountScreen> {
                 );
               }
 
-              if (state is AccountLoaded || state is AccountSaving) {
-                final user = state is AccountSaving
-                    ? state.user
-                    : (state as AccountLoaded).user;
-                final preferences = state is AccountSaving
-                    ? state.preferences
-                    : (state as AccountLoaded).preferences;
-                final isSaving = state is AccountSaving;
+              if (state.user != null && state.preferences != null) {
+                final user = state.user!;
+                final preferences = state.preferences!;
+                final isSaving = state.isSaving;
 
                 return SingleChildScrollView(
                   child: Padding(
@@ -249,7 +257,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         preferences.copyWith(vegetarian: value);
                                     context
                                         .read<AccountBloc>()
-                                        .add(UpdateUserPreferences(updated));
+                                        .add(AccountEvent.updateUserPreferences(updated));
                                   },
                                 ),
                                 _buildPreferenceChip(
@@ -261,7 +269,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         preferences.copyWith(vegan: value);
                                     context
                                         .read<AccountBloc>()
-                                        .add(UpdateUserPreferences(updated));
+                                        .add(AccountEvent.updateUserPreferences(updated));
                                   },
                                 ),
                                 _buildPreferenceChip(
@@ -273,7 +281,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         preferences.copyWith(halaal: value);
                                     context
                                         .read<AccountBloc>()
-                                        .add(UpdateUserPreferences(updated));
+                                        .add(AccountEvent.updateUserPreferences(updated));
                                   },
                                 ),
                                 _buildPreferenceChip(
@@ -285,7 +293,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         preferences.copyWith(pork: value);
                                     context
                                         .read<AccountBloc>()
-                                        .add(UpdateUserPreferences(updated));
+                                        .add(AccountEvent.updateUserPreferences(updated));
                                   },
                                 ),
                                 _buildPreferenceChip(
@@ -297,7 +305,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         preferences.copyWith(lactose: value);
                                     context
                                         .read<AccountBloc>()
-                                        .add(UpdateUserPreferences(updated));
+                                        .add(AccountEvent.updateUserPreferences(updated));
                                   },
                                 ),
                               ],
@@ -332,7 +340,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         final updated = preferences.copyWith(
                                             outdoor: value);
                                         context.read<AccountBloc>().add(
-                                            UpdateUserPreferences(updated));
+                                            AccountEvent.updateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -343,7 +351,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         final updated = preferences.copyWith(
                                             wineTasting: value);
                                         context.read<AccountBloc>().add(
-                                            UpdateUserPreferences(updated));
+                                            AccountEvent.updateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -354,7 +362,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         final updated = preferences.copyWith(
                                             wineFarms: value);
                                         context.read<AccountBloc>().add(
-                                            UpdateUserPreferences(updated));
+                                            AccountEvent.updateUserPreferences(updated));
                                       },
                                     ),
                                   ],
@@ -378,7 +386,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         final updated = preferences.copyWith(
                                             african: value);
                                         context.read<AccountBloc>().add(
-                                            UpdateUserPreferences(updated));
+                                            AccountEvent.updateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -389,7 +397,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         final updated = preferences.copyWith(
                                             italian: value);
                                         context.read<AccountBloc>().add(
-                                            UpdateUserPreferences(updated));
+                                            AccountEvent.updateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -400,7 +408,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         final updated =
                                             preferences.copyWith(greek: value);
                                         context.read<AccountBloc>().add(
-                                            UpdateUserPreferences(updated));
+                                            AccountEvent.updateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -411,7 +419,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         final updated = preferences.copyWith(
                                             chinese: value);
                                         context.read<AccountBloc>().add(
-                                            UpdateUserPreferences(updated));
+                                            AccountEvent.updateUserPreferences(updated));
                                       },
                                     ),
                                     _buildPreferenceChip(
@@ -422,7 +430,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                         final updated =
                                             preferences.copyWith(thai: value);
                                         context.read<AccountBloc>().add(
-                                            UpdateUserPreferences(updated));
+                                            AccountEvent.updateUserPreferences(updated));
                                       },
                                     ),
                                   ],
@@ -450,6 +458,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
               );
             },
+          ),
           ),
           bottomNavigationBar: BottomNavigationWidget(
             currentIndex: _currentTabIndex,

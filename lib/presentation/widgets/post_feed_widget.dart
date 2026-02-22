@@ -1,7 +1,13 @@
+import 'package:dartz/dartz.dart' show Either;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../application/use_cases/post/get_posts.dart';
 import '../../core/error/failures.dart';
+import '../../domain/entities/post.dart';
+import '../state/comment_count/comment_count_bloc.dart';
+import '../state/comment_count/comment_count_event.dart';
+import '../state/comment_count/comment_count_state.dart';
 import '../theme/colours.dart';
 import '../theme/spacing.dart';
 import '../theme/text_styles.dart';
@@ -15,12 +21,15 @@ import 'post_card.dart';
 class PostFeedWidget extends StatefulWidget {
   final GetPosts getPosts;
   final Function(String postId, String userId) onLike;
+  /// Called when user taps comment on a post. If null, comment button is hidden.
+  final void Function(String postId)? onCommentTap;
   final String? currentUserUID;
 
   const PostFeedWidget({
     super.key,
     required this.getPosts,
     required this.onLike,
+    this.onCommentTap,
     this.currentUserUID,
   });
 
@@ -29,7 +38,8 @@ class PostFeedWidget extends StatefulWidget {
 }
 
 class _PostFeedWidgetState extends State<PostFeedWidget> {
-  late Future<dynamic> _postsFuture;
+  late Future<Either<Failure, List<Post>>> _postsFuture;
+  List<String>? _lastRequestedPostIds;
 
   @override
   void initState() {
@@ -52,6 +62,7 @@ class _PostFeedWidgetState extends State<PostFeedWidget> {
   /// Handle pull-to-refresh
   Future<void> _handleRefresh() async {
     HapticFeedback.lightImpact();
+    _lastRequestedPostIds = null;
     _loadPosts();
     // Wait for the future to complete
     await _postsFuture;
@@ -65,6 +76,13 @@ class _PostFeedWidgetState extends State<PostFeedWidget> {
     } else {
       return 'Something went wrong. Please try again.';
     }
+  }
+
+  static bool _setEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    final setA = Set.from(a);
+    final setB = Set.from(b);
+    return setA.length == setB.length && setA.difference(setB).isEmpty;
   }
 
   @override
@@ -204,27 +222,57 @@ class _PostFeedWidgetState extends State<PostFeedWidget> {
                 );
               }
 
-              // Posts list with pull-to-refresh
-              return RefreshIndicator(
-                onRefresh: _handleRefresh,
-                color: accentPink,
-                child: ListView.builder(
-                  physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
-                  ),
-                  itemCount: posts.length,
-                  itemBuilder: (context, index) {
-                    final post = posts[index];
-                    return PostCard(
-                      post: post,
-                      onLike: () => widget.onLike(
-                        post.id ?? '',
-                        widget.currentUserUID ?? '',
+              // Request comment counts once for this set of posts (triggers re-build when counts arrive)
+              final postIds = posts
+                  .map((p) => p.id ?? '')
+                  .where((id) => id.isNotEmpty)
+                  .toList();
+              final needCounts = postIds.isNotEmpty &&
+                  (_lastRequestedPostIds == null ||
+                      !_setEquals(_lastRequestedPostIds!, postIds));
+              if (needCounts) {
+                _lastRequestedPostIds = List.from(postIds);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  context.read<CommentCountBloc>().add(
+                    CommentCountEvent.loadCountsForPosts(postIds: postIds),
+                  );
+                });
+              }
+
+              // Rebuild when comment counts change so UI shows updated numbers
+              return BlocBuilder<CommentCountBloc, CommentCountState>(
+                builder: (context, countState) {
+                  return RefreshIndicator(
+                    onRefresh: _handleRefresh,
+                    color: accentPink,
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics(),
                       ),
-                      currentUserUID: widget.currentUserUID,
-                    );
-                  },
-                ),
+                      itemCount: posts.length,
+                      itemBuilder: (context, index) {
+                        final post = posts[index];
+                        final postId = post.id ?? '';
+                        final commentCount = postId.isEmpty
+                            ? 0
+                            : (countState.counts[postId] ?? 0);
+                        return PostCard(
+                          post: post,
+                          onLike: () => widget.onLike(
+                            postId,
+                            widget.currentUserUID ?? '',
+                          ),
+                          onComment: widget.onCommentTap != null
+                              ? () => widget.onCommentTap!(postId)
+                              : null,
+                          currentUserUID: widget.currentUserUID,
+                          commentCount: commentCount,
+                        );
+                      },
+                    ),
+                  );
+                },
               );
             },
           );

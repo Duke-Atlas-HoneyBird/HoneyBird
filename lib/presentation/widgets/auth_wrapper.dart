@@ -15,30 +15,24 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {},
+      buildWhen: (prev, curr) =>
+          prev?.user != curr.user || prev?.isLoading != curr.isLoading,
       builder: (context, state) {
-        if (state is AuthLoading) {
+        if (state.isLoading && state.user == null) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
+            body: SafeArea(
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
           );
         }
-        
-        if (state is AuthUnauthenticated || state is AuthError) {
+        if (state.user == null) {
           return const AuthScreen();
         }
-        
-        if (state is AuthAuthenticated) {
-          return child;
-        }
-        
-        // Initial state - show loading
-        return const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
+        return child;
       },
     );
   }

@@ -1,58 +1,19 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-/// Base class for Favorites events
-abstract class FavoritesEvent extends Equatable {
-  const FavoritesEvent();
+part 'favorites_event.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
+@freezed
+class FavoritesEvent with _$FavoritesEvent {
+  const factory FavoritesEvent.loadFavoritePosts(String userUID) =
+      LoadFavoritePosts;
+  const factory FavoritesEvent.addToFavorites({
+    required String postId,
+    required String userUID,
+  }) = AddToFavorites;
+  const factory FavoritesEvent.removeFromFavorites({
+    required String postId,
+    required String userUID,
+  }) = RemoveFromFavorites;
+  const factory FavoritesEvent.refreshFavoritePosts(String userUID) =
+      RefreshFavoritePosts;
 }
-
-/// Event to load favorite posts
-class LoadFavoritePosts extends FavoritesEvent {
-  final String userUID;
-
-  const LoadFavoritePosts(this.userUID);
-
-  @override
-  List<Object?> get props => [userUID];
-}
-
-/// Event to add post to favorites
-class AddToFavorites extends FavoritesEvent {
-  final String postId;
-  final String userUID;
-
-  const AddToFavorites({
-    required this.postId,
-    required this.userUID,
-  });
-
-  @override
-  List<Object?> get props => [postId, userUID];
-}
-
-/// Event to remove post from favorites
-class RemoveFromFavorites extends FavoritesEvent {
-  final String postId;
-  final String userUID;
-
-  const RemoveFromFavorites({
-    required this.postId,
-    required this.userUID,
-  });
-
-  @override
-  List<Object?> get props => [postId, userUID];
-}
-
-/// Event to refresh favorite posts
-class RefreshFavoritePosts extends FavoritesEvent {
-  final String userUID;
-
-  const RefreshFavoritePosts(this.userUID);
-
-  @override
-  List<Object?> get props => [userUID];
-}
-

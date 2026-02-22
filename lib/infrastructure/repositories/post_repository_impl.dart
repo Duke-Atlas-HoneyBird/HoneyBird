@@ -19,9 +19,11 @@ class PostRepositoryImpl implements PostRepository {
       final postModels = await _firebaseDataSource.getPosts();
       return Right(postModels.map((model) => model.toDomain()).toList());
     } on ServerException catch (e) {
+      print('[PostRepositoryImpl] getPosts ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[PostRepositoryImpl] getPosts unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -31,9 +33,11 @@ class PostRepositoryImpl implements PostRepository {
       final postModel = await _firebaseDataSource.getPost(postId);
       return Right(postModel.toDomain());
     } on ServerException catch (e) {
+      print('[PostRepositoryImpl] getPost ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[PostRepositoryImpl] getPost unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -44,9 +48,11 @@ class PostRepositoryImpl implements PostRepository {
       final createdPost = await _firebaseDataSource.createPost(postModel);
       return Right(createdPost.toDomain());
     } on ServerException catch (e) {
+      print('[PostRepositoryImpl] createPost ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[PostRepositoryImpl] createPost unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -57,9 +63,11 @@ class PostRepositoryImpl implements PostRepository {
       final updatedPost = await _firebaseDataSource.updatePost(postModel);
       return Right(updatedPost.toDomain());
     } on ServerException catch (e) {
+      print('[PostRepositoryImpl] updatePost ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[PostRepositoryImpl] updatePost unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -69,9 +77,11 @@ class PostRepositoryImpl implements PostRepository {
       await _firebaseDataSource.deletePost(postId);
       return const Right(null);
     } on ServerException catch (e) {
+      print('[PostRepositoryImpl] deletePost ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[PostRepositoryImpl] deletePost unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -81,9 +91,11 @@ class PostRepositoryImpl implements PostRepository {
       final updatedPost = await _firebaseDataSource.likePost(postId, userId);
       return Right(updatedPost.toDomain());
     } on ServerException catch (e) {
+      print('[PostRepositoryImpl] likePost ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[PostRepositoryImpl] likePost unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 }

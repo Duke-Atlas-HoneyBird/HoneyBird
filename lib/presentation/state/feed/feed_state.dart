@@ -1,45 +1,14 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../domain/entities/post.dart';
 
-/// Base class for Feed states
-abstract class FeedState extends Equatable {
-  const FeedState();
+part 'feed_state.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
+@freezed
+class FeedState with _$FeedState {
+  const factory FeedState({
+    @Default(false) bool isLoading,
+    @Default([]) List<Post> posts,
+    String? selectedCategory,
+    String? errorMessage,
+  }) = _FeedState;
 }
-
-/// Initial state
-class FeedInitial extends FeedState {
-  const FeedInitial();
-}
-
-/// Loading state
-class FeedLoading extends FeedState {
-  const FeedLoading();
-}
-
-/// Loaded state with posts
-class FeedLoaded extends FeedState {
-  final List<Post> posts;
-  final String? selectedCategory;
-
-  const FeedLoaded({
-    required this.posts,
-    this.selectedCategory,
-  });
-
-  @override
-  List<Object?> get props => [posts, selectedCategory];
-}
-
-/// Error state
-class FeedError extends FeedState {
-  final String message;
-
-  const FeedError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
-

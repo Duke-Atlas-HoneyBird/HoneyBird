@@ -10,20 +10,26 @@ import '../theme/text_styles.dart';
 /// Aspect ratio for feed images — mobile-first (portrait-friendly, like phone photos).
 const double _feedImageAspectRatio = 4 / 5;
 
-/// A card widget that displays a post with star (like) functionality.
+/// A card widget that displays a post with star (like) and comment functionality.
 /// Includes haptic feedback and proper touch targets (48dp minimum).
 /// Image frame is optimized for mobile viewing.
 class PostCard extends StatelessWidget {
   final Post post;
   final VoidCallback onLike;
+  /// Called when user taps comment — opens comments sheet when provided.
+  final VoidCallback? onComment;
   /// Current user's UID — if in [post.likeIDs], star is filled.
   final String? currentUserUID;
+  /// Number of comments to show on the comment button (defaults to 0).
+  final int commentCount;
 
   const PostCard({
     super.key,
     required this.post,
     required this.onLike,
+    this.onComment,
     this.currentUserUID,
+    this.commentCount = 0,
   });
 
   String _formatDate(DateTime date) {
@@ -168,7 +174,7 @@ class PostCard extends StatelessWidget {
             
             const SizedBox(height: spacingM),
             
-            // Star (like) button — food industry style
+            // Star (like) and comment actions
             Row(
               children: [
                 InkWell(
@@ -211,6 +217,50 @@ class PostCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (onComment != null) ...[
+                  const SizedBox(width: spacingS),
+                  InkWell(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onComment!();
+                    },
+                    borderRadius: BorderRadius.circular(buttonBorderRadius),
+                    child: Container(
+                      constraints: const BoxConstraints(
+                        minHeight: 48.0,
+                        minWidth: 48.0,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: spacingM,
+                        vertical: spacingM,
+                      ),
+                      decoration: BoxDecoration(
+                        color: textSecondary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(buttonBorderRadius),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            color: textSecondary,
+                            size: 22,
+                          ),
+                          const SizedBox(width: spacingXs),
+                          Text(
+                            commentCount == 0
+                                ? 'Comment'
+                                : commentCount.toString(),
+                            style: labelLarge.copyWith(
+                              color: textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ],
