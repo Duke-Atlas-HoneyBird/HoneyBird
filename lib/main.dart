@@ -38,7 +38,7 @@ void main() async {
   await di.init();
 
   // Seed conversations from existing users (runs in background; safe to call every launch)
-  DataSeeder().seedConversationsFromUsers();
+  // DataSeeder().seedConversationsFromUsers();
 
   // Uncomment the line below to seed Firestore with full dummy data
   // await DataSeeder().seedFirestore();
@@ -55,7 +55,7 @@ class HoneyBirdApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
-          create: (context) => di.sl<AuthBloc>()..add(const AuthCheckRequested()),
+          create: (context) => di.sl<AuthBloc>()..add(const AuthEvent.checkRequested()),
         ),
         BlocProvider<FeedBloc>(
           create: (context) => FeedBloc(di.sl<GetPosts>()),
@@ -79,11 +79,15 @@ class HoneyBirdApp extends StatelessWidget {
         color: primaryColor,
         theme: buildBlackAndWhiteTheme(),
         themeMode: ThemeMode.light,
-        home: BlocBuilder<AuthBloc, AuthState>(
+        home: BlocConsumer<AuthBloc, AuthState>(
+          listener: (context, state) {},
+          buildWhen: (prev, curr) =>
+              prev?.user != curr.user || prev?.errorMessage != curr.errorMessage,
           builder: (context, state) {
-            if (state is AuthAuthenticated) {
+            if (state.user != null) {
               return const PostAuthGate();
-            } else if (state is AuthUnauthenticated || state is AuthError) {
+            }
+            if (state.user == null && !state.isLoading) {
               return const AuthScreen();
             }
             return const Scaffold(

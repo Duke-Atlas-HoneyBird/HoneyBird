@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:honey_bird/presentation/state/timeline/timeline_event.dart';
 import '../../core/di/injection.dart';
-import '../../application/use_cases/post/get_posts.dart';
 import '../../application/use_cases/post/like_post.dart';
 import '../../domain/repositories/favorite_repository.dart';
 import '../state/auth/auth_bloc.dart';
@@ -33,7 +31,7 @@ class _FeedScreenState extends State<FeedScreen> {
     super.didChangeDependencies();
     if (!_hasRequestedLoad) {
       _hasRequestedLoad = true;
-      context.read<FeedBloc>().add(const LoadFeedPosts());
+      context.read<FeedBloc>().add(const FeedEvent.loadFeedPosts());
     }
   }
 
@@ -54,7 +52,7 @@ class _FeedScreenState extends State<FeedScreen> {
           await repo.removeFromFavorites(postId, currentUserUID);
         }
         if (!context.mounted) return;
-        context.read<FeedBloc>().add(AddOrUpdatePostToFeed(updatedPost));
+        context.read<FeedBloc>().add(FeedEvent.addOrUpdatePostToFeed(updatedPost));
       },
     );
   }
@@ -96,17 +94,22 @@ class _FeedScreenState extends State<FeedScreen> {
             elevation: 0,
             iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
           ),
-          body: BlocBuilder<FeedBloc, FeedState>(
+          body: SafeArea(
+            child: BlocConsumer<FeedBloc, FeedState>(
+            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
+            listener: (context, state) {
+              if (state.errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.errorMessage!)),
+                );
+              }
+            },
+            buildWhen: (prev, curr) =>
+                prev?.posts != curr.posts ||
+                prev?.isLoading != curr.isLoading ||
+                prev?.errorMessage != curr.errorMessage,
             builder: (context, state) {
-              // if (state is FeedLoading) {
-              //   return Center(
-              //     child: CircularProgressIndicator(
-              //       valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onBackground),
-              //     ),
-              //   );
-              // }
-
-              if (state is FeedError) {
+              if (state.errorMessage != null && state.posts.isEmpty) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(spacingL),
@@ -127,7 +130,7 @@ class _FeedScreenState extends State<FeedScreen> {
                         ),
                         const SizedBox(height: spacingS),
                         Text(
-                          state.message,
+                          state.errorMessage!,
                           style: bodyLarge.copyWith(
                             color: Colors.white.withOpacity(0.8),
                           ),
@@ -136,7 +139,7 @@ class _FeedScreenState extends State<FeedScreen> {
                         const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            context.read<FeedBloc>().add(const LoadFeedPosts());
+                            context.read<FeedBloc>().add(const FeedEvent.loadFeedPosts());
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
@@ -154,7 +157,7 @@ class _FeedScreenState extends State<FeedScreen> {
                 );
               }
 
-              if (state is FeedLoaded) {
+              if (!state.isLoading || state.posts.isNotEmpty) {
                 if (state.posts.isEmpty) {
                   return Center(
                     child: Column(
@@ -187,7 +190,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<FeedBloc>().add(const RefreshFeedPosts());
+                    context.read<FeedBloc>().add(const FeedEvent.refreshFeedPosts());
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
                   color: accentPink,
@@ -196,9 +199,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     itemCount: state.posts.length,
                     itemBuilder: (context, index) {
                       final post = state.posts[index];
-                      final currentUserUID = context.read<AuthBloc>().state is AuthAuthenticated
-                          ? (context.read<AuthBloc>().state as AuthAuthenticated).user.uid
-                          : null;
+                      final currentUserUID = context.read<AuthBloc>().state.user?.uid;
                       return PostCard(
                         post: post,
                         onLike: () => _handleLike(
@@ -219,6 +220,7 @@ class _FeedScreenState extends State<FeedScreen> {
                 ),
               );
             },
+          ),
           ),
           bottomNavigationBar: BottomNavigationWidget(
             currentIndex: _currentTabIndex,

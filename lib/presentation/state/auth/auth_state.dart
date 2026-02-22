@@ -1,52 +1,15 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../domain/entities/auth_user.dart';
 
-abstract class AuthState extends Equatable {
-  const AuthState();
+part 'auth_state.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
-}
-
-class AuthInitial extends AuthState {
-  const AuthInitial();
-}
-
-class AuthLoading extends AuthState {
-  const AuthLoading();
-}
-
-class AuthAuthenticated extends AuthState {
-  final AuthUser user;
-
-  const AuthAuthenticated({required this.user});
-
-  @override
-  List<Object> get props => [user];
-}
-
-class AuthUnauthenticated extends AuthState {
-  const AuthUnauthenticated();
-}
-
-class AuthError extends AuthState {
-  final String message;
-
-  const AuthError({required this.message});
-
-  @override
-  List<Object> get props => [message];
-}
-
-class AuthPasswordResetSent extends AuthState {
-  final String email;
-
-  const AuthPasswordResetSent({required this.email});
-
-  @override
-  List<Object> get props => [email];
-}
-
-class AuthEmailVerificationSent extends AuthState {
-  const AuthEmailVerificationSent();
+@freezed
+class AuthState with _$AuthState {
+  const factory AuthState({
+    @Default(false) bool isLoading,
+    AuthUser? user,
+    String? errorMessage,
+    String? passwordResetEmail,
+    @Default(false) bool emailVerificationSent,
+  }) = _AuthState;
 }

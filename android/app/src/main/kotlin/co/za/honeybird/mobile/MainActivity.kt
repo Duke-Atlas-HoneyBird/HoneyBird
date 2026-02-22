@@ -1,4 +1,4 @@
-package com.example.honey_bird
+package co.za.honeybird.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

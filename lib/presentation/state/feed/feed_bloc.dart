@@ -5,14 +5,12 @@ import '../../../application/use_cases/post/get_posts.dart';
 import 'feed_event.dart';
 import 'feed_state.dart';
 
-/// Bloc for managing feed state; loads posts from Firebase.
 class FeedBloc extends Bloc<FeedEvent, FeedState> {
-  FeedBloc(this._getPosts) : super(const FeedInitial()) {
+  FeedBloc(this._getPosts) : super(const FeedState()) {
     on<LoadFeedPosts>(_onLoadFeedPosts);
     on<RefreshFeedPosts>(_onRefreshFeedPosts);
     on<FilterFeedByCategory>(_onFilterFeedByCategory);
     on<AddOrUpdatePostToFeed>(_onAddOrUpdatePostToFeed);
-
   }
 
   final GetPosts _getPosts;
@@ -21,13 +19,16 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
     LoadFeedPosts event,
     Emitter<FeedState> emit,
   ) async {
-    emit(const FeedLoading());
+    emit(state.copyWith(isLoading: true, errorMessage: null));
 
     final result = await _getPosts();
 
     result.fold(
-      (failure) => emit(FeedError('Failed to load feed: ${failure.message}')),
-      (posts) => emit(FeedLoaded(posts: posts)),
+      (failure) => emit(state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to load feed: ${failure.message}',
+          posts: [])),
+      (posts) => emit(state.copyWith(isLoading: false, posts: posts)),
     );
   }
 
@@ -35,29 +36,14 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
     RefreshFeedPosts event,
     Emitter<FeedState> emit,
   ) async {
-    if (state is FeedLoaded) {
-      final currentState = state as FeedLoaded;
-      emit(FeedLoaded(
-        posts: currentState.posts,
-        selectedCategory: currentState.selectedCategory,
-      ));
-    }
-
     final result = await _getPosts();
 
     result.fold(
-      (failure) => emit(FeedError('Failed to refresh: ${failure.message}')),
-      (posts) {
-        final currentState = state;
-        if (currentState is FeedLoaded) {
-          emit(FeedLoaded(
-            posts: posts,
-            selectedCategory: currentState.selectedCategory,
-          ));
-        } else {
-          emit(FeedLoaded(posts: posts));
-        }
-      },
+      (failure) => emit(state.copyWith(
+          errorMessage: 'Failed to refresh: ${failure.message}')),
+      (posts) => emit(state.copyWith(
+          posts: posts,
+          selectedCategory: state.selectedCategory)),
     );
   }
 
@@ -65,30 +51,28 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
     FilterFeedByCategory event,
     Emitter<FeedState> emit,
   ) async {
-    emit(const FeedLoading());
+    emit(state.copyWith(isLoading: true, errorMessage: null));
 
     final result = await _getPosts();
 
     result.fold(
-      (failure) => emit(FeedError('Failed to filter feed: ${failure.message}')),
-      (allPosts) => emit(FeedLoaded(
-        posts: allPosts,
-        selectedCategory: event.category,
-      )),
+      (failure) => emit(state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to filter feed: ${failure.message}',
+          posts: [])),
+      (allPosts) => emit(state.copyWith(
+          isLoading: false,
+          posts: allPosts,
+          selectedCategory: event.category)),
     );
   }
 
-  FutureOr<void> _onAddOrUpdatePostToFeed(AddOrUpdatePostToFeed event, Emitter<FeedState> emit) {
-    final currentState = state;
-    if (currentState is FeedLoaded) {
-      final updatedPosts = currentState.posts.map((post) {
-        return post.id == event.post.id ? event.post : post;
-      }).toList();
-      emit(FeedLoaded(
-        posts: updatedPosts,
-        selectedCategory: currentState.selectedCategory,
-      ));
-    }
+  FutureOr<void> _onAddOrUpdatePostToFeed(
+      AddOrUpdatePostToFeed event, Emitter<FeedState> emit) {
+    final updatedPosts = state.posts.map((post) {
+      return post.id == event.post.id ? event.post : post;
+    }).toList();
+    emit(state.copyWith(
+        posts: updatedPosts, selectedCategory: state.selectedCategory));
   }
 }
-

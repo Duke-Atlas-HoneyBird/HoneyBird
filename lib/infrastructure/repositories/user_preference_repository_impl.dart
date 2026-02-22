@@ -18,9 +18,11 @@ class UserPreferenceRepositoryImpl implements UserPreferenceRepository {
       final preferenceModel = await dataSource.getPreferences(userId);
       return Right(preferenceModel);
     } on ServerException catch (e) {
+      print('[UserPreferenceRepositoryImpl] getPreferences ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[UserPreferenceRepositoryImpl] getPreferences unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -31,9 +33,11 @@ class UserPreferenceRepositoryImpl implements UserPreferenceRepository {
       await dataSource.savePreferences(preferenceModel);
       return const Right(null);
     } on ServerException catch (e) {
+      print('[UserPreferenceRepositoryImpl] savePreferences ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[UserPreferenceRepositoryImpl] savePreferences unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 }

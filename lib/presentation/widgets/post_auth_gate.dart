@@ -30,12 +30,12 @@ class _PostAuthGateState extends State<PostAuthGate> {
 
   Future<void> _checkPreferences() async {
     final authState = context.read<AuthBloc>().state;
-    if (authState is! AuthAuthenticated) {
+    if (authState.user == null) {
       if (mounted) setState(() => _loading = false);
       return;
     }
 
-    final result = await sl<GetPreferences>().call(authState.user.uid);
+    final result = await sl<GetPreferences>().call(authState.user!.uid);
 
     if (!mounted) return;
 
@@ -48,14 +48,16 @@ class _PostAuthGateState extends State<PostAuthGate> {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
-    if (authState is! AuthAuthenticated) {
+    if (authState.user == null) {
       return const SizedBox.shrink();
     }
 
     if (_loading) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
+        body: SafeArea(
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
         ),
       );
     }
@@ -64,6 +66,6 @@ class _PostAuthGateState extends State<PostAuthGate> {
       return const HomeScreen();
     }
 
-    return OnboardingScreen(userId: authState.user.uid);
+    return OnboardingScreen(userId: authState.user!.uid);
   }
 }

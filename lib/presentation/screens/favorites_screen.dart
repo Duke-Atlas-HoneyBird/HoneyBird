@@ -53,8 +53,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   String? _currentUserUID(BuildContext context) {
-    final state = context.read<AuthBloc>().state;
-    return state is AuthAuthenticated ? state.user.uid : null;
+    return context.read<AuthBloc>().state.user?.uid;
   }
 
   Future<void> _handleUnstar(BuildContext context, String postId, String userUID) async {
@@ -64,7 +63,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     await likePost(postId, userUID);
     await favoriteRepository.removeFromFavorites(postId, userUID);
     if (!context.mounted) return;
-    context.read<FavoritesBloc>().add(RefreshFavoritePosts(userUID));
+    context.read<FavoritesBloc>().add(FavoritesEvent.refreshFavoritePosts(userUID));
   }
 
   @override
@@ -73,7 +72,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     final userUID = _currentUserUID(context) ?? '';
     if (!_hasRequestedLoad && userUID.isNotEmpty) {
       _hasRequestedLoad = true;
-      context.read<FavoritesBloc>().add(LoadFavoritePosts(userUID));
+      context.read<FavoritesBloc>().add(FavoritesEvent.loadFavoritePosts(userUID));
     }
   }
 
@@ -96,9 +95,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             elevation: 0,
             iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
           ),
-          body: BlocBuilder<FavoritesBloc, FavoritesState>(
+          body: SafeArea(
+            child: BlocConsumer<FavoritesBloc, FavoritesState>(
+            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
+            listener: (context, state) {
+              if (state.errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.errorMessage!)),
+                );
+              }
+            },
+            buildWhen: (prev, curr) =>
+                prev?.posts != curr.posts ||
+                prev?.isLoading != curr.isLoading ||
+                prev?.errorMessage != curr.errorMessage,
             builder: (context, state) {
-              if (state is FavoritesLoading) {
+              if (state.isLoading && state.posts.isEmpty) {
                 return Center(
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onBackground),
@@ -106,7 +118,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 );
               }
 
-              if (state is FavoritesError) {
+              if (state.errorMessage != null && state.posts.isEmpty) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(spacingL),
@@ -127,7 +139,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         ),
                         const SizedBox(height: spacingS),
                         Text(
-                          state.message,
+                          state.errorMessage!,
                           style: bodyLarge.copyWith(
                             color: Colors.white.withOpacity(0.8),
                           ),
@@ -136,7 +148,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            context.read<FavoritesBloc>().add(LoadFavoritePosts(userUID));
+                            context.read<FavoritesBloc>().add(FavoritesEvent.loadFavoritePosts(userUID));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentPink,
@@ -154,7 +166,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 );
               }
 
-              if (state is FavoritesLoaded) {
+              if (state.posts.isNotEmpty || !state.isLoading) {
                 if (state.posts.isEmpty) {
                   return Center(
                     child: Column(
@@ -187,7 +199,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<FavoritesBloc>().add(RefreshFavoritePosts(userUID));
+                    context.read<FavoritesBloc>().add(FavoritesEvent.refreshFavoritePosts(userUID));
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
                   color: accentPink,
@@ -212,6 +224,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 ),
               );
             },
+          ),
           ),
           bottomNavigationBar: BottomNavigationWidget(
             currentIndex: _currentTabIndex,

@@ -18,11 +18,11 @@ class MessageRepositoryImpl implements MessageRepository {
       var conversations = await dataSource.getConversations(userUID);
       return Right(conversations);
     } on ServerException catch (e) {
-      print(e);
+      print('[MessageRepositoryImpl] getConversations ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      print(e);
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[MessageRepositoryImpl] getConversations unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -32,9 +32,11 @@ class MessageRepositoryImpl implements MessageRepository {
       await dataSource.seedFakeConversationsIfEmpty(userUID);
       return const Right(null);
     } on ServerException catch (e) {
+      print('[MessageRepositoryImpl] seedFakeConversationsIfEmpty ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[MessageRepositoryImpl] seedFakeConversationsIfEmpty unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -44,9 +46,11 @@ class MessageRepositoryImpl implements MessageRepository {
       final messages = await dataSource.getMessages(conversationId);
       return Right(messages);
     } on ServerException catch (e) {
+      print('[MessageRepositoryImpl] getMessages ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[MessageRepositoryImpl] getMessages unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -57,9 +61,11 @@ class MessageRepositoryImpl implements MessageRepository {
       final sentMessage = await dataSource.sendMessage(messageModel, conversationId);
       return Right(sentMessage);
     } on ServerException catch (e) {
+      print('[MessageRepositoryImpl] sendMessage ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[MessageRepositoryImpl] sendMessage unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -69,9 +75,11 @@ class MessageRepositoryImpl implements MessageRepository {
       await dataSource.markAsRead(conversationId, userUID);
       return const Right(null);
     } on ServerException catch (e) {
+      print('[MessageRepositoryImpl] markAsRead ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[MessageRepositoryImpl] markAsRead unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 
@@ -81,9 +89,11 @@ class MessageRepositoryImpl implements MessageRepository {
       final count = await dataSource.getUnreadCount(userUID);
       return Right(count);
     } on ServerException catch (e) {
+      print('[MessageRepositoryImpl] getUnreadCount ServerException: ${e.message}');
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred: $e'));
+      print('[MessageRepositoryImpl] getUnreadCount unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }
 }

@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import '../../infrastructure/data_sources/firebase_auth_data_source.dart';
+import '../../infrastructure/data_sources/firebase_comment_data_source.dart';
 import '../../infrastructure/data_sources/firebase_post_data_source.dart';
 import '../../infrastructure/data_sources/firebase_storage_data_source.dart';
 import '../../infrastructure/data_sources/firebase_user_data_source.dart';
@@ -15,6 +16,7 @@ import '../../infrastructure/data_sources/firebase_message_data_source.dart';
 import '../../infrastructure/data_sources/local_preference_data_source.dart';
 import '../../infrastructure/data_sources/local_task_data_source.dart';
 import '../../infrastructure/repositories/auth_repository_impl.dart';
+import '../../infrastructure/repositories/comment_repository_impl.dart';
 import '../../infrastructure/repositories/post_repository_impl.dart';
 import '../../infrastructure/repositories/task_repository_impl.dart';
 import '../../infrastructure/repositories/user_preference_repository_impl.dart';
@@ -22,6 +24,7 @@ import '../../infrastructure/repositories/user_repository_impl.dart';
 import '../../infrastructure/repositories/message_repository_impl.dart';
 import '../../infrastructure/repositories/favorite_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/comment_repository.dart';
 import '../../domain/repositories/post_repository.dart';
 import '../../domain/repositories/task_repository.dart';
 import '../../domain/repositories/user_preference_repository.dart';
@@ -35,6 +38,8 @@ import '../../application/use_cases/user/create_user.dart';
 import '../../application/use_cases/user/delete_user.dart';
 import '../../application/use_cases/user/get_user.dart';
 import '../../application/use_cases/user/update_user.dart';
+import '../../application/use_cases/comment/create_comment.dart';
+import '../../application/use_cases/comment/get_comments_for_post.dart';
 import '../../application/use_cases/post/create_post.dart';
 import '../../application/use_cases/post/delete_post.dart';
 import '../../application/use_cases/post/get_post.dart';
@@ -48,6 +53,8 @@ import '../../application/use_cases/tasks/delete_task.dart';
 import '../../application/use_cases/tasks/get_tasks.dart';
 import '../../application/use_cases/tasks/update_task.dart';
 import '../../presentation/state/auth/auth_bloc.dart';
+import '../../presentation/state/comment/comment_bloc.dart';
+import '../../presentation/state/comment_count/comment_count_bloc.dart';
 import '../../presentation/state/post/post_bloc.dart';
 import '../../presentation/state/manage/manage_bloc.dart';
 import '../../presentation/state/account/account_bloc.dart';
@@ -67,6 +74,9 @@ Future<void> init() async {
   // Firebase data sources
   sl.registerLazySingleton<FirebaseAuthDataSource>(
     () => FirebaseAuthDataSourceImpl(firebaseAuth: sl()),
+  );
+  sl.registerLazySingleton<FirebaseCommentDataSource>(
+    () => FirebaseCommentDataSourceImpl(firestore: sl()),
   );
   sl.registerLazySingleton<FirebasePostDataSource>(
     () => FirebasePostDataSourceImpl(firestore: sl()),
@@ -104,6 +114,9 @@ Future<void> init() async {
   sl.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(firebaseDataSource: sl()),
   );
+  sl.registerLazySingleton<CommentRepository>(
+    () => CommentRepositoryImpl(dataSource: sl()),
+  );
   sl.registerLazySingleton<PostRepository>(
     () => PostRepositoryImpl(firebaseDataSource: sl()),
   );
@@ -131,6 +144,10 @@ Future<void> init() async {
   sl.registerFactory(() => UpdateUser(sl()));
   sl.registerFactory(() => DeleteUser(sl()));
   
+  // Use cases - Comment
+  sl.registerFactory(() => GetCommentsForPost(sl()));
+  sl.registerFactory(() => CreateComment(sl()));
+
   // Use cases - Post
   sl.registerFactory(() => GetPosts(sl()));
   sl.registerFactory(() => GetPost(sl()));
@@ -151,6 +168,12 @@ Future<void> init() async {
   
   // BLoCs
   sl.registerFactory(() => AuthBloc(authRepository: sl()));
+  sl.registerFactory(() => CommentBloc(
+        commentRepository: sl(),
+      ));
+  sl.registerFactory(() => CommentCountBloc(
+        commentRepository: sl(),
+      ));
   sl.registerFactory(() => PostBloc(
         postRepository: sl(),
         authRepository: sl(),

@@ -32,25 +32,35 @@ class _AuthScreenState extends State<AuthScreen> {
       appBar: AppBar(
         title: Text(_isSignUp ? 'Sign Up' : 'Sign In'),
       ),
-      body: BlocListener<AuthBloc, AuthState>(
+      body: SafeArea(
+        child: BlocConsumer<AuthBloc, AuthState>(
+        listenWhen: (prev, curr) =>
+            curr.errorMessage != null ||
+            curr.user != null ||
+            curr.passwordResetEmail != null ||
+            curr.emailVerificationSent,
         listener: (context, state) {
-          if (state is AuthError) {
+          if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
+                content: Text(state.errorMessage!),
                 backgroundColor: Colors.red,
               ),
             );
-          } else if (state is AuthAuthenticated) {
+          }
+          if (state.user != null) {
             Navigator.of(context).pushReplacementNamed('/home');
-          } else if (state is AuthPasswordResetSent) {
+          }
+          if (state.passwordResetEmail != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Password reset email sent to ${state.email}'),
+                content: Text(
+                    'Password reset email sent to ${state.passwordResetEmail}'),
                 backgroundColor: Colors.green,
               ),
             );
-          } else if (state is AuthEmailVerificationSent) {
+          }
+          if (state.emailVerificationSent) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Email verification sent'),
@@ -59,8 +69,9 @@ class _AuthScreenState extends State<AuthScreen> {
             );
           }
         },
-        child: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
+        buildWhen: (prev, curr) =>
+            prev?.isLoading != curr.isLoading || prev?.user != curr.user,
+        builder: (context, state) {
             return Padding(
               padding: const EdgeInsets.all(16.0),
               child: Form(
@@ -118,8 +129,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: state is AuthLoading ? null : _submitForm,
-                        child: state is AuthLoading
+                        onPressed: state.isLoading ? null : _submitForm,
+                        child: state.isLoading
                             ? const CircularProgressIndicator()
                             : Text(_isSignUp ? 'Sign Up' : 'Sign In'),
                       ),
@@ -146,10 +157,10 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
             );
-          },
-        ),
+        },
       ),
-    );
+    ),
+  );
   }
 
   void _submitForm() {
@@ -160,7 +171,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
       if (_isSignUp) {
         context.read<AuthBloc>().add(
-              AuthSignUpRequested(
+              AuthEvent.signUpRequested(
                 email: email,
                 password: password,
                 displayName: displayName.isEmpty ? null : displayName,
@@ -168,7 +179,7 @@ class _AuthScreenState extends State<AuthScreen> {
             );
       } else {
         context.read<AuthBloc>().add(
-              AuthSignInRequested(
+              AuthEvent.signInRequested(
                 email: email,
                 password: password,
               ),
@@ -190,7 +201,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
 
     context.read<AuthBloc>().add(
-          AuthPasswordResetRequested(email: email),
+          AuthEvent.passwordResetRequested(email: email),
         );
   }
 }

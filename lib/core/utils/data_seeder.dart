@@ -7,7 +7,6 @@ import '../../infrastructure/models/user_model.dart';
 import '../../infrastructure/models/message_model.dart';
 import '../../infrastructure/models/drop_task_model.dart';
 import '../../infrastructure/models/user_preference_model.dart';
-import '../../infrastructure/models/message_model.dart'; // ConversationModel is in here
 import '../../domain/entities/post.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/drop_task.dart';

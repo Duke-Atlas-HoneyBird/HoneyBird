@@ -1,35 +1,13 @@
-import 'package:equatable/equatable.dart';
-import 'package:honey_bird/domain/entities/post.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../domain/entities/post.dart';
 
-/// Base class for Timeline events
-abstract class TimelineEvent extends Equatable {
-  const TimelineEvent();
+part 'timeline_event.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
-}
-
-/// Event to load timeline posts
-class LoadTimelinePosts extends TimelineEvent {
-  const LoadTimelinePosts();
-}
-
-/// Event to refresh timeline posts
-class RefreshTimelinePosts extends TimelineEvent {
-  const RefreshTimelinePosts();
-}
-
-/// Event to load more timeline posts (pagination)
-class LoadMoreTimelinePosts extends TimelineEvent {
-  const LoadMoreTimelinePosts();
-}
-
-// make a event to update TimelineLoaded if one post changes (e.g. like/unlike) without reloading all posts
-class UpdateTimelinePost extends TimelineEvent {
-  final Post post;
-
-  const UpdateTimelinePost(this.post);
-
-  @override
-  List<Object?> get props => [post];
+@freezed
+class TimelineEvent with _$TimelineEvent {
+  const factory TimelineEvent.loadTimelinePosts() = LoadTimelinePosts;
+  const factory TimelineEvent.refreshTimelinePosts() = RefreshTimelinePosts;
+  const factory TimelineEvent.loadMoreTimelinePosts() = LoadMoreTimelinePosts;
+  const factory TimelineEvent.updateTimelinePost(Post post) =
+      UpdateTimelinePost;
 }

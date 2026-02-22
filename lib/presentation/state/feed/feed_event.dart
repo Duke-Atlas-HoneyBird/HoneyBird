@@ -1,39 +1,14 @@
-import 'package:equatable/equatable.dart';
-import 'package:honey_bird/domain/entities/post.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../domain/entities/post.dart';
 
-/// Base class for Feed events
-abstract class FeedEvent extends Equatable {
-  const FeedEvent();
+part 'feed_event.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
-}
-
-/// Event to load feed posts
-class LoadFeedPosts extends FeedEvent {
-  const LoadFeedPosts();
-}
-
-/// Event to refresh feed posts
-class RefreshFeedPosts extends FeedEvent {
-  const RefreshFeedPosts();
-}
-
-/// Event to filter feed by category
-class FilterFeedByCategory extends FeedEvent {
-  final String category;
-
-  const FilterFeedByCategory(this.category);
-
-  @override
-  List<Object?> get props => [category];
-}
-
-class AddOrUpdatePostToFeed extends FeedEvent {
-  final Post post;
-
-  const AddOrUpdatePostToFeed(this.post);
-
-  @override
-  List<Object?> get props => [post];
+@freezed
+class FeedEvent with _$FeedEvent {
+  const factory FeedEvent.loadFeedPosts() = LoadFeedPosts;
+  const factory FeedEvent.refreshFeedPosts() = RefreshFeedPosts;
+  const factory FeedEvent.filterFeedByCategory(String category) =
+      FilterFeedByCategory;
+  const factory FeedEvent.addOrUpdatePostToFeed(Post post) =
+      AddOrUpdatePostToFeed;
 }

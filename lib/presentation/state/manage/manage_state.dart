@@ -1,41 +1,13 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../domain/entities/drop_task.dart';
 
-/// Base class for Manage states
-abstract class ManageState extends Equatable {
-  const ManageState();
+part 'manage_state.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
+@freezed
+class ManageState with _$ManageState {
+  const factory ManageState({
+    @Default(false) bool isLoading,
+    @Default([]) List<DropTask> tasks,
+    String? errorMessage,
+  }) = _ManageState;
 }
-
-/// Initial state
-class ManageInitial extends ManageState {
-  const ManageInitial();
-}
-
-/// Loading state
-class ManageLoading extends ManageState {
-  const ManageLoading();
-}
-
-/// Loaded state with tasks
-class ManageLoaded extends ManageState {
-  final List<DropTask> tasks;
-
-  const ManageLoaded({required this.tasks});
-
-  @override
-  List<Object?> get props => [tasks];
-}
-
-/// Error state
-class ManageError extends ManageState {
-  final String message;
-
-  const ManageError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
-

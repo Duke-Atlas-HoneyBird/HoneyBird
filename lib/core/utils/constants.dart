@@ -7,6 +7,7 @@ class FirebaseCollections {
   static const String favorites = 'favorites';
   static const String preferences = 'preferences';
   static const String conversations = 'conversations';
+  static const String comments = 'comments';
 }
 
 /// Firebase storage paths

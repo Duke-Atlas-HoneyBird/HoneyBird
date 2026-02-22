@@ -60,8 +60,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
     if (!_hasRequestedLoad) {
       _hasRequestedLoad = true;
       final authState = context.read<AuthBloc>().state;
-      final userUID = authState is AuthAuthenticated ? authState.user.uid : '';
-      context.read<MessagesBloc>().add(LoadConversations(userUID));
+      final userUID = authState.user?.uid ?? '';
+      context.read<MessagesBloc>().add(MessagesEvent.loadConversations(userUID));
     }
   }
 
@@ -74,10 +74,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
-    String userUID = '';
-    if (authState is AuthAuthenticated) {
-      userUID = authState.user.uid;
-    }
+    final userUID = authState.user?.uid ?? '';
 
     return Container(
       decoration: const BoxDecoration(
@@ -100,13 +97,27 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   )
                 : null,
           ),
-          body: BlocBuilder<MessagesBloc, MessagesState>(
+          body: SafeArea(
+            child: BlocConsumer<MessagesBloc, MessagesState>(
+            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
+            listener: (context, state) {
+              if (state.errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.errorMessage!)),
+                );
+              }
+            },
+            buildWhen: (prev, curr) =>
+                prev?.conversations != curr.conversations ||
+                prev?.messages != curr.messages ||
+                prev?.isLoading != curr.isLoading ||
+                prev?.errorMessage != curr.errorMessage,
             builder: (context, state) {
               if (_selectedConversationId != null) {
                 return _buildConversationView(context, _selectedConversationId!, userUID);
               }
 
-              if (state is MessagesLoading) {
+              if (state.isLoading && state.conversations.isEmpty) {
                 return Center(
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onBackground),
@@ -114,7 +125,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 );
               }
 
-              if (state is MessagesError) {
+              if (state.errorMessage != null && state.conversations.isEmpty) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(spacingL),
@@ -132,14 +143,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ),
                         const SizedBox(height: spacingS),
                         Text(
-                          state.message,
+                          state.errorMessage!,
                           style: bodyLarge,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            context.read<MessagesBloc>().add(LoadConversations(userUID));
+                            context.read<MessagesBloc>().add(MessagesEvent.loadConversations(userUID));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
@@ -157,16 +168,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 );
               }
 
-              if (state is ConversationsLoaded) {
+              if (state.conversations.isNotEmpty || !state.isLoading) {
                 if (state.conversations.isEmpty) {
                   return _NoMessagesYetWidget(
-                    onRetry: () => context.read<MessagesBloc>().add(LoadConversations(userUID)),
+                    onRetry: () => context.read<MessagesBloc>().add(MessagesEvent.loadConversations(userUID)),
                   );
                 }
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<MessagesBloc>().add(RefreshConversations(userUID));
+                    context.read<MessagesBloc>().add(MessagesEvent.refreshConversations(userUID));
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
                   color: accentPink,
@@ -182,8 +193,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             _selectedConversationId = conversation.id;
                             _selectedConversation = conversation;
                           });
-                          context.read<MessagesBloc>().add(LoadMessages(conversation.id));
-                          context.read<MessagesBloc>().add(MarkAsRead(
+                          context.read<MessagesBloc>().add(MessagesEvent.loadMessages(conversation.id));
+                          context.read<MessagesBloc>().add(MessagesEvent.markAsRead(
                                 conversationId: conversation.id,
                                 userUID: userUID,
                               ));
@@ -201,6 +212,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               );
             },
           ),
+          ),
           bottomNavigationBar: BottomNavigationWidget(
             currentIndex: _currentTabIndex,
             onTabSelected: _handleTabSelected,
@@ -212,8 +224,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget _buildConversationView(BuildContext context, String conversationId, String userUID) {
     final conversation = _selectedConversation;
     return BlocBuilder<MessagesBloc, MessagesState>(
+      buildWhen: (prev, curr) =>
+          prev?.messages != curr.messages ||
+          prev?.conversationId != curr.conversationId ||
+          prev?.isLoading != curr.isLoading,
       builder: (context, state) {
-        if (state is MessagesLoading) {
+        if (state.isLoading && state.messages.isEmpty) {
           return const Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -221,7 +237,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           );
         }
 
-        if (state is MessagesLoaded && state.conversationId == conversationId) {
+        if (state.conversationId == conversationId) {
           String otherUID;
           String otherName;
           if (conversation != null) {
@@ -272,9 +288,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   String _senderDisplayName(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    if (authState is AuthAuthenticated) {
-      return authState.user.displayName ?? authState.user.email.split('@').first;
+    final user = context.read<AuthBloc>().state.user;
+    if (user != null) {
+      return user.displayName ?? user.email.split('@').first;
     }
     return 'You';
   }
@@ -364,7 +380,7 @@ class _MessageInputBarState extends State<_MessageInputBar> {
                 content: text,
                 timestamp: DateTime.now(),
               );
-              context.read<MessagesBloc>().add(SendMessage(message, conversationId: widget.conversationId));
+              context.read<MessagesBloc>().add(MessagesEvent.sendMessage(message, conversationId: widget.conversationId));
               _controller.clear();
             },
           ),
