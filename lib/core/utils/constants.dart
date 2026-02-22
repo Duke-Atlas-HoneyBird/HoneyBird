@@ -8,6 +8,7 @@ class FirebaseCollections {
   static const String preferences = 'preferences';
   static const String conversations = 'conversations';
   static const String comments = 'comments';
+  static const String blocked = 'blocked';
 }
 
 /// Firebase storage paths
@@ -28,4 +29,8 @@ class AppConstants {
 class StorageKeys {
   static const String tasks = 'tasks';
   static const String userPreferences = 'user_preferences';
+  /// Set when user completes onboarding. Wiped on app uninstall = fresh start.
+  static const String hasCompletedOnboardingThisInstall = 'has_completed_onboarding_this_install';
+  /// Set on first app launch. If missing = fresh install → sign out to clear any Keychain-persisted auth.
+  static const String appHasLaunchedBefore = 'app_has_launched_before';
 }

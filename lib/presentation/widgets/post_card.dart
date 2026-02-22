@@ -18,6 +18,8 @@ class PostCard extends StatelessWidget {
   final VoidCallback onLike;
   /// Called when user taps comment — opens comments sheet when provided.
   final VoidCallback? onComment;
+  /// Called when user taps author name/avatar — opens their profile.
+  final void Function(String userUID, String userName)? onAuthorTap;
   /// Current user's UID — if in [post.likeIDs], star is filled.
   final String? currentUserUID;
   /// Number of comments to show on the comment button (defaults to 0).
@@ -28,6 +30,7 @@ class PostCard extends StatelessWidget {
     required this.post,
     required this.onLike,
     this.onComment,
+    this.onAuthorTap,
     this.currentUserUID,
     this.commentCount = 0,
   });
@@ -61,36 +64,45 @@ class PostCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User info and date
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: primaryPurple,
-                  child: Text(
-                    post.userName.isNotEmpty ? post.userName[0].toUpperCase() : '?',
-                    style: labelLarge.copyWith(
-                      color: Colors.white,
+            // User info and date — tappable to view profile
+            InkWell(
+              onTap: onAuthorTap != null && post.userUID.isNotEmpty
+                  ? () {
+                      HapticFeedback.lightImpact();
+                      onAuthorTap!(post.userUID, post.userName);
+                    }
+                  : null,
+              borderRadius: BorderRadius.circular(buttonBorderRadius),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: primaryPurple,
+                    child: Text(
+                      post.userName.isNotEmpty ? post.userName[0].toUpperCase() : '?',
+                      style: labelLarge.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: spacingS),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post.userName,
-                        style: labelLarge,
-                      ),
-                      Text(
-                        _formatDate(post.publishedDate),
-                        style: bodyMedium,
-                      ),
-                    ],
+                  const SizedBox(width: spacingS),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.userName,
+                          style: labelLarge,
+                        ),
+                        Text(
+                          _formatDate(post.publishedDate),
+                          style: bodyMedium,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: spacingM),
             

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/di/injection.dart';
-import '../../application/use_cases/preferences/get_preferences.dart';
-import '../state/auth/auth_bloc.dart';
-import '../state/auth/auth_state.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_state.dart';
+import '../bloc/account/account_bloc.dart';
+import '../bloc/account/account_event.dart';
+import '../bloc/account/account_state.dart';
 import '../screens/home_screen.dart';
 import '../screens/onboarding_screen.dart';
 
@@ -17,32 +18,20 @@ class PostAuthGate extends StatefulWidget {
 }
 
 class _PostAuthGateState extends State<PostAuthGate> {
-  bool? _hasPreferences;
-  bool _loading = true;
+  bool _hasRequestedCheck = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_loading) {
-      _checkPreferences();
+    if (!_hasRequestedCheck) {
+      final authState = context.read<AuthBloc>().state;
+      if (authState.user != null) {
+        _hasRequestedCheck = true;
+        context
+            .read<AccountBloc>()
+            .add(AccountEvent.checkOnboardingStatus(authState.user!.uid));
+      }
     }
-  }
-
-  Future<void> _checkPreferences() async {
-    final authState = context.read<AuthBloc>().state;
-    if (authState.user == null) {
-      if (mounted) setState(() => _loading = false);
-      return;
-    }
-
-    final result = await sl<GetPreferences>().call(authState.user!.uid);
-
-    if (!mounted) return;
-
-    setState(() {
-      _loading = false;
-      _hasPreferences = result.isRight();
-    });
   }
 
   @override
@@ -52,20 +41,27 @@ class _PostAuthGateState extends State<PostAuthGate> {
       return const SizedBox.shrink();
     }
 
-    if (_loading) {
-      return const Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
-    }
+    return BlocBuilder<AccountBloc, AccountState>(
+      buildWhen: (prev, curr) =>
+          prev?.hasCompletedOnboarding != curr.hasCompletedOnboarding ||
+          prev?.isLoading != curr.isLoading,
+      builder: (context, accountState) {
+        if (accountState.isLoading && accountState.hasCompletedOnboarding == null) {
+          return const Scaffold(
+            body: SafeArea(
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          );
+        }
 
-    if (_hasPreferences == true) {
-      return const HomeScreen();
-    }
+        if (accountState.hasCompletedOnboarding == true) {
+          return const HomeScreen();
+        }
 
-    return OnboardingScreen(userId: authState.user!.uid);
+        return OnboardingScreen(userId: authState.user!.uid);
+      },
+    );
   }
 }

@@ -4,13 +4,16 @@ import '../theme/colours.dart';
 import '../theme/text_styles.dart';
 import '../theme/spacing.dart';
 import '../widgets/bottom_navigation_widget.dart';
-import '../state/account/account_bloc.dart';
-import '../state/account/account_event.dart';
-import '../state/account/account_state.dart';
+import '../bloc/account/account_bloc.dart';
+import '../bloc/account/account_event.dart';
+import '../bloc/account/account_state.dart';
+import '../bloc/messages/messages_bloc.dart';
+import '../bloc/messages/messages_event.dart';
+import '../bloc/messages/messages_state.dart';
 
 import '../../core/di/injection.dart';
-import '../state/auth/auth_bloc.dart';
-import '../state/auth/auth_state.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_state.dart';
 
 /// Account screen for managing user account settings
 class AccountScreen extends StatefulWidget {
@@ -23,6 +26,7 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   int _currentTabIndex = 2;
   bool _hasRequestedLoad = false;
+  bool _hasRequestedUnreadCount = false;
 
   void _handleTabSelected(int index) {
     if (_currentTabIndex == index) {
@@ -57,6 +61,13 @@ class _AccountScreenState extends State<AccountScreen> {
       final authState = context.read<AuthBloc>().state;
       final userUID = authState.user?.uid ?? '';
       context.read<AccountBloc>().add(AccountEvent.loadAccountData(userUID));
+    }
+    if (!_hasRequestedUnreadCount) {
+      _hasRequestedUnreadCount = true;
+      final userUID = context.read<AuthBloc>().state.user?.uid ?? '';
+      if (userUID.isNotEmpty) {
+        context.read<MessagesBloc>().add(MessagesEvent.loadUnreadCount(userUID));
+      }
     }
   }
 
@@ -112,23 +123,23 @@ class _AccountScreenState extends State<AccountScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
                           size: 64,
-                          color: Colors.white,
+                          color: textPrimary,
                         ),
                         const SizedBox(height: spacingM),
                         Text(
                           'Error',
                           style: headlineMedium.copyWith(
-                            color: Colors.white,
+                            color: textPrimary,
                           ),
                         ),
                         const SizedBox(height: spacingS),
                         Text(
                           state.errorMessage!,
                           style: bodyLarge.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -141,7 +152,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentPink,
-                            foregroundColor: Colors.white,
+                            foregroundColor: surfaceColor,
                             padding: const EdgeInsets.symmetric(
                               horizontal: spacingL,
                               vertical: spacingM,
@@ -440,6 +451,77 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                         ),
 
+                        // Privacy / Visibility Section
+                        const SizedBox(height: spacingM),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(spacingM),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'What others can see',
+                                  style: Theme.of(context).textTheme.headlineMedium,
+                                ),
+                                const SizedBox(height: spacingS),
+                                Text(
+                                  'Control what appears when others view your profile.',
+                                  style: bodyMedium.copyWith(color: textSecondary),
+                                ),
+                                const SizedBox(height: spacingM),
+                                _buildPreferenceChip(
+                                  context,
+                                  'Profile (name, avatar)',
+                                  preferences.showProfileToOthers,
+                                  (value) {
+                                    context.read<AccountBloc>().add(
+                                          AccountEvent.updateUserPreferences(
+                                            preferences.copyWith(showProfileToOthers: value),
+                                          ),
+                                        );
+                                  },
+                                ),
+                                _buildPreferenceChip(
+                                  context,
+                                  'Bio',
+                                  preferences.showBioToOthers,
+                                  (value) {
+                                    context.read<AccountBloc>().add(
+                                          AccountEvent.updateUserPreferences(
+                                            preferences.copyWith(showBioToOthers: value),
+                                          ),
+                                        );
+                                  },
+                                ),
+                                _buildPreferenceChip(
+                                  context,
+                                  'Email',
+                                  preferences.showEmailToOthers,
+                                  (value) {
+                                    context.read<AccountBloc>().add(
+                                          AccountEvent.updateUserPreferences(
+                                            preferences.copyWith(showEmailToOthers: value),
+                                          ),
+                                        );
+                                  },
+                                ),
+                                _buildPreferenceChip(
+                                  context,
+                                  'Dietary & experience preferences',
+                                  preferences.showPreferencesToOthers,
+                                  (value) {
+                                    context.read<AccountBloc>().add(
+                                          AccountEvent.updateUserPreferences(
+                                            preferences.copyWith(showPreferencesToOthers: value),
+                                          ),
+                                        );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
                         if (isSaving) ...[
                           const SizedBox(height: spacingM),
                           const Center(
@@ -454,15 +536,19 @@ class _AccountScreenState extends State<AccountScreen> {
 
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
                 ),
               );
             },
           ),
           ),
-          bottomNavigationBar: BottomNavigationWidget(
-            currentIndex: _currentTabIndex,
-            onTabSelected: _handleTabSelected,
+          bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
+            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+            builder: (context, messagesState) => BottomNavigationWidget(
+              currentIndex: _currentTabIndex,
+              onTabSelected: _handleTabSelected,
+              unreadMessageCount: messagesState.unreadCount,
+            ),
           ),
         ),
     

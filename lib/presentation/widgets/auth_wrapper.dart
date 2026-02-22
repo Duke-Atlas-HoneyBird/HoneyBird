@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../state/auth/auth_bloc.dart';
-import '../state/auth/auth_state.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_state.dart';
 import '../screens/auth_screen.dart';
 
 /// Wrapper widget that shows authentication screen or main content based on auth state

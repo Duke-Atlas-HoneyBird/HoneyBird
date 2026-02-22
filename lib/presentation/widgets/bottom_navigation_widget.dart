@@ -8,14 +8,18 @@ import '../theme/constants.dart';
 
 /// A custom bottom navigation bar with four tabs
 /// Includes haptic feedback on tab selection
+/// Optional unread message badge (capped at 99+) on Messages tab
 class BottomNavigationWidget extends StatelessWidget {
   final int currentIndex;
   final Function(int index) onTabSelected;
+  /// Unread message count for badge on Messages tab (index 3). Displayed as 99+ when > 99.
+  final int unreadMessageCount;
 
   const BottomNavigationWidget({
     super.key,
     required this.currentIndex,
     required this.onTabSelected,
+    this.unreadMessageCount = 0,
   });
 
   @override
@@ -55,9 +59,22 @@ class BottomNavigationWidget extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          icons[index],
-                          color: isActive ? selectedTab : unselectedTab,
+                        Badge(
+                          isLabelVisible: index == 3 && unreadMessageCount > 0,
+                          label: Text(
+                            unreadMessageCount > 99
+                                ? '99+'
+                                : unreadMessageCount.toString(),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          child: Icon(
+                            icons[index],
+                            color: isActive ? selectedTab : unselectedTab,
+                          ),
                         ),
                         const SizedBox(height: spacingXs),
                         Text(

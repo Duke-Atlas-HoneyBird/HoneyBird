@@ -60,6 +60,10 @@ class FirebaseMessageDataSourceImpl implements FirebaseMessageDataSource {
 
   @override
   Future<List<MessageModel>> getMessages(String conversationId) async {
+    return _getMessagesWithRetry(conversationId, retryCount: 0);
+  }
+
+  Future<List<MessageModel>> _getMessagesWithRetry(String conversationId, {required int retryCount}) async {
     try {
       final snapshot = await _conversations
           .doc(conversationId)
@@ -71,6 +75,11 @@ class FirebaseMessageDataSourceImpl implements FirebaseMessageDataSource {
           .map((doc) => MessageModel.fromJson(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
+      final errStr = e.toString();
+      if (errStr.contains('permission-denied') && retryCount < 1) {
+        await Future<void>.delayed(const Duration(milliseconds: 1500));
+        return _getMessagesWithRetry(conversationId, retryCount: retryCount + 1);
+      }
       print('Failed to get messages from Firestore: $e');
       throw ServerException('Failed to get messages from Firestore: $e');
     }
@@ -78,6 +87,10 @@ class FirebaseMessageDataSourceImpl implements FirebaseMessageDataSource {
 
   @override
   Future<MessageModel> sendMessage(MessageModel message, String? conversationId) async {
+    return _sendMessageWithRetry(message, conversationId, retryCount: 0);
+  }
+
+  Future<MessageModel> _sendMessageWithRetry(MessageModel message, String? conversationId, {required int retryCount}) async {
     try {
       String convId = conversationId ?? _generateConversationId(message.senderUID, message.receiverUID);
       
@@ -87,8 +100,7 @@ class FirebaseMessageDataSourceImpl implements FirebaseMessageDataSource {
       final msgDoc = _conversations.doc(convId).collection(FirebaseCollections.messages).doc(message.id);
       batch.set(msgDoc, message.toJson());
       
-      // 2. Update/Create conversation overview
-      final convDoc = _conversations.doc(convId);
+      // 2. Update/Create conversation overview - ensure participants array for rules
       final convData = ConversationModel(
         id: convId,
         participant1UID: message.senderUID,
@@ -97,14 +109,18 @@ class FirebaseMessageDataSourceImpl implements FirebaseMessageDataSource {
         participant2Name: message.receiverName,
         lastMessage: message,
         lastUpdated: message.timestamp,
-        unreadCount: 1, // This is simplified, real logic would increment if recipient
+        unreadCount: 1,
       );
-      
-      batch.set(convDoc, convData.toJson(), SetOptions(merge: true));
+      batch.set(_conversations.doc(convId), convData.toJson(), SetOptions(merge: true));
       
       await batch.commit();
       return message;
     } catch (e) {
+      final errStr = e.toString();
+      if (errStr.contains('permission-denied') && retryCount < 1) {
+        await Future<void>.delayed(const Duration(milliseconds: 1500));
+        return _sendMessageWithRetry(message, conversationId, retryCount: retryCount + 1);
+      }
       throw ServerException('Failed to send message in Firestore: $e');
     }
   }

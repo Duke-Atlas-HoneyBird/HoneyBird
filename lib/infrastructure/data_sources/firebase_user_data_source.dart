@@ -5,11 +5,18 @@ import '../models/user_model.dart';
 
 /// Abstract interface for Firebase user data operations
 abstract class FirebaseUserDataSource {
-  /// Retrieves a user from Firestore by user ID
+  /// Retrieves a user from Firestore by document ID
   Future<UserModel> getUser(String userId);
+
+  /// Retrieves a user from Firestore by Firebase Auth UID (userUID field)
+  Future<UserModel> getUserByUID(String userUID);
 
   /// Creates a new user in Firestore
   Future<UserModel> createUser(UserModel user);
+
+  /// Creates a user with a specific document ID (e.g. Firebase Auth UID).
+  /// Used for sign-up so doc ID matches auth.uid for Firestore rules.
+  Future<UserModel> createUserWithId(String docId, UserModel user);
 
   /// Updates an existing user in Firestore
   Future<UserModel> updateUser(UserModel user);
@@ -44,9 +51,53 @@ class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
 
       return UserModel.fromJson({...data, 'id': doc.id});
     } on FirebaseException catch (e) {
+      throw ServerException('Firebase error getting user by UID: ${e.message ?? e.code}');
+    } catch (e) {
+      throw ServerException('Failed to get user: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<UserModel> getUserByUID(String userUID) async {
+    try {
+      // Try direct doc lookup first (users are often stored with doc ID = Auth UID)
+      final docRef = _firestore
+          .collection(FirebaseCollections.users)
+          .doc(userUID);
+      final directDoc = await docRef.get();
+
+      if (directDoc.exists) {
+        final data = directDoc.data();
+        if (data == null) {
+          throw ServerException('User data is null for UID: $userUID');
+        }
+        return UserModel.fromJson({...data, 'id': directDoc.id});
+      }
+
+      // Fallback: query by userUID field (for users with auto-generated doc IDs)
+      final query = await _firestore
+          .collection(FirebaseCollections.users)
+          .where('userUID', isEqualTo: userUID)
+          .limit(1)
+          .get();
+
+      if (query.docs.isEmpty) {
+        throw ServerException('User not found with UID: $userUID');
+      }
+
+      final doc = query.docs.first;
+      final data = doc.data();
+      if (data == null) {
+        throw ServerException('User data is null for UID: $userUID');
+      }
+
+      return UserModel.fromJson({...data, 'id': doc.id});
+    } on ServerException {
+      rethrow;
+    } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
-      throw ServerException('Failed to get user: $e');
+      throw ServerException('Failed to get user by UID: ${e.toString()}');
     }
   }
 
@@ -68,7 +119,30 @@ class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
-      throw ServerException('Failed to create user: $e');
+      throw ServerException('Failed to create user: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<UserModel> createUserWithId(String docId, UserModel user) async {
+    try {
+      final docRef =
+          _firestore.collection(FirebaseCollections.users).doc(docId);
+      final userWithId = UserModel(
+        id: docId,
+        userName: user.userName,
+        userBio: user.userBio,
+        userBioLink: user.userBioLink,
+        userUID: user.userUID,
+        userEmail: user.userEmail,
+      );
+
+      await docRef.set(userWithId.toJson());
+      return userWithId;
+    } on FirebaseException catch (e) {
+      throw ServerException('Firebase error: ${e.message ?? e.code}');
+    } catch (e) {
+      throw ServerException('Failed to create user: ${e.toString()}');
     }
   }
 
@@ -88,7 +162,7 @@ class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
-      throw ServerException('Failed to update user: $e');
+      throw ServerException('Failed to update user: ${e.toString()}');
     }
   }
 
@@ -102,7 +176,7 @@ class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
-      throw ServerException('Failed to delete user: $e');
+      throw ServerException('Failed to delete user: ${e.toString()}');
     }
   }
 }

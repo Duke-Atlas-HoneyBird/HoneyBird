@@ -81,7 +81,7 @@ class SideMenuDrawer extends StatelessWidget {
                 child: Text(
                   'HoneyBird v2.0.0',
                   style: bodyMedium.copyWith(
-                    color: Colors.white70,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
               ),

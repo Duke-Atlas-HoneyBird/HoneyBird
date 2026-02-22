@@ -1,14 +1,25 @@
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/auth_user.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/entities/user_preference.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/user_repository.dart';
+import '../../domain/repositories/user_preference_repository.dart';
 import '../../core/error/failures.dart';
 import '../data_sources/firebase_auth_data_source.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuthDataSource _authDataSource;
+  final UserRepository _userRepository;
+  final UserPreferenceRepository _preferenceRepository;
 
-  AuthRepositoryImpl({required FirebaseAuthDataSource authDataSource})
-      : _authDataSource = authDataSource;
+  AuthRepositoryImpl({
+    required FirebaseAuthDataSource authDataSource,
+    required UserRepository userRepository,
+    required UserPreferenceRepository preferenceRepository,
+  })  : _authDataSource = authDataSource,
+        _userRepository = userRepository,
+        _preferenceRepository = preferenceRepository;
 
   @override
   Future<Either<Failure, AuthUser?>> getCurrentUser() async {
@@ -50,7 +61,35 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
         displayName: displayName,
       );
-      return Right(userModel.toDomain());
+      final authUser = userModel.toDomain();
+      final userUID = authUser.uid;
+      final userName = displayName?.trim().isNotEmpty == true
+          ? displayName!.trim()
+          : email.split('@').first;
+
+      // Create User document in Firestore (doc ID = auth UID)
+      final user = User(
+        userName: userName,
+        userBio: '',
+        userBioLink: '',
+        userUID: userUID,
+        userEmail: email,
+      );
+      final userResult = await _userRepository.createUserWithId(userUID, user);
+      userResult.fold(
+        (e) => print('[AuthRepositoryImpl] createUser failed: $e'),
+        (_) {},
+      );
+
+      // Create default UserPreference in Firestore
+      final preferences = UserPreference(id: userUID);
+      final prefResult = await _preferenceRepository.savePreferences(preferences);
+      prefResult.fold(
+        (e) => print('[AuthRepositoryImpl] savePreferences failed: $e'),
+        (_) {},
+      );
+
+      return Right(authUser);
     } catch (e) {
       print('[AuthRepositoryImpl] signUpWithEmailAndPassword: ${e.toString()}');
       return Left(ServerFailure(e.toString()));

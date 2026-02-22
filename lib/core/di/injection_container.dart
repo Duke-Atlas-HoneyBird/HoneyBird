@@ -21,7 +21,7 @@ import '../../application/use_cases/auth/sign_up_use_case.dart';
 import '../../application/use_cases/auth/sign_out_use_case.dart';
 
 // BLoCs
-import '../../presentation/state/auth/auth_bloc.dart';
+import '../../presentation/bloc/auth/auth_bloc.dart';
 
 final sl = GetIt.instance;
 

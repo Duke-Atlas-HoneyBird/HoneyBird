@@ -1,0 +1,56 @@
+---
+description: Bloc architecture - UI only via events, Blocs use repositories
+globs: lib/presentation/**/*.dart
+alwaysApply: false
+---
+
+# Bloc architecture
+
+## Data flow
+
+1. **UI → Bloc (events)** – UI interacts ONLY with Blocs via events (`bloc.add(Event)`).
+2. **Bloc → Repositories** – Blocs depend on and call repositories. A Bloc may use one or more repositories.
+3. **Bloc → UI (state)** – UI listens to state via `BlocBuilder`, `BlocListener`, or `BlocConsumer` and rebuilds.
+
+## Rules
+
+- UI must **never** import or call repositories, use cases, or data sources directly.
+- All data operations go through Blocs: dispatch events, react to state.
+- Blocs may depend on multiple repositories.
+- Use `context.read<Bloc>().add(Event)` to dispatch; use `BlocBuilder`/`BlocListener` to react.
+
+## ❌ Violations
+
+```dart
+// BAD: UI calling repository
+import 'domain/repositories/favorite_repository.dart';
+final repo = sl<FavoriteRepository>();
+await repo.addToFavorites(postId, userId);
+
+// BAD: UI calling use case
+import 'application/use_cases/post/like_post.dart';
+await sl<LikePost>().call(postId, userId);
+
+// BAD: UI using FutureBuilder with GetPosts
+PostFeedWidget(getPosts: sl<GetPosts>(), ...)
+```
+
+## ✅ Correct
+
+```dart
+// GOOD: Dispatch to Bloc
+context.read<FeedBloc>().add(FeedEvent.likePostInFeed(
+  postId: postId,
+  userUID: userId,
+));
+
+// GOOD: React to state
+BlocBuilder<FeedBloc, FeedState>(
+  builder: (context, state) => PostFeedWidget(
+    posts: state.posts,
+    onLike: (id, uid) => context.read<FeedBloc>().add(
+      FeedEvent.likePostInFeed(postId: id, userUID: uid),
+    ),
+  ),
+)
+```
