@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../core/di/injection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/utils/snackbar_utils.dart';
-import '../../application/use_cases/preferences/save_preferences.dart';
 import '../../domain/entities/user_preference.dart';
+import '../bloc/account/account_bloc.dart';
+import '../bloc/account/account_event.dart';
+import '../bloc/account/account_state.dart';
 import '../theme/colours.dart';
 import '../theme/spacing.dart';
 import '../theme/text_styles.dart';
@@ -26,7 +28,6 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   late PageController _pageController;
   int _currentPage = 0;
-  bool _isSaving = false;
 
   late UserPreference _prefs;
 
@@ -58,44 +59,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  Future<void> _complete() async {
+  void _complete() {
     HapticFeedback.mediumImpact();
-    setState(() {
-      _isSaving = true;
-    });
-
-    final result = await sl<SavePreferences>().call(_prefs);
-
-    if (!mounted) return;
-
-    setState(() {
-      _isSaving = false;
-    });
-
-    result.fold(
-      (failure) {
-        SnackBarUtils.showError(
-          context,
-          'Could not save preferences. Try again.',
+    context.read<AccountBloc>().add(
+          AccountEvent.updateUserPreferences(_prefs, markOnboardingComplete: true),
         );
-      },
-      (_) {
-        Navigator.of(context).pushReplacementNamed('/home');
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: backgroundGradient,
-      ),
-      child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: spacingL),
+    return BlocListener<AccountBloc, AccountState>(
+      listenWhen: (prev, curr) =>
+          (prev?.isSaving == true && curr.isSaving == false) ||
+          (prev?.errorMessage != curr.errorMessage && curr.errorMessage != null),
+      listener: (context, state) {
+        if (state.errorMessage != null && !state.isSaving) {
+          SnackBarUtils.showError(
+            context,
+            'Could not save preferences. Try again.',
+          );
+          return;
+        }
+        // Save completed successfully (was saving, now done, no error)
+        if (!state.isSaving && state.errorMessage == null) {
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: backgroundGradient,
+        ),
+        child: Scaffold(
+          body: SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: spacingL),
               Text(
                 'Tell us about your taste',
                 style: headlineMedium.copyWith(
@@ -145,20 +143,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(spacingL, 0, spacingL, spacingL),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : _next,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accentPink,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: spacingM),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(buttonBorderRadius),
-                      ),
-                      minimumSize: const Size.fromHeight(48),
-                    ),
-                    child: _isSaving
+                child: BlocBuilder<AccountBloc, AccountState>(
+                  buildWhen: (prev, curr) => prev?.isSaving != curr.isSaving,
+                  builder: (context, state) {
+                    final isSaving = state.isSaving;
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isSaving ? null : _next,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentPink,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: spacingM),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(buttonBorderRadius),
+                          ),
+                          minimumSize: const Size.fromHeight(48),
+                        ),
+                        child: isSaving
                         ? const SizedBox(
                             height: 22,
                             width: 22,
@@ -167,17 +169,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
-                        : Text(
-                            _currentPage < 2 ? 'Next' : 'Get started',
-                            style: labelLarge.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                  ),
+                            : Text(
+                                _currentPage < 2 ? 'Next' : 'Get started',
+                                style: labelLarge.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                    );
+                  },
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -13,6 +13,7 @@ import '../../infrastructure/data_sources/firebase_favorite_data_source.dart';
 import '../../infrastructure/data_sources/firebase_task_data_source.dart';
 import '../../infrastructure/data_sources/firebase_preference_data_source.dart';
 import '../../infrastructure/data_sources/firebase_message_data_source.dart';
+import '../../infrastructure/data_sources/firebase_block_data_source.dart';
 import '../../infrastructure/data_sources/local_preference_data_source.dart';
 import '../../infrastructure/data_sources/local_task_data_source.dart';
 import '../../infrastructure/repositories/auth_repository_impl.dart';
@@ -23,6 +24,8 @@ import '../../infrastructure/repositories/user_preference_repository_impl.dart';
 import '../../infrastructure/repositories/user_repository_impl.dart';
 import '../../infrastructure/repositories/message_repository_impl.dart';
 import '../../infrastructure/repositories/favorite_repository_impl.dart';
+import '../../infrastructure/repositories/block_repository_impl.dart';
+import '../../infrastructure/repositories/storage_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/comment_repository.dart';
 import '../../domain/repositories/post_repository.dart';
@@ -31,6 +34,8 @@ import '../../domain/repositories/user_preference_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/repositories/message_repository.dart';
 import '../../domain/repositories/favorite_repository.dart';
+import '../../domain/repositories/storage_repository.dart';
+import '../../domain/repositories/block_repository.dart';
 import '../../application/use_cases/auth/sign_in_use_case.dart';
 import '../../application/use_cases/auth/sign_up_use_case.dart';
 import '../../application/use_cases/auth/sign_out_use_case.dart';
@@ -52,13 +57,14 @@ import '../../application/use_cases/tasks/create_task.dart';
 import '../../application/use_cases/tasks/delete_task.dart';
 import '../../application/use_cases/tasks/get_tasks.dart';
 import '../../application/use_cases/tasks/update_task.dart';
-import '../../presentation/state/auth/auth_bloc.dart';
-import '../../presentation/state/comment/comment_bloc.dart';
-import '../../presentation/state/comment_count/comment_count_bloc.dart';
-import '../../presentation/state/post/post_bloc.dart';
-import '../../presentation/state/manage/manage_bloc.dart';
-import '../../presentation/state/account/account_bloc.dart';
-import '../../presentation/state/messages/messages_bloc.dart';
+import '../../presentation/bloc/auth/auth_bloc.dart';
+import '../../presentation/bloc/comment/comment_bloc.dart';
+import '../../presentation/bloc/comment_count/comment_count_bloc.dart';
+import '../../presentation/bloc/post/post_bloc.dart';
+import '../../presentation/bloc/manage/manage_bloc.dart';
+import '../../presentation/bloc/account/account_bloc.dart';
+import '../../presentation/bloc/messages/messages_bloc.dart';
+import '../../presentation/bloc/profile/profile_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -99,7 +105,10 @@ Future<void> init() async {
   sl.registerLazySingleton<FirebaseMessageDataSource>(
     () => FirebaseMessageDataSourceImpl(firestore: sl()),
   );
-  
+  sl.registerLazySingleton<FirebaseBlockDataSource>(
+    () => FirebaseBlockDataSourceImpl(firestore: sl()),
+  );
+
   sl.registerLazySingleton<LocalPreferenceDataSource>(
     () => LocalPreferenceDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
   );
@@ -109,7 +118,11 @@ Future<void> init() async {
   
   // Repositories - using Firebase data sources
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(authDataSource: sl()),
+    () => AuthRepositoryImpl(
+      authDataSource: sl(),
+      userRepository: sl(),
+      preferenceRepository: sl(),
+    ),
   );
   sl.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(firebaseDataSource: sl()),
@@ -132,7 +145,13 @@ Future<void> init() async {
   sl.registerLazySingleton<FavoriteRepository>(
     () => FavoriteRepositoryImpl(firebaseDataSource: sl()),
   );
-  
+  sl.registerLazySingleton<StorageRepository>(
+    () => StorageRepositoryImpl(dataSource: sl<FirebaseStorageDataSource>()),
+  );
+  sl.registerLazySingleton<BlockRepository>(
+    () => BlockRepositoryImpl(dataSource: sl<FirebaseBlockDataSource>()),
+  );
+
   // Use cases - Auth
   sl.registerFactory(() => SignInUseCase(authRepository: sl()));
   sl.registerFactory(() => SignUpUseCase(authRepository: sl()));
@@ -177,6 +196,7 @@ Future<void> init() async {
   sl.registerFactory(() => PostBloc(
         postRepository: sl(),
         authRepository: sl(),
+        storageRepository: sl(),
       ));
   sl.registerFactory(() => ManageBloc(
         getTasks: sl(),
@@ -187,8 +207,14 @@ Future<void> init() async {
   sl.registerFactory(() => AccountBloc(
         userRepository: sl(),
         preferenceRepository: sl(),
+        sharedPreferences: sl(),
       ));
   sl.registerFactory(() => MessagesBloc(
         messageRepository: sl(),
+      ));
+  sl.registerFactory(() => ProfileBloc(
+        userRepository: sl(),
+        preferenceRepository: sl(),
+        blockRepository: sl(),
       ));
 }

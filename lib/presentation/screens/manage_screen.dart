@@ -6,12 +6,14 @@ import '../theme/constants.dart';
 import '../theme/text_styles.dart';
 import '../theme/spacing.dart';
 import '../widgets/bottom_navigation_widget.dart';
-import '../state/account/account_bloc.dart';
-import '../state/account/account_event.dart';
-import '../state/account/account_state.dart';
+import '../bloc/account/account_bloc.dart';
+import '../bloc/account/account_event.dart';
+import '../bloc/account/account_state.dart';
+import '../bloc/messages/messages_bloc.dart';
+import '../bloc/messages/messages_state.dart';
 
-import '../state/auth/auth_bloc.dart';
-import '../state/auth/auth_state.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_state.dart';
 
 /// Manage screen for managing user preferences
 class ManageScreen extends StatefulWidget {
@@ -112,23 +114,23 @@ class _ManageScreenState extends State<ManageScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
                           size: 64,
-                          color: Colors.white,
+                          color: textPrimary,
                         ),
                         const SizedBox(height: spacingM),
                         Text(
                           'Error',
                           style: headlineMedium.copyWith(
-                            color: Colors.white,
+                            color: textPrimary,
                           ),
                         ),
                         const SizedBox(height: spacingS),
                         Text(
                           state.errorMessage!,
                           style: bodyLarge.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -139,7 +141,7 @@ class _ManageScreenState extends State<ManageScreen> {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentPink,
-                            foregroundColor: Colors.white,
+                            foregroundColor: surfaceColor,
                             padding: const EdgeInsets.symmetric(
                               horizontal: spacingL,
                               vertical: spacingM,
@@ -373,7 +375,7 @@ class _ManageScreenState extends State<ManageScreen> {
 
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
                 ),
               );
             },
@@ -390,9 +392,13 @@ class _ManageScreenState extends State<ManageScreen> {
             heroTag: 'manageCreateFAB',
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          bottomNavigationBar: BottomNavigationWidget(
-            currentIndex: _currentTabIndex,
-            onTabSelected: _handleTabSelected,
+          bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
+            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+            builder: (context, messagesState) => BottomNavigationWidget(
+              currentIndex: _currentTabIndex,
+              onTabSelected: _handleTabSelected,
+              unreadMessageCount: messagesState.unreadCount,
+            ),
           ),
         ),
     );

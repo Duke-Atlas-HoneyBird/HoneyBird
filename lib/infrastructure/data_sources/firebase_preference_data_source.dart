@@ -22,16 +22,29 @@ class FirebasePreferenceDataSourceImpl implements FirebasePreferenceDataSource {
 
   @override
   Future<UserPreferenceModel> getPreferences(String userId) async {
+    return _getPreferencesWithRetry(userId, retryCount: 0);
+  }
+
+  Future<UserPreferenceModel> _getPreferencesWithRetry(String userId, {required int retryCount}) async {
     try {
-      final doc = await _collection.doc(userId).get();
+      final docRef = _collection.doc(userId);
+      final doc = await docRef.get();
 
       if (!doc.exists) {
-        throw ServerException('No preferences found for user: $userId');
+        // Create default preferences for new users
+        final defaultPrefs = UserPreferenceModel(id: userId);
+        await docRef.set(defaultPrefs.toJson());
+        return defaultPrefs;
       }
 
       return UserPreferenceModel.fromJson(doc.data() as Map<String, dynamic>);
     } catch (e) {
       if (e is ServerException) rethrow;
+      final errStr = e.toString();
+      if (errStr.contains('permission-denied') && retryCount < 1) {
+        await Future<void>.delayed(const Duration(milliseconds: 1500));
+        return _getPreferencesWithRetry(userId, retryCount: retryCount + 1);
+      }
       throw ServerException('Failed to get preferences from Firestore: $e');
     }
   }

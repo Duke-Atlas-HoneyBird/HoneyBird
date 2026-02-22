@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:honey_bird/application/use_cases/post/like_post.dart';
-import 'package:honey_bird/core/di/injection.dart';
-import 'package:honey_bird/domain/repositories/favorite_repository.dart';
-import 'package:honey_bird/domain/repositories/post_repository.dart';
-import 'package:honey_bird/presentation/state/auth/auth_bloc.dart';
-import 'package:honey_bird/presentation/state/auth/auth_state.dart';
+import 'package:honey_bird/presentation/bloc/auth/auth_bloc.dart';
+import 'package:honey_bird/presentation/bloc/auth/auth_state.dart';
 import '../theme/colours.dart';
 import '../theme/spacing.dart';
 import '../theme/text_styles.dart';
 import '../widgets/bottom_navigation_widget.dart';
-import '../state/timeline/timeline_bloc.dart';
-import '../state/timeline/timeline_event.dart';
-import '../state/timeline/timeline_state.dart';
+import '../bloc/timeline/timeline_bloc.dart';
+import '../bloc/timeline/timeline_event.dart';
+import '../bloc/timeline/timeline_state.dart';
+import '../bloc/messages/messages_bloc.dart';
+import '../bloc/messages/messages_state.dart';
 import '../widgets/post_card.dart';
 
 /// Timeline screen displaying chronological content
@@ -39,7 +37,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     super.didChangeDependencies();
     if (!_hasRequestedLoad) {
       _hasRequestedLoad = true;
-      context.read<TimelineBloc>().add(const LoadTimelinePosts());
+      final uid = context.read<AuthBloc>().state.user?.uid;
+      context.read<TimelineBloc>().add(TimelineEvent.loadTimelinePosts(userUID: uid));
     }
   }
 
@@ -56,8 +55,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _onScroll() {
-    if (_isBottom) {
-      context.read<TimelineBloc>().add(const TimelineEvent.loadMoreTimelinePosts());
+    if (_isBottom && mounted) {
+      final uid = context.read<AuthBloc>().state.user?.uid;
+      context.read<TimelineBloc>().add(TimelineEvent.loadMoreTimelinePosts(userUID: uid));
     }
   }
 
@@ -135,34 +135,34 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
                           size: 64,
-                          color: Colors.white,
+                          color: textPrimary,
                         ),
                         const SizedBox(height: spacingM),
                         Text(
                           'Error',
                           style: headlineMedium.copyWith(
-                            color: Colors.white,
+                            color: textPrimary,
                           ),
                         ),
                         const SizedBox(height: spacingS),
                         Text(
                           state.errorMessage!,
                           style: bodyLarge.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            context.read<TimelineBloc>().add(const TimelineEvent.loadTimelinePosts());
+                            context.read<TimelineBloc>().add(TimelineEvent.loadTimelinePosts(userUID: context.read<AuthBloc>().state.user?.uid));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentPink,
-                            foregroundColor: Colors.white,
+                            foregroundColor: surfaceColor,
                             padding: const EdgeInsets.symmetric(
                               horizontal: spacingL,
                               vertical: spacingM,
@@ -185,20 +185,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         Icon(
                           Icons.timeline_outlined,
                           size: 64,
-                          color: Colors.white.withOpacity(0.7),
+                          color: textSecondary,
                         ),
                         const SizedBox(height: spacingL),
                         Text(
                           'No posts yet',
                           style: headlineMedium.copyWith(
-                            color: Colors.white,
+                            color: textPrimary,
                           ),
                         ),
                         const SizedBox(height: spacingM),
                         Text(
                           'Your timeline will appear here',
                           style: bodyLarge.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -209,7 +209,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<TimelineBloc>().add(const TimelineEvent.refreshTimelinePosts());
+                    context.read<TimelineBloc>().add(TimelineEvent.refreshTimelinePosts(userUID: context.read<AuthBloc>().state.user?.uid));
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
                   color: accentPink,
@@ -231,7 +231,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       final currentUserUID = context.read<AuthBloc>().state.user?.uid;
                       return PostCard(
                         post: post,
-                        onLike: () => _handleLike(context, post.id ?? '', currentUserUID, post.likeIDs.contains(currentUserUID ?? '')),
+                        onLike: () => _handleLike(
+                          context,
+                          post.id ?? '',
+                          currentUserUID,
+                        ),
+                        onAuthorTap: (userUID, userName) {
+                          Navigator.pushNamed(
+                            context,
+                            '/profile',
+                            arguments: {'userUID': userUID, 'userName': userName},
+                          );
+                        },
                         currentUserUID: currentUserUID,
                       );
                     },
@@ -241,42 +252,33 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
                 ),
               );
             },
           ),
           ),
-          bottomNavigationBar: BottomNavigationWidget(
-            currentIndex: _currentTabIndex,
-            onTabSelected: _handleTabSelected,
+          bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
+            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+            builder: (context, messagesState) => BottomNavigationWidget(
+              currentIndex: _currentTabIndex,
+              onTabSelected: _handleTabSelected,
+              unreadMessageCount: messagesState.unreadCount,
+            ),
           ),
         ),
     );
   }
 
-  Future<void> _handleLike(
+  void _handleLike(
     BuildContext context,
     String postId,
     String? currentUserUID,
-    bool isCurrentlyLiked,
-  ) async { 
+  ) {
     if (currentUserUID == null) return;
-
-    final result = await sl<LikePost>().call(postId, currentUserUID);
-    result.fold(
-      (_) {},
-      (updatedPost) async {
-        final repo = sl<FavoriteRepository>();
-        if (updatedPost.likeIDs.contains(currentUserUID)) {
-          await repo.addToFavorites(postId, currentUserUID);
-        } else {
-          await repo.removeFromFavorites(postId, currentUserUID);
-        }
-        if (!context.mounted) return;
-        context.read<TimelineBloc>().add(TimelineEvent.updateTimelinePost(updatedPost));
-      },
-    );
-  
+    context.read<TimelineBloc>().add(TimelineEvent.likePostInTimeline(
+          postId: postId,
+          userUID: currentUserUID,
+        ));
   }
 }

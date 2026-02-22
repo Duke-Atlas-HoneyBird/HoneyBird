@@ -1,0 +1,137 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/utils/constants.dart';
+import '../../../core/utils/error_message_utils.dart';
+import '../../../domain/entities/user.dart';
+import '../../../domain/entities/user_preference.dart';
+import '../../../domain/repositories/user_repository.dart';
+import '../../../domain/repositories/user_preference_repository.dart';
+import 'account_event.dart';
+import 'account_state.dart';
+
+class AccountBloc extends Bloc<AccountEvent, AccountState> {
+  final UserRepository userRepository;
+  final UserPreferenceRepository preferenceRepository;
+  final SharedPreferences sharedPreferences;
+
+  AccountBloc({
+    required this.userRepository,
+    required this.preferenceRepository,
+    required this.sharedPreferences,
+  }) : super(const AccountState()) {
+    on<LoadAccountData>(_onLoadAccountData);
+    on<UpdateUserPreferences>(_onUpdateUserPreferences);
+    on<UpdateUserProfile>(_onUpdateUserProfile);
+    on<CheckOnboardingStatus>(_onCheckOnboardingStatus);
+  }
+
+  Future<void> _onLoadAccountData(
+    LoadAccountData event,
+    Emitter<AccountState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+
+    final userResult = await userRepository.getUser(event.userUID);
+    final prefResult = await preferenceRepository.getPreferences(event.userUID);
+
+    userResult.fold(
+      (failure) => emit(state.copyWith(
+          isLoading: false,
+          errorMessage: ErrorMessageUtils.forUi('load_account'))),
+      (user) {
+        prefResult.fold(
+          (failure) => emit(state.copyWith(
+              isLoading: false,
+              errorMessage: ErrorMessageUtils.forUi('load_preferences'))),
+          (preferences) => emit(state.copyWith(
+              isLoading: false, user: user, preferences: preferences)),
+        );
+      },
+    );
+  }
+
+  Future<void> _onUpdateUserPreferences(
+    UpdateUserPreferences event,
+    Emitter<AccountState> emit,
+  ) async {
+    final user = state.user;
+    if (user == null) return;
+
+    emit(state.copyWith(isSaving: true, errorMessage: null));
+
+    // Only set hasCompletedOnboardingThisInstall in DB when user actually completes onboarding
+    final prefsToSave = event.markOnboardingComplete
+        ? event.preferences.copyWith(hasCompletedOnboardingThisInstall: true)
+        : event.preferences;
+
+    final result = await preferenceRepository.savePreferences(prefsToSave);
+
+    await result.fold(
+      (failure) async => emit(state.copyWith(
+          isSaving: false,
+          errorMessage: ErrorMessageUtils.forUi('save_preferences'))),
+      (_) async {
+        if (event.markOnboardingComplete) {
+          await sharedPreferences.setBool(
+              StorageKeys.hasCompletedOnboardingThisInstall, true);
+        }
+        emit(state.copyWith(
+            isSaving: false, preferences: prefsToSave));
+      },
+    );
+  }
+
+  Future<void> _onUpdateUserProfile(
+    UpdateUserProfile event,
+    Emitter<AccountState> emit,
+  ) async {
+    final currentUser = state.user;
+    final prefs = state.preferences;
+    if (currentUser == null || prefs == null) return;
+
+    emit(state.copyWith(isSaving: true, errorMessage: null));
+
+    final updatedUser = User(
+      id: currentUser.id,
+      userName: event.userName,
+      userBio: event.userBio,
+      userBioLink: event.userBioLink,
+      userUID: currentUser.userUID,
+      userEmail: currentUser.userEmail,
+    );
+
+    final result = await userRepository.updateUser(updatedUser);
+
+    result.fold(
+      (failure) => emit(state.copyWith(
+          isSaving: false,
+          errorMessage: ErrorMessageUtils.forUi('save_profile'))),
+      (updated) => emit(state.copyWith(isSaving: false, user: updated)),
+    );
+  }
+
+  Future<void> _onCheckOnboardingStatus(
+    CheckOnboardingStatus event,
+    Emitter<AccountState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+
+    // DB is source of truth; sync local store to match
+    final prefResult = await preferenceRepository.getPreferences(event.userUID);
+
+    await prefResult.fold(
+      (failure) async {
+        await sharedPreferences.setBool(
+            StorageKeys.hasCompletedOnboardingThisInstall, false);
+        emit(state.copyWith(isLoading: false, hasCompletedOnboarding: false));
+      },
+      (preferences) async {
+        final hasCompleted = preferences.hasCompletedOnboardingThisInstall;
+        await sharedPreferences.setBool(
+            StorageKeys.hasCompletedOnboardingThisInstall, hasCompleted);
+        emit(state.copyWith(
+            isLoading: false, hasCompletedOnboarding: hasCompleted));
+      },
+    );
+  }
+}

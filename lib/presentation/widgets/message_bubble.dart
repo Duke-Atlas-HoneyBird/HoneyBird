@@ -44,6 +44,8 @@ class MessageBubble extends StatelessWidget {
               style: bodyMedium.copyWith(
                 color: isCurrentUser ? Colors.white : textPrimary,
               ),
+              maxLines: 20,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: spacingXs),
             Text(

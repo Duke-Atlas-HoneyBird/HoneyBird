@@ -28,6 +28,20 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<Either<Failure, User>> getUserByUID(String userUID) async {
+    try {
+      final userModel = await _firebaseDataSource.getUserByUID(userUID);
+      return Right(userModel.toDomain());
+    } on ServerException catch (e) {
+      print('[UserRepositoryImpl] getUserByUID ServerException: ${e.message}');
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      print('[UserRepositoryImpl] getUserByUID unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Either<Failure, User>> createUser(User user) async {
     try {
       final userModel = UserModel.fromEntity(user);
@@ -38,6 +52,22 @@ class UserRepositoryImpl implements UserRepository {
       return Left(ServerFailure(e.message));
     } catch (e) {
       print('[UserRepositoryImpl] createUser unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> createUserWithId(String userUID, User user) async {
+    try {
+      final userModel = UserModel.fromEntity(user);
+      final createdUser =
+          await _firebaseDataSource.createUserWithId(userUID, userModel);
+      return Right(createdUser.toDomain());
+    } on ServerException catch (e) {
+      print('[UserRepositoryImpl] createUserWithId ServerException: ${e.message}');
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      print('[UserRepositoryImpl] createUserWithId unexpected: ${e.toString()}');
       return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
     }
   }

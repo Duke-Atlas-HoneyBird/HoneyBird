@@ -26,6 +26,15 @@ class UserPreference extends Equatable {
   final bool chinese;
   final bool thai;
 
+  /// What others can see when viewing your profile
+  final bool showProfileToOthers; // name, avatar
+  final bool showBioToOthers;
+  final bool showEmailToOthers;
+  final bool showPreferencesToOthers;
+
+  /// Set when user completes onboarding. Stored in DB; local store kept in sync.
+  final bool hasCompletedOnboardingThisInstall;
+
   UserPreference({
     String? id,
     this.halaal = false,
@@ -42,6 +51,11 @@ class UserPreference extends Equatable {
     this.greek = true,
     this.italian = true,
     this.thai = true,
+    this.showProfileToOthers = true,
+    this.showBioToOthers = true,
+    this.showEmailToOthers = false,
+    this.showPreferencesToOthers = true,
+    this.hasCompletedOnboardingThisInstall = false,
   }) : id = id ?? UuidUtils.generate();
 
   /// Creates a copy of this UserPreference with the given fields replaced with new values.
@@ -61,6 +75,11 @@ class UserPreference extends Equatable {
     bool? greek,
     bool? chinese,
     bool? thai,
+    bool? showProfileToOthers,
+    bool? showBioToOthers,
+    bool? showEmailToOthers,
+    bool? showPreferencesToOthers,
+    bool? hasCompletedOnboardingThisInstall,
   }) {
     return UserPreference(
       id: id ?? this.id,
@@ -78,6 +97,12 @@ class UserPreference extends Equatable {
       greek: greek ?? this.greek,
       chinese: chinese ?? this.chinese,
       thai: thai ?? this.thai,
+      showProfileToOthers: showProfileToOthers ?? this.showProfileToOthers,
+      showBioToOthers: showBioToOthers ?? this.showBioToOthers,
+      showEmailToOthers: showEmailToOthers ?? this.showEmailToOthers,
+      showPreferencesToOthers: showPreferencesToOthers ?? this.showPreferencesToOthers,
+      hasCompletedOnboardingThisInstall:
+          hasCompletedOnboardingThisInstall ?? this.hasCompletedOnboardingThisInstall,
     );
   }
 
@@ -98,5 +123,10 @@ class UserPreference extends Equatable {
         greek,
         chinese,
         thai,
+        showProfileToOthers,
+        showBioToOthers,
+        showEmailToOthers,
+        showPreferencesToOthers,
+        hasCompletedOnboardingThisInstall,
       ];
 }

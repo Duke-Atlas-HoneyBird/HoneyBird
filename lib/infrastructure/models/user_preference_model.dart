@@ -7,6 +7,7 @@ import '../../domain/entities/user_preference.dart';
 class UserPreferenceModel extends UserPreference {
   UserPreferenceModel({
     super.id,
+    super.hasCompletedOnboardingThisInstall = false,
     super.halaal = false,
     super.haram = false,
     super.pork = false,
@@ -21,12 +22,18 @@ class UserPreferenceModel extends UserPreference {
     super.greek = true,
     super.italian = true,
     super.thai = true,
+    super.showProfileToOthers = true,
+    super.showBioToOthers = true,
+    super.showEmailToOthers = false,
+    super.showPreferencesToOthers = true,
   });
 
   /// Creates a UserPreferenceModel from a JSON map (local storage).
   factory UserPreferenceModel.fromJson(Map<String, dynamic> json) {
     return UserPreferenceModel(
       id: json['id'] as String?,
+      hasCompletedOnboardingThisInstall:
+          json['hasCompletedOnboardingThisInstall'] as bool? ?? false,
       halaal: json['halaal'] as bool? ?? false,
       haram: json['haram'] as bool? ?? false,
       pork: json['pork'] as bool? ?? false,
@@ -41,6 +48,10 @@ class UserPreferenceModel extends UserPreference {
       greek: json['greek'] as bool? ?? true,
       italian: json['italian'] as bool? ?? true,
       thai: json['thai'] as bool? ?? true,
+      showProfileToOthers: json['showProfileToOthers'] as bool? ?? true,
+      showBioToOthers: json['showBioToOthers'] as bool? ?? true,
+      showEmailToOthers: json['showEmailToOthers'] as bool? ?? false,
+      showPreferencesToOthers: json['showPreferencesToOthers'] as bool? ?? true,
     );
   }
 
@@ -48,6 +59,7 @@ class UserPreferenceModel extends UserPreference {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'hasCompletedOnboardingThisInstall': hasCompletedOnboardingThisInstall,
       'halaal': halaal,
       'haram': haram,
       'pork': pork,
@@ -62,6 +74,10 @@ class UserPreferenceModel extends UserPreference {
       'greek': greek,
       'italian': italian,
       'thai': thai,
+      'showProfileToOthers': showProfileToOthers,
+      'showBioToOthers': showBioToOthers,
+      'showEmailToOthers': showEmailToOthers,
+      'showPreferencesToOthers': showPreferencesToOthers,
     };
   }
 
@@ -69,6 +85,8 @@ class UserPreferenceModel extends UserPreference {
   factory UserPreferenceModel.fromEntity(UserPreference preference) {
     return UserPreferenceModel(
       id: preference.id,
+      hasCompletedOnboardingThisInstall:
+          preference.hasCompletedOnboardingThisInstall,
       halaal: preference.halaal,
       haram: preference.haram,
       pork: preference.pork,
@@ -83,6 +101,10 @@ class UserPreferenceModel extends UserPreference {
       greek: preference.greek,
       italian: preference.italian,
       thai: preference.thai,
+      showProfileToOthers: preference.showProfileToOthers,
+      showBioToOthers: preference.showBioToOthers,
+      showEmailToOthers: preference.showEmailToOthers,
+      showPreferencesToOthers: preference.showPreferencesToOthers,
     );
   }
 }

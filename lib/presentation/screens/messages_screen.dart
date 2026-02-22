@@ -7,12 +7,15 @@ import '../theme/spacing.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../widgets/conversation_item.dart';
 import '../widgets/message_bubble.dart';
-import '../state/messages/messages_bloc.dart';
-import '../state/messages/messages_event.dart';
-import '../state/messages/messages_state.dart';
+import '../bloc/messages/messages_bloc.dart';
+import '../bloc/messages/messages_event.dart';
+import '../bloc/messages/messages_state.dart';
 import '../../domain/entities/message.dart';
-import '../state/auth/auth_bloc.dart';
-import '../state/auth/auth_state.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_state.dart';
+
+/// Global key for [MessagesScreen] to allow resetting its state (e.g. from app bar leading).
+final messagesScreenGlobalKey = GlobalKey<_MessagesScreenState>();
 
 /// Messages screen displaying user conversations
 class MessagesScreen extends StatefulWidget {
@@ -28,6 +31,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Conversation? _selectedConversation;
   bool _hasRequestedLoad = false;
 
+  /// Resets the screen state (e.g. when navigating back from a conversation).
+  void reset() {
+    setState(() {
+      _selectedConversationId = null;
+      _selectedConversation = null;
+    });
+    context.read<MessagesBloc>().add(const MessagesEvent.clearOpenConversation());
+  }
+
   void _handleTabSelected(int index) {
     if (_currentTabIndex == index) {
       return;
@@ -40,13 +52,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
     // Navigate to different screens based on tab index
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.popAndPushNamed(context, '/home');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/favorites');
+        Navigator.popAndPushNamed(context, '/favorites');
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/account');
+        Navigator.popAndPushNamed(context, '/account');
         break;
       case 3:
         // Already on Messages screen
@@ -82,20 +94,35 @@ class _MessagesScreenState extends State<MessagesScreen> {
       ),
       child: Scaffold(
           appBar: AppBar(
-            title: Text(_selectedConversationId == null ? 'Messages' : 'Conversation'),
+            title: BlocBuilder<MessagesBloc, MessagesState>(
+              buildWhen: (prev, curr) =>
+                  prev?.conversationId != curr.conversationId ||
+                  prev?.openWithUserName != curr.openWithUserName,
+              builder: (context, s) => Text(
+                s.conversationId.isEmpty && _selectedConversation == null
+                    ? 'Messages'
+                    : (s.openWithUserName ?? _selectedConversation?.participant2Name ?? _selectedConversation?.participant1Name ?? 'Conversation'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              
+            ),
             elevation: 0,
             iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
-            leading: _selectedConversationId != null
-                ? IconButton(
-                    icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onBackground),
-                    onPressed: () {
-                      setState(() {
-                        _selectedConversationId = null;
-                        _selectedConversation = null;
-                      });
-                    },
-                  )
-                : null,
+            leading: BlocBuilder<MessagesBloc, MessagesState>(
+              buildWhen: (prev, curr) => prev?.conversationId != curr.conversationId,
+              builder: (context, s) {
+                if (s.conversationId.isEmpty && _selectedConversationId == null) {
+                  return const SizedBox.shrink();
+                }
+                return IconButton(
+                  icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+                  onPressed: () {
+                    messagesScreenGlobalKey.currentState?.reset();
+                  },
+                );
+              },
+            ),
           ),
           body: SafeArea(
             child: BlocConsumer<MessagesBloc, MessagesState>(
@@ -110,11 +137,20 @@ class _MessagesScreenState extends State<MessagesScreen> {
             buildWhen: (prev, curr) =>
                 prev?.conversations != curr.conversations ||
                 prev?.messages != curr.messages ||
+                prev?.conversationId != curr.conversationId ||
                 prev?.isLoading != curr.isLoading ||
                 prev?.errorMessage != curr.errorMessage,
             builder: (context, state) {
-              if (_selectedConversationId != null) {
-                return _buildConversationView(context, _selectedConversationId!, userUID);
+              final activeConvId =
+                  _selectedConversationId ?? (state.conversationId.isNotEmpty ? state.conversationId : null);
+              if (activeConvId != null) {
+                return _buildConversationView(
+                  context,
+                  activeConvId,
+                  userUID,
+                  otherUID: state.openWithUserUID,
+                  otherName: state.openWithUserName,
+                );
               }
 
               if (state.isLoading && state.conversations.isEmpty) {
@@ -126,27 +162,30 @@ class _MessagesScreenState extends State<MessagesScreen> {
               }
 
               if (state.errorMessage != null && state.conversations.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(spacingL),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          size: 64,
-                        ),
-                        const SizedBox(height: spacingM),
-                        Text(
-                          'Error',
-                          style: headlineMedium
-                        ),
-                        const SizedBox(height: spacingS),
-                        Text(
-                          state.errorMessage!,
-                          style: bodyLarge,
-                          textAlign: TextAlign.center,
-                        ),
+                return SingleChildScrollView(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(spacingL),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            size: 64,
+                          ),
+                          const SizedBox(height: spacingM),
+                          Text(
+                            'Error',
+                            style: headlineMedium
+                          ),
+                          const SizedBox(height: spacingS),
+                          Text(
+                            state.errorMessage!,
+                            style: bodyLarge,
+                            textAlign: TextAlign.center,
+                            maxLines: 10,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
@@ -154,7 +193,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
-                            foregroundColor: Colors.white,
+                            foregroundColor: surfaceColor,
                             padding: const EdgeInsets.symmetric(
                               horizontal: spacingL,
                               vertical: spacingM,
@@ -165,7 +204,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                       ],
                     ),
                   ),
-                );
+                ),
+              );
               }
 
               if (state.conversations.isNotEmpty || !state.isLoading) {
@@ -207,21 +247,31 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
                 ),
               );
             },
           ),
           ),
-          bottomNavigationBar: BottomNavigationWidget(
-            currentIndex: _currentTabIndex,
-            onTabSelected: _handleTabSelected,
+          bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
+            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+            builder: (context, messagesState) => BottomNavigationWidget(
+              currentIndex: _currentTabIndex,
+              onTabSelected: _handleTabSelected,
+              unreadMessageCount: messagesState.unreadCount,
+            ),
           ),
         ),
     );
   }
 
-  Widget _buildConversationView(BuildContext context, String conversationId, String userUID) {
+  Widget _buildConversationView(
+    BuildContext context,
+    String conversationId,
+    String userUID, {
+    String? otherUID,
+    String? otherName,
+  }) {
     final conversation = _selectedConversation;
     return BlocBuilder<MessagesBloc, MessagesState>(
       buildWhen: (prev, curr) =>
@@ -232,28 +282,34 @@ class _MessagesScreenState extends State<MessagesScreen> {
         if (state.isLoading && state.messages.isEmpty) {
           return const Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
             ),
           );
         }
 
         if (state.conversationId == conversationId) {
-          String otherUID;
-          String otherName;
-          if (conversation != null) {
-            otherUID = userUID == conversation.participant1UID ? conversation.participant2UID : conversation.participant1UID;
-            otherName = userUID == conversation.participant1UID ? conversation.participant2Name : conversation.participant1Name;
+          String resolvedOtherUID;
+          String resolvedOtherName;
+          if (otherUID != null && otherName != null) {
+            resolvedOtherUID = otherUID;
+            resolvedOtherName = otherName;
+          } else if (conversation != null) {
+            resolvedOtherUID = userUID == conversation.participant1UID ? conversation.participant2UID : conversation.participant1UID;
+            resolvedOtherName = userUID == conversation.participant1UID ? conversation.participant2Name : conversation.participant1Name;
           } else {
             final other = _otherParticipantFromMessages(state.messages, userUID);
-            otherUID = other.$1;
-            otherName = other.$2;
+            resolvedOtherUID = other.$1;
+            resolvedOtherName = other.$2;
           }
           final senderName = _senderDisplayName(context);
-
+          
+ 
           return Column(
             children: [
               Expanded(
-                child: ListView.builder(
+                child: state.messages.isEmpty
+                    ? const _TypeFirstMessageWidget()
+                    : ListView.builder(
                   reverse: true,
                   padding: const EdgeInsets.symmetric(vertical: spacingM),
                   itemCount: state.messages.length,
@@ -271,8 +327,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 conversationId: conversationId,
                 userUID: userUID,
                 senderName: senderName,
-                receiverUID: otherUID,
-                receiverName: otherName,
+                receiverUID: resolvedOtherUID,
+                receiverName: resolvedOtherName,
               ),
             ],
           );
@@ -280,7 +336,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
         return const Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
           ),
         );
       },
@@ -390,11 +446,74 @@ class _MessageInputBarState extends State<_MessageInputBar> {
   }
 }
 
-/// Empty state when the user has no messages yet.
+/// Empty state when the user has no conversations yet.
 class _NoMessagesYetWidget extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const _NoMessagesYetWidget({this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
+            ),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: spacingL),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.chat_bubble_outline_rounded,
+                      size: 80,
+                      color: textSecondary,
+                    ),
+                    const SizedBox(height: spacingL),
+                    Text(
+                      'No messages yet',
+                      style: headlineMedium.copyWith(
+                        color: textPrimary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: spacingM),
+                    Text(
+                      'Visit someone\'s profile from the feed and tap Message to start a conversation.',
+                      style: bodyLarge.copyWith(
+                        color: textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    if (onRetry != null) ...[
+                      const SizedBox(height: spacingL),
+                      TextButton.icon(
+                        onPressed: onRetry,
+                        icon: Icon(Icons.refresh, color: textSecondary),
+                        label: const Text('Refresh'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: textSecondary,
+                        ),
+                      ),
+                    ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      },
+    );
+  }
+}
+
+/// Empty state when a conversation has no messages yet.
+class _TypeFirstMessageWidget extends StatelessWidget {
+  const _TypeFirstMessageWidget();
 
   @override
   Widget build(BuildContext context) {
@@ -406,39 +525,29 @@ class _NoMessagesYetWidget extends StatelessWidget {
           children: [
             Icon(
               Icons.chat_bubble_outline_rounded,
-              size: 80,
-              color: Colors.white.withOpacity(0.6),
+              size: 64,
+              color: textSecondary,
             ),
             const SizedBox(height: spacingL),
             Text(
-              'No messages yet',
+              'Type your first message',
               style: headlineMedium.copyWith(
-                color: Colors.white,
+                color: textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: spacingM),
             Text(
-              'Start a conversation and your messages will appear here.',
+              'Say hello and start the conversation below.',
               style: bodyLarge.copyWith(
-                color: Colors.white.withOpacity(0.8),
+                color: textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
-            if (onRetry != null) ...[
-              const SizedBox(height: spacingL),
-              TextButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh, color: Colors.white70),
-                label: const Text('Refresh'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white70,
-                ),
-              ),
-            ],
           ],
         ),
       ),
     );
   }
 }
+

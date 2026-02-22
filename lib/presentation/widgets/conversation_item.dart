@@ -71,6 +71,8 @@ class ConversationItem extends StatelessWidget {
                 style: labelLarge.copyWith(
                   fontWeight: hasUnread ? FontWeight.w600 : FontWeight.normal,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             if (conversation.lastMessage != null)

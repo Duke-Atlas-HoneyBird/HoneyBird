@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection.dart';
-import '../../core/utils/snackbar_utils.dart';
-import '../../application/use_cases/post/get_posts.dart';
-import '../../application/use_cases/post/like_post.dart';
-import '../../domain/repositories/favorite_repository.dart';
-import '../state/auth/auth_bloc.dart';
-import '../state/auth/auth_state.dart';
-import '../state/comment/comment_bloc.dart';
-import '../state/comment_count/comment_count_bloc.dart';
-import '../state/comment_count/comment_count_event.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_state.dart';
+import '../bloc/comment/comment_bloc.dart';
+import '../bloc/comment_count/comment_count_bloc.dart';
+import '../bloc/comment_count/comment_count_event.dart';
+import '../bloc/feed/feed_bloc.dart';
+import '../bloc/feed/feed_event.dart';
+import '../bloc/feed/feed_state.dart';
+import '../bloc/messages/messages_bloc.dart';
+import '../bloc/messages/messages_event.dart';
+import '../bloc/messages/messages_state.dart';
 import '../theme/colours.dart';
 import '../theme/constants.dart';
 import '../theme/spacing.dart';
@@ -36,23 +38,34 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentTabIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool _isProcessingVote = false;
-  int _feedRefreshKey = 0;
+  bool _hasRequestedLoad = false;
+  bool _hasRequestedUnreadCount = false;
 
-  late final GetPosts _getPosts;
-  late final LikePost _likePost;
-  late final FavoriteRepository _favoriteRepository;
   late final CommentBloc _commentBloc;
   late final CommentCountBloc _commentCountBloc;
 
   @override
   void initState() {
     super.initState();
-    _getPosts = sl<GetPosts>();
-    _likePost = sl<LikePost>();
-    _favoriteRepository = sl<FavoriteRepository>();
     _commentBloc = sl<CommentBloc>();
     _commentCountBloc = sl<CommentCountBloc>();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasRequestedLoad) {
+      _hasRequestedLoad = true;
+      final uid = context.read<AuthBloc>().state.user?.uid;
+      context.read<FeedBloc>().add(FeedEvent.loadFeedPosts(userUID: uid));
+    }
+    if (!_hasRequestedUnreadCount) {
+      _hasRequestedUnreadCount = true;
+      final uid = context.read<AuthBloc>().state.user?.uid ?? '';
+      if (uid.isNotEmpty) {
+        context.read<MessagesBloc>().add(MessagesEvent.loadUnreadCount(uid));
+      }
+    }
   }
 
 
@@ -116,17 +129,59 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? (authState.user!.displayName ??
                                 authState.user!.email.split('@').first)
                             : null;
-                        return PostFeedWidget(
-                          key: ValueKey(_feedRefreshKey),
-                          getPosts: _getPosts,
-                          onLike: _handleLike,
-                          onCommentTap: (postId) => _openComments(
-                            context,
-                            postId: postId,
-                            currentUserUID: currentUserUID,
-                            currentUserName: currentUserName,
-                          ),
-                          currentUserUID: currentUserUID,
+                        return BlocConsumer<FeedBloc, FeedState>(
+                          listenWhen: (prev, curr) =>
+                              prev?.errorMessage != curr.errorMessage,
+                          listener: (context, state) {
+                            if (state.errorMessage != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(state.errorMessage!)),
+                              );
+                            }
+                          },
+                          buildWhen: (prev, curr) =>
+                              prev?.posts != curr.posts ||
+                              prev?.isLoading != curr.isLoading,
+                          builder: (context, feedState) {
+                            return PostFeedWidget(
+                              posts: feedState.posts,
+                              isLoading: feedState.isLoading,
+                              onRefresh: () {
+                                final uid = context.read<AuthBloc>().state.user?.uid;
+                                context.read<FeedBloc>().add(FeedEvent.refreshFeedPosts(userUID: uid));
+                              },
+                              onRetry: () {
+                                final uid = context.read<AuthBloc>().state.user?.uid;
+                                context.read<FeedBloc>().add(FeedEvent.loadFeedPosts(userUID: uid));
+                              },
+                              onLike: (postId, userId) {
+                                context.read<FeedBloc>().add(
+                                      FeedEvent.likePostInFeed(
+                                        postId: postId,
+                                        userUID: userId,
+                                      ),
+                                    );
+                              },
+                              onCommentTap: (postId) => _openComments(
+                                context,
+                                postId: postId,
+                                currentUserUID: currentUserUID,
+                                currentUserName: currentUserName,
+                              ),
+                              onAuthorTap: (userUID, userName) {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/profile',
+                                  arguments: {
+                                    'userUID': userUID,
+                                    'userName': userName,
+                                  },
+                                );
+                              },
+                              currentUserUID: currentUserUID,
+                              errorMessage: feedState.errorMessage,
+                            );
+                          },
                         );
                       },
                     ),
@@ -136,9 +191,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        bottomNavigationBar: BottomNavigationWidget(
-          currentIndex: _currentTabIndex,
-          onTabSelected: _handleTabSelected,
+        bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
+          buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+          builder: (context, messagesState) => BottomNavigationWidget(
+            currentIndex: _currentTabIndex,
+            onTabSelected: _handleTabSelected,
+            unreadMessageCount: messagesState.unreadCount,
+          ),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
@@ -162,40 +221,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openSideMenu() {
     _scaffoldKey.currentState?.openEndDrawer();
-  }
-
-  void _handleLike(String postId, String userId) async {
-    if (_isProcessingVote || userId.isEmpty) return;
-
-    setState(() {
-      _isProcessingVote = true;
-    });
-
-    final result = await _likePost(postId, userId);
-
-    if (!mounted) return;
-
-    setState(() {
-      _isProcessingVote = false;
-    });
-
-    result.fold(
-      (failure) {
-        SnackBarUtils.showError(
-          context,
-          'Failed to update. Please try again.',
-        );
-      },
-      (updatedPost) async {
-        if (updatedPost.likeIDs.contains(userId)) {
-          await _favoriteRepository.addToFavorites(postId, userId);
-        } else {
-          await _favoriteRepository.removeFromFavorites(postId, userId);
-        }
-        // if (!mounted) return;
-        // setState(() => _feedRefreshKey++);
-      },
-    );
   }
 
   void _handleTabSelected(int index) {

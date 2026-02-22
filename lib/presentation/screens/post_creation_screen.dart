@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../core/di/injection.dart';
 import '../../core/utils/snackbar_utils.dart';
-import '../../application/use_cases/post/create_post.dart';
-import '../../domain/entities/post.dart';
-import '../../infrastructure/data_sources/firebase_storage_data_source.dart';
-import '../state/auth/auth_bloc.dart';
-import '../state/auth/auth_state.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_state.dart';
+import '../bloc/post/post_bloc.dart';
+import '../bloc/post/post_event.dart';
+import '../bloc/post/post_state.dart';
 import '../theme/colours.dart';
 import '../theme/constants.dart';
 import '../theme/spacing.dart';
@@ -31,19 +30,14 @@ class PostCreationScreen extends StatefulWidget {
 class _PostCreationScreenState extends State<PostCreationScreen> {
   final TextEditingController _textController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false;
   File? _pickedImage;
   File? _pickedVideo;
 
-  late final CreatePost _createPost;
-  late final FirebaseStorageDataSource _storage;
   void _onCaptionChanged() => setState(() {});
 
   @override
   void initState() {
     super.initState();
-    _createPost = sl<CreatePost>();
-    _storage = sl<FirebaseStorageDataSource>();
     _textController.addListener(_onCaptionChanged);
   }
 
@@ -65,7 +59,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
 
   Future<void> _showImageSourcePicker() async {
     HapticFeedback.lightImpact();
-    if (_isLoading) return;
+    if (context.read<PostBloc>().state.isLoading) return;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (context) => SafeArea(
@@ -96,7 +90,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
     });
   }
 
-  Future<void> _handleSubmit() async {
+  void _handleSubmit() {
     HapticFeedback.mediumImpact();
     if (!_formKey.currentState!.validate()) {
       HapticFeedback.heavyImpact();
@@ -109,72 +103,31 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
       return;
     }
 
-    final user = authState.user!;
-    final userId = user.uid;
-    final userName = user.displayName ?? user.email.split('@').first;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    Uri? imageURL;
-    Uri? videoURL;
-
-    try {
-      if (_pickedImage != null) {
-        imageURL = await _storage.uploadPostImage(_pickedImage!, userId);
-      }
-      if (_pickedVideo != null) {
-        videoURL = await _storage.uploadPostVideo(_pickedVideo!, userId);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
-      SnackBarUtils.showError(context, 'Upload failed. Please try again.');
-      return;
-    }
-
-    final post = Post(
-      text: _textController.text.trim(),
-      publishedDate: DateTime.now(),
-      userName: userName,
-      userUID: userId,
-      imageURL: imageURL,
-      imageReferenceID: imageURL != null ? imageURL.toString() : '',
-      videoURL: videoURL,
-      videoReferenceID: videoURL != null ? videoURL.toString() : '',
-      likeIDs: const [],
-    );
-
-    final result = await _createPost(post);
-
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    result.fold(
-      (failure) {
-        SnackBarUtils.showError(
-          context,
-          'Failed to create post. Please try again.',
-        );
-      },
-      (_) {
-        SnackBarUtils.showSuccess(context, 'Post created!');
-        Navigator.pop(context);
-      },
-    );
+    context.read<PostBloc>().add(PostEvent.createRequested(
+          text: _textController.text.trim(),
+          imageFile: _pickedImage,
+          videoFile: _pickedVideo,
+        ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Scaffold(
-        appBar: AppBar(
+    return BlocConsumer<PostBloc, PostState>(
+      listener: (context, state) {
+        if (state.errorMessage != null) {
+          SnackBarUtils.showError(
+            context,
+            state.errorMessage!,
+          );
+        }
+        if (state.lastCreatedPost != null) {
+          SnackBarUtils.showSuccess(context, 'Post created!');
+          Navigator.pop(context);
+        }
+      },
+      builder: (context, state) => Container(
+        child: Scaffold(
+          appBar: AppBar(
           elevation: 0,
           leading: IconButton(
             icon: Icon(
@@ -188,9 +141,9 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
             iconSize: 48,
           ),
           title: const Text('Create Post'),
-        ),
-        body: SafeArea(
-          child: Padding(
+          ),
+          body: SafeArea(
+            child: Padding(
             padding: const EdgeInsets.all(spacingM),
             child: Form(
               key: _formKey,
@@ -365,16 +318,22 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                               ),
                             ),
                           ),
-                          TextButton.icon(
-                            onPressed: _isLoading
-                                ? null
-                                : () {
-                                    setState(() {
-                                      _pickedImage = null;
-                                    });
-                                  },
-                            icon: const Icon(Icons.close, size: 18),
-                            label: const Text('Remove image'),
+                          BlocBuilder<PostBloc, PostState>(
+                            buildWhen: (prev, curr) =>
+                                prev?.isLoading != curr.isLoading,
+                            builder: (context, state) {
+                              return TextButton.icon(
+                                onPressed: state.isLoading
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          _pickedImage = null;
+                                        });
+                                      },
+                                icon: const Icon(Icons.close, size: 18),
+                                label: const Text('Remove image'),
+                              );
+                            },
                           ),
                         ],
                         if (_pickedVideo != null) ...[
@@ -408,16 +367,20 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                               ),
                             ),
                           
-                          TextButton.icon(
-                            onPressed: _isLoading
-                                ? null
-                                : () {
-                                    setState(() {
-                                      _pickedVideo = null;
-                                    });
-                                  },
-                            icon: const Icon(Icons.close, size: 18),
-                            label: const Text('Remove video'),
+                          BlocBuilder<PostBloc, PostState>(
+                            buildWhen: (prev, curr) =>
+                                prev?.isLoading != curr.isLoading,
+                            builder: (context, state) {
+                              return TextButton.icon(
+                                onPressed: state.isLoading ? null : () {
+                                  setState(() {
+                                    _pickedVideo = null;
+                                  });
+                                },
+                                icon: const Icon(Icons.close, size: 18),
+                                label: const Text('Remove video'),
+                              );
+                            },
                           ),
                         ],
                         ],
@@ -427,8 +390,14 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                   const SizedBox(height: spacingS),
                   Row(
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: _isLoading ? null : _showImageSourcePicker,
+                        BlocBuilder<PostBloc, PostState>(
+                          buildWhen: (prev, curr) =>
+                              prev?.isLoading != curr.isLoading,
+                          builder: (context, state) {
+                            return OutlinedButton.icon(
+                              onPressed: state.isLoading
+                                  ? null
+                                  : _showImageSourcePicker,
                         icon: const Icon(Icons.image_outlined),
                         label: const Text('Photo'),
                         style: OutlinedButton.styleFrom(
@@ -439,17 +408,25 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                             vertical: spacingM,
                           ),
                           minimumSize: const Size(0, 48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(buttonBorderRadius),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(buttonBorderRadius),
+                            ),
                           ),
+                        );
+                          },
                         ),
-                      ),
-                    ],
+                      ],
                   ),
                   const SizedBox(height: spacingM),
-                  ElevatedButton(
-                    onPressed: (_isLoading || !_canSubmit) ? null : _handleSubmit,
+                  BlocBuilder<PostBloc, PostState>(
+                    buildWhen: (prev, curr) =>
+                        prev?.isLoading != curr.isLoading,
+                    builder: (context, state) {
+                      return ElevatedButton(
+                        onPressed: (state.isLoading || !_canSubmit)
+                            ? null
+                            : _handleSubmit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
@@ -462,9 +439,9 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                         borderRadius:
                             BorderRadius.circular(buttonBorderRadius),
                       ),
-                      minimumSize: const Size.fromHeight(48),
-                    ),
-                    child: _isLoading
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                      child: state.isLoading
                         ? Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -498,9 +475,11 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                                 ),
                               ),
                               const SizedBox(width: spacingS),
-                              const Icon(Icons.send),
-                            ],
-                          ),
+                                const Icon(Icons.send),
+                              ],
+                            ),
+                    );
+                    },
                   ),
                 ],
               ),
@@ -508,6 +487,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

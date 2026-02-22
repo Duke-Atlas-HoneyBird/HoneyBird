@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/di/injection.dart';
-import '../../application/use_cases/post/like_post.dart';
-import '../../domain/repositories/favorite_repository.dart';
-import '../state/auth/auth_bloc.dart';
-import '../state/auth/auth_state.dart';
-import '../state/feed/feed_bloc.dart';
-import '../state/feed/feed_event.dart';
-import '../state/feed/feed_state.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_state.dart';
+import '../bloc/feed/feed_bloc.dart';
+import '../bloc/feed/feed_event.dart';
+import '../bloc/feed/feed_state.dart';
+import '../bloc/messages/messages_bloc.dart';
+import '../bloc/messages/messages_state.dart';
 import '../theme/colours.dart';
 import '../theme/text_styles.dart';
 import '../theme/spacing.dart';
@@ -31,30 +30,21 @@ class _FeedScreenState extends State<FeedScreen> {
     super.didChangeDependencies();
     if (!_hasRequestedLoad) {
       _hasRequestedLoad = true;
-      context.read<FeedBloc>().add(const FeedEvent.loadFeedPosts());
+      final uid = context.read<AuthBloc>().state.user?.uid;
+      context.read<FeedBloc>().add(FeedEvent.loadFeedPosts(userUID: uid));
     }
   }
 
-  Future<void> _handleLike(
+  void _handleLike(
     BuildContext context,
     String postId,
     String? currentUserUID,
-  ) async {
+  ) {
     if (currentUserUID == null) return;
-    final result = await sl<LikePost>().call(postId, currentUserUID);
-    result.fold(
-      (_) {},
-      (updatedPost) async {
-        final repo = sl<FavoriteRepository>();
-        if (updatedPost.likeIDs.contains(currentUserUID)) {
-          await repo.addToFavorites(postId, currentUserUID);
-        } else {
-          await repo.removeFromFavorites(postId, currentUserUID);
-        }
-        if (!context.mounted) return;
-        context.read<FeedBloc>().add(FeedEvent.addOrUpdatePostToFeed(updatedPost));
-      },
-    );
+    context.read<FeedBloc>().add(FeedEvent.likePostInFeed(
+          postId: postId,
+          userUID: currentUserUID,
+        ));
   }
 
   void _handleTabSelected(int index) {
@@ -116,34 +106,34 @@ class _FeedScreenState extends State<FeedScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
                           size: 64,
-                          color: Colors.white,
+                          color: textPrimary,
                         ),
                         const SizedBox(height: spacingM),
                         Text(
                           'Error',
                           style: headlineMedium.copyWith(
-                            color: Colors.white,
+                            color: textPrimary,
                           ),
                         ),
                         const SizedBox(height: spacingS),
                         Text(
                           state.errorMessage!,
                           style: bodyLarge.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            context.read<FeedBloc>().add(const FeedEvent.loadFeedPosts());
+                            context.read<FeedBloc>().add(FeedEvent.loadFeedPosts(userUID: context.read<AuthBloc>().state.user?.uid));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
-                            foregroundColor: Colors.white,
+                            foregroundColor: surfaceColor,
                             padding: const EdgeInsets.symmetric(
                               horizontal: spacingL,
                               vertical: spacingM,
@@ -166,20 +156,20 @@ class _FeedScreenState extends State<FeedScreen> {
                         Icon(
                           Icons.rss_feed_outlined,
                           size: 64,
-                          color: Colors.white.withOpacity(0.7),
+                          color: textSecondary,
                         ),
                         const SizedBox(height: spacingL),
                         Text(
                           'No posts yet',
                           style: headlineMedium.copyWith(
-                            color: Colors.white,
+                            color: textPrimary,
                           ),
                         ),
                         const SizedBox(height: spacingM),
                         Text(
                           'Your curated feed will appear here',
                           style: bodyLarge.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -190,7 +180,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<FeedBloc>().add(const FeedEvent.refreshFeedPosts());
+                    context.read<FeedBloc>().add(FeedEvent.refreshFeedPosts(userUID: context.read<AuthBloc>().state.user?.uid));
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
                   color: accentPink,
@@ -207,6 +197,13 @@ class _FeedScreenState extends State<FeedScreen> {
                           post.id ?? '',
                           currentUserUID,
                         ),
+                        onAuthorTap: (userUID, userName) {
+                          Navigator.pushNamed(
+                            context,
+                            '/profile',
+                            arguments: {'userUID': userUID, 'userName': userName},
+                          );
+                        },
                         currentUserUID: currentUserUID,
                       );
                     },
@@ -216,15 +213,19 @@ class _FeedScreenState extends State<FeedScreen> {
 
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
                 ),
               );
             },
           ),
           ),
-          bottomNavigationBar: BottomNavigationWidget(
-            currentIndex: _currentTabIndex,
-            onTabSelected: _handleTabSelected,
+          bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
+            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+            builder: (context, messagesState) => BottomNavigationWidget(
+              currentIndex: _currentTabIndex,
+              onTabSelected: _handleTabSelected,
+              unreadMessageCount: messagesState.unreadCount,
+            ),
           ),
         ),
     );

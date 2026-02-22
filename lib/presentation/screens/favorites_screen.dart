@@ -5,14 +5,14 @@ import '../theme/text_styles.dart';
 import '../theme/spacing.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../widgets/post_card.dart';
-import '../state/auth/auth_bloc.dart';
-import '../state/auth/auth_state.dart';
-import '../state/favorites/favorites_bloc.dart';
-import '../state/favorites/favorites_event.dart';
-import '../state/favorites/favorites_state.dart';
-import '../../core/di/injection.dart' as di;
-import '../../domain/repositories/favorite_repository.dart';
-import '../../application/use_cases/post/like_post.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_state.dart';
+import '../bloc/favorites/favorites_bloc.dart';
+import '../bloc/favorites/favorites_event.dart';
+import '../bloc/favorites/favorites_state.dart';
+import '../bloc/messages/messages_bloc.dart';
+import '../bloc/messages/messages_event.dart';
+import '../bloc/messages/messages_state.dart';
 
 /// Favorites screen displaying user's starred (favorited) posts — all from API.
 class FavoritesScreen extends StatefulWidget {
@@ -25,6 +25,7 @@ class FavoritesScreen extends StatefulWidget {
 class _FavoritesScreenState extends State<FavoritesScreen> {
   int _currentTabIndex = 1;
   bool _hasRequestedLoad = false;
+  bool _hasRequestedUnreadCount = false;
 
   void _handleTabSelected(int index) {
     if (_currentTabIndex == index) {
@@ -56,14 +57,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return context.read<AuthBloc>().state.user?.uid;
   }
 
-  Future<void> _handleUnstar(BuildContext context, String postId, String userUID) async {
+  void _handleUnstar(BuildContext context, String postId, String userUID) {
     if (userUID.isEmpty) return;
-    final likePost = di.sl<LikePost>();
-    final favoriteRepository = di.sl<FavoriteRepository>();
-    await likePost(postId, userUID);
-    await favoriteRepository.removeFromFavorites(postId, userUID);
-    if (!context.mounted) return;
-    context.read<FavoritesBloc>().add(FavoritesEvent.refreshFavoritePosts(userUID));
+    context.read<FavoritesBloc>().add(FavoritesEvent.unstarPost(
+          postId: postId,
+          userUID: userUID,
+        ));
   }
 
   @override
@@ -73,6 +72,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     if (!_hasRequestedLoad && userUID.isNotEmpty) {
       _hasRequestedLoad = true;
       context.read<FavoritesBloc>().add(FavoritesEvent.loadFavoritePosts(userUID));
+    }
+    if (!_hasRequestedUnreadCount && userUID.isNotEmpty) {
+      _hasRequestedUnreadCount = true;
+      context.read<MessagesBloc>().add(MessagesEvent.loadUnreadCount(userUID));
     }
   }
 
@@ -125,23 +128,23 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
                           size: 64,
-                          color: Colors.white,
+                          color: textPrimary,
                         ),
                         const SizedBox(height: spacingM),
                         Text(
                           'Error',
                           style: headlineMedium.copyWith(
-                            color: Colors.white,
+                            color: textPrimary,
                           ),
                         ),
                         const SizedBox(height: spacingS),
                         Text(
                           state.errorMessage!,
                           style: bodyLarge.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -152,7 +155,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentPink,
-                            foregroundColor: Colors.white,
+                            foregroundColor: surfaceColor,
                             padding: const EdgeInsets.symmetric(
                               horizontal: spacingL,
                               vertical: spacingM,
@@ -175,20 +178,20 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         Icon(
                           Icons.favorite_border,
                           size: 64,
-                          color: Colors.white.withOpacity(0.7),
+                          color: textSecondary,
                         ),
                         const SizedBox(height: spacingL),
                         Text(
                           'No favorites yet',
                           style: headlineMedium.copyWith(
-                            color: Colors.white,
+                            color: textPrimary,
                           ),
                         ),
                         const SizedBox(height: spacingM),
                         Text(
                           'Posts you favorite will appear here',
                           style: bodyLarge.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -211,6 +214,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       return PostCard(
                         post: post,
                         onLike: () => _handleUnstar(context, post.id ?? '', userUID),
+                        onAuthorTap: (userUID, userName) {
+                          Navigator.pushNamed(
+                            context,
+                            '/profile',
+                            arguments: {'userUID': userUID, 'userName': userName},
+                          );
+                        },
                         currentUserUID: userUID.isNotEmpty ? userUID : null,
                       );
                     },
@@ -220,15 +230,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
                 ),
               );
             },
           ),
           ),
-          bottomNavigationBar: BottomNavigationWidget(
-            currentIndex: _currentTabIndex,
-            onTabSelected: _handleTabSelected,
+          bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
+            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+            builder: (context, messagesState) => BottomNavigationWidget(
+              currentIndex: _currentTabIndex,
+              onTabSelected: _handleTabSelected,
+              unreadMessageCount: messagesState.unreadCount,
+            ),
           ),
         ),
     );
