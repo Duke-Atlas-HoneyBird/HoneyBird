@@ -66,8 +66,18 @@ jobs:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
           FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
         run: |
-          [ -f android/app/google-services.json ] || printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
-          [ -f lib/firebase_options.dart ] || printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
+          if [ -f android/app/google-services.json ]; then
+            echo "android/app/google-services.json already exists (skip write)"
+          else
+            printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+            echo "Created android/app/google-services.json ($(wc -c < android/app/google-services.json) bytes)"
+          fi
+          if [ -f lib/firebase_options.dart ]; then
+            echo "lib/firebase_options.dart already exists (skip write)"
+          else
+            printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
+            echo "Created lib/firebase_options.dart ($(wc -c < lib/firebase_options.dart) bytes)"
+          fi
 
       # Do NOT add: if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
       # Secrets cannot be used in step if: conditions (docs.github.com/actions/use-secrets).
@@ -79,14 +89,24 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
           if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
-            [ -f android/app/release.keystore ] || echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
-            if [ ! -f android/key.properties ]; then
+            if [ -f android/app/release.keystore ]; then
+              echo "android/app/release.keystore already exists (skip write)"
+            else
+              echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+              echo "Created android/app/release.keystore ($(wc -c < android/app/release.keystore) bytes)"
+            fi
+            if [ -f android/key.properties ]; then
+              echo "android/key.properties already exists (skip write)"
+            else
               mkdir -p android
               echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
               echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
               echo "keyAlias=$KEY_ALIAS" >> android/key.properties
               echo "storeFile=app/release.keystore" >> android/key.properties
+              echo "Created android/key.properties"
             fi
+          else
+            echo "ANDROID_KEYSTORE_BASE64 not set, skipping signing config"
           fi
 
       - name: Build Android APK
