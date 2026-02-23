@@ -1,4 +1,4 @@
 
-// Border radius constants
-const double cardBorderRadius = 12.0;
-const double buttonBorderRadius = 8.0;
+// Border radius constants (matches bottom nav bar for consistency)
+const double cardBorderRadius = 16.0;
+const double buttonBorderRadius = 16.0;

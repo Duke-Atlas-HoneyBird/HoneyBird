@@ -16,47 +16,90 @@ class MessageBubble extends StatelessWidget {
     required this.isCurrentUser,
   });
 
+  Widget _buildAvatar() {
+    final initial = message.senderName.isNotEmpty
+        ? message.senderName[0].toUpperCase()
+        : '?';
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(cardBorderRadius),
+      child: Container(
+        width: 32,
+        height: 32,
+        color: primaryPurple,
+        alignment: Alignment.center,
+        child: Text(
+          initial,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bubble = Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: spacingM,
+        vertical: spacingXs,
+      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: spacingM,
+        vertical: spacingS,
+      ),
+      decoration: BoxDecoration(
+        color: isCurrentUser ? accentPink : cardBackground,
+        borderRadius: BorderRadius.circular(cardBorderRadius),
+      ),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.75,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            message.content,
+            style: bodyMedium.copyWith(
+              color: isCurrentUser ? Colors.white : textPrimary,
+            ),
+            maxLines: 20,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: spacingXs),
+          Text(
+            _formatTime(message.timestamp),
+            style: bodyMedium.copyWith(
+              color: isCurrentUser
+                  ? Colors.white.withValues(alpha: 0.7)
+                  : textSecondary,
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (isCurrentUser) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: bubble,
+      );
+    }
+
     return Align(
-      alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(
-          horizontal: spacingM,
-          vertical: spacingXs,
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: spacingM,
-          vertical: spacingS,
-        ),
-        decoration: BoxDecoration(
-          color: isCurrentUser ? accentPink : cardBackground,
-          borderRadius: BorderRadius.circular(cardBorderRadius),
-        ),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(left: spacingM),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
-              message.content,
-              style: bodyMedium.copyWith(
-                color: isCurrentUser ? Colors.white : textPrimary,
-              ),
-              maxLines: 20,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: spacingXs),
-            Text(
-              _formatTime(message.timestamp),
-              style: bodyMedium.copyWith(
-                color: isCurrentUser
-                    ? Colors.white.withValues(alpha: 0.7)
-                    : textSecondary,
-                fontSize: 10,
-              ),
-            ),
+            _buildAvatar(),
+            const SizedBox(width: spacingS),
+            Flexible(child: bubble),
           ],
         ),
       ),

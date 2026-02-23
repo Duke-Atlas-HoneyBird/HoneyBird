@@ -197,17 +197,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         child: Column(
                           children: [
                             if (showProfile) ...[
-                              CircleAvatar(
-                                radius: 48,
-                                backgroundColor: primaryPurple,
-                                child: Text(
-                                  user.userName.isNotEmpty
-                                      ? user.userName[0].toUpperCase()
-                                      : '?',
-                                  style: const TextStyle(
-                                    fontSize: 40,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(cardBorderRadius),
+                                child: Container(
+                                  width: 96,
+                                  height: 96,
+                                  color: primaryPurple,
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    user.userName.isNotEmpty
+                                        ? user.userName[0].toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(
+                                      fontSize: 40,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),

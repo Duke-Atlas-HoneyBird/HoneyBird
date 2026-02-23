@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'border_radius.dart';
+
 ThemeData buildBlackAndWhiteTheme() {
   const Color kBlack = Colors.black;
   const Color kWhite = Colors.white;
@@ -61,7 +63,7 @@ ThemeData buildBlackAndWhiteTheme() {
       shadowColor: Colors.black.withValues(alpha: 0.2),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(cardBorderRadius),
       ),
     ),
     appBarTheme: AppBarTheme(
@@ -90,7 +92,7 @@ ThemeData buildBlackAndWhiteTheme() {
         backgroundColor: kBlack,
         foregroundColor: kWhite,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(buttonBorderRadius),
         ),
       ),
     ),
@@ -102,42 +104,42 @@ ThemeData buildBlackAndWhiteTheme() {
     ),
     inputDecorationTheme: InputDecorationTheme(
       labelStyle: GoogleFonts.ibmPlexSans(
-          fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
-      helperStyle: GoogleFonts.ibmPlexSans(
-          fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black54),
-      prefixStyle: GoogleFonts.ibmPlexSans(
-          fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black54),
-      suffixStyle: GoogleFonts.ibmPlexSans(
-          fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black54),
-      errorStyle: GoogleFonts.ibmPlexSans(
           fontSize: 12, fontWeight: FontWeight.w500, color: kBlack),
+      helperStyle: GoogleFonts.ibmPlexSans(
+          fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black45),
+      prefixStyle: GoogleFonts.ibmPlexSans(
+          fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black45),
+      suffixStyle: GoogleFonts.ibmPlexSans(
+          fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black45),
+      errorStyle: GoogleFonts.ibmPlexSans(
+          fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black45),
       floatingLabelStyle: GoogleFonts.ibmPlexSans(
-          fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
+          fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black45),
       filled: true,
-      fillColor: kWhite,
+      fillColor: Colors.grey[200],
       iconColor: kBlack,
       focusColor: kBlack,
       hoverColor: kBlack,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(50),
-        borderSide: const BorderSide(color: Colors.black12),
+        borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(50),
-        borderSide: const BorderSide(color: Colors.black12),
+        borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(50),
-        borderSide: const BorderSide(color: kBlack),
+        borderSide: BorderSide.none,
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(50),
-        borderSide: const BorderSide(color: kBlack),
+        borderSide: const BorderSide(color: Colors.red),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(50),
-        borderSide: const BorderSide(color: kBlack),
+        borderSide: const BorderSide(color: Colors.red),
       ),
     ),
     iconTheme: const IconThemeData(color: kBlack),
@@ -188,7 +190,7 @@ extension MorrenaThemeExtension on ThemeData {
           backgroundColor: kBlack,
           foregroundColor: kWhite,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(buttonBorderRadius),
           ),
         ),
       ),
@@ -207,7 +209,7 @@ extension MorrenaThemeExtension on ThemeData {
         style: ElevatedButton.styleFrom(
           backgroundColor: kBlack,
           foregroundColor: kWhite,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(buttonBorderRadius)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -217,6 +219,9 @@ extension MorrenaThemeExtension on ThemeData {
         style: OutlinedButton.styleFrom(
           foregroundColor: kBlack,
           side: const BorderSide(color: Colors.black12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(buttonBorderRadius),
+          ),
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(

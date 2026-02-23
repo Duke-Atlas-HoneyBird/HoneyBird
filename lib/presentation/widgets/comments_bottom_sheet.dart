@@ -297,14 +297,19 @@ class _CommentTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: primaryPurple,
-            child: Text(
-              comment.userName.isNotEmpty
-                  ? comment.userName[0].toUpperCase()
-                  : '?',
-              style: labelLarge.copyWith(color: Colors.white, fontSize: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(cardBorderRadius),
+            child: Container(
+              width: 36,
+              height: 36,
+              color: primaryPurple,
+              alignment: Alignment.center,
+              child: Text(
+                comment.userName.isNotEmpty
+                    ? comment.userName[0].toUpperCase()
+                    : '?',
+                style: labelLarge.copyWith(color: Colors.white, fontSize: 12),
+              ),
             ),
           ),
           const SizedBox(width: spacingS),

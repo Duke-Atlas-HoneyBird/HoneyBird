@@ -75,13 +75,20 @@ class PostCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(buttonBorderRadius),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: primaryPurple,
-                    child: Text(
-                      post.userName.isNotEmpty ? post.userName[0].toUpperCase() : '?',
-                      style: labelLarge.copyWith(
-                        color: Colors.white,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(cardBorderRadius),
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      color: primaryPurple,
+                      alignment: Alignment.center,
+                      child: Text(
+                        post.userName.isNotEmpty ? post.userName[0].toUpperCase() : '?',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

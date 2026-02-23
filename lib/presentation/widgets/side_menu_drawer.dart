@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../theme/spacing.dart';
 import '../theme/text_styles.dart';
 import '../theme/constants.dart';
@@ -78,11 +79,19 @@ class SideMenuDrawer extends StatelessWidget {
               // Footer
               Padding(
                 padding: const EdgeInsets.all(spacingL),
-                child: Text(
-                  'HoneyBird v2.0.0',
-                  style: bodyMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                child: FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    final version = snapshot.hasData
+                        ? snapshot.data!.version
+                        : '...';
+                    return Text(
+                      'HoneyBird v$version',
+                      style: bodyMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

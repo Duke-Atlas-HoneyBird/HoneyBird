@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import '../theme/border_radius.dart';
 import '../theme/colours.dart';
 import '../theme/spacing.dart';
 import '../theme/text_styles.dart';
@@ -43,9 +44,9 @@ class BottomNavigationWidget extends StatelessWidget {
                     HapticFeedback.selectionClick();
                     onTabSelected(index);
                   },
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(buttonBorderRadius),
                   customBorder: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(buttonBorderRadius),
                   ),
                   splashColor: selectedTab.withValues(alpha: 0.12),
                   highlightColor: Colors.transparent,
@@ -54,7 +55,7 @@ class BottomNavigationWidget extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 6.0),
                     decoration: BoxDecoration(
                       color: isActive ? selectedTab.withValues(alpha: 0.14) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(buttonBorderRadius),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,

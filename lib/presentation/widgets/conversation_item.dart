@@ -51,15 +51,20 @@ class ConversationItem extends StatelessWidget {
         vertical: spacingS,
       ),
       child: ListTile(
-        leading: CircleAvatar(
-          radius: 28,
-          backgroundColor: primaryPurple,
-          child: Text(
-            otherName.isNotEmpty ? otherName[0].toUpperCase() : '?',
-            style: const TextStyle(
-              fontSize: 20,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(cardBorderRadius),
+          child: Container(
+            width: 56,
+            height: 56,
+            color: primaryPurple,
+            alignment: Alignment.center,
+            child: Text(
+              otherName.isNotEmpty ? otherName[0].toUpperCase() : '?',
+              style: const TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),

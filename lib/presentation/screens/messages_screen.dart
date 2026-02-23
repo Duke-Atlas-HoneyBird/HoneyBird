@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../theme/border_radius.dart';
 import '../theme/colours.dart';
 import '../theme/text_styles.dart';
 import '../theme/spacing.dart';
@@ -411,7 +412,7 @@ class _MessageInputBarState extends State<_MessageInputBar> {
               decoration: InputDecoration(
                 hintText: 'Type a message...',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(cardBorderRadius),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: spacingM,

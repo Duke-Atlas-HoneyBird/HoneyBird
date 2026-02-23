@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../theme/border_radius.dart';
 import '../theme/colours.dart';
 import '../theme/text_styles.dart';
 import '../theme/spacing.dart';
@@ -186,17 +187,22 @@ class _AccountScreenState extends State<AccountScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    CircleAvatar(
-                                      radius: 40,
-                                      backgroundColor: primaryPurple,
-                                      child: Text(
-                                        user.userName.isNotEmpty
-                                            ? user.userName[0].toUpperCase()
-                                            : '?',
-                                        style: const TextStyle(
-                                          fontSize: 32,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(cardBorderRadius),
+                                      child: Container(
+                                        width: 80,
+                                        height: 80,
+                                        color: primaryPurple,
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          user.userName.isNotEmpty
+                                              ? user.userName[0].toUpperCase()
+                                              : '?',
+                                          style: const TextStyle(
+                                            fontSize: 32,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
