@@ -60,6 +60,7 @@ flutter:
 
   assets:
     - assets/
+    - asset/privacy.md
   #   - images/a_dot_ham.jpeg
 
   # fonts:

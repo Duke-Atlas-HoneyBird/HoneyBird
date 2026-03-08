@@ -58,16 +58,16 @@ class _FeedScreenState extends State<FeedScreen> {
 
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushNamed(context, '/home');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/favorites');
+        Navigator.pushNamed(context, '/favorites');
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/account');
+        Navigator.pushNamed(context, '/account');
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/messages');
+        Navigator.pushNamed(context, '/messages');
         break;
     }
   }
@@ -79,14 +79,16 @@ class _FeedScreenState extends State<FeedScreen> {
         gradient: backgroundGradient,
       ),
       child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Feed'),
-            elevation: 0,
-            iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
-          ),
-          body: SafeArea(
-            child: BlocConsumer<FeedBloc, FeedState>(
-            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
+        appBar: AppBar(
+          title: const Text('Feed'),
+          centerTitle: false,
+          elevation: 0,
+          iconTheme:
+              IconThemeData(color: Theme.of(context).colorScheme.onBackground),
+        ),
+        body: SafeArea(
+          child: BlocConsumer<FeedBloc, FeedState>(
+            listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
             listener: (context, state) {
               if (state.errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -95,9 +97,9 @@ class _FeedScreenState extends State<FeedScreen> {
               }
             },
             buildWhen: (prev, curr) =>
-                prev?.posts != curr.posts ||
-                prev?.isLoading != curr.isLoading ||
-                prev?.errorMessage != curr.errorMessage,
+                prev.posts != curr.posts ||
+                prev.isLoading != curr.isLoading ||
+                prev.errorMessage != curr.errorMessage,
             builder: (context, state) {
               if (state.errorMessage != null && state.posts.isEmpty) {
                 return Center(
@@ -129,7 +131,13 @@ class _FeedScreenState extends State<FeedScreen> {
                         const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            context.read<FeedBloc>().add(FeedEvent.loadFeedPosts(userUID: context.read<AuthBloc>().state.user?.uid));
+                            context.read<FeedBloc>().add(
+                                FeedEvent.loadFeedPosts(
+                                    userUID: context
+                                        .read<AuthBloc>()
+                                        .state
+                                        .user
+                                        ?.uid));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
@@ -180,7 +188,8 @@ class _FeedScreenState extends State<FeedScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<FeedBloc>().add(FeedEvent.refreshFeedPosts(userUID: context.read<AuthBloc>().state.user?.uid));
+                    context.read<FeedBloc>().add(FeedEvent.refreshFeedPosts(
+                        userUID: context.read<AuthBloc>().state.user?.uid));
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
                   color: accentPink,
@@ -189,7 +198,8 @@ class _FeedScreenState extends State<FeedScreen> {
                     itemCount: state.posts.length,
                     itemBuilder: (context, index) {
                       final post = state.posts[index];
-                      final currentUserUID = context.read<AuthBloc>().state.user?.uid;
+                      final currentUserUID =
+                          context.read<AuthBloc>().state.user?.uid;
                       return PostCard(
                         post: post,
                         onLike: () => _handleLike(
@@ -201,7 +211,10 @@ class _FeedScreenState extends State<FeedScreen> {
                           Navigator.pushNamed(
                             context,
                             '/profile',
-                            arguments: {'userUID': userUID, 'userName': userName},
+                            arguments: {
+                              'userUID': userUID,
+                              'userName': userName
+                            },
                           );
                         },
                         currentUserUID: currentUserUID,
@@ -218,16 +231,16 @@ class _FeedScreenState extends State<FeedScreen> {
               );
             },
           ),
-          ),
-          bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
-            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
-            builder: (context, messagesState) => BottomNavigationWidget(
-              currentIndex: _currentTabIndex,
-              onTabSelected: _handleTabSelected,
-              unreadMessageCount: messagesState.unreadCount,
-            ),
+        ),
+        bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
+          buildWhen: (prev, curr) => prev.unreadCount != curr.unreadCount,
+          builder: (context, messagesState) => BottomNavigationWidget(
+            currentIndex: _currentTabIndex,
+            onTabSelected: _handleTabSelected,
+            unreadMessageCount: messagesState.unreadCount,
           ),
         ),
+      ),
     );
   }
 }

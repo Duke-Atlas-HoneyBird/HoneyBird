@@ -13,7 +13,6 @@ import '../bloc/messages/messages_event.dart';
 import '../bloc/messages/messages_state.dart';
 import '../../domain/entities/message.dart';
 import '../bloc/auth/auth_bloc.dart';
-import '../bloc/auth/auth_state.dart';
 
 /// Global key for [MessagesScreen] to allow resetting its state (e.g. from app bar leading).
 final messagesScreenGlobalKey = GlobalKey<_MessagesScreenState>();
@@ -38,7 +37,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
       _selectedConversationId = null;
       _selectedConversation = null;
     });
-    context.read<MessagesBloc>().add(const MessagesEvent.clearOpenConversation());
+    context
+        .read<MessagesBloc>()
+        .add(const MessagesEvent.clearOpenConversation());
   }
 
   void _handleTabSelected(int index) {
@@ -74,7 +75,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
       _hasRequestedLoad = true;
       final authState = context.read<AuthBloc>().state;
       final userUID = authState.user?.uid ?? '';
-      context.read<MessagesBloc>().add(MessagesEvent.loadConversations(userUID));
+      context
+          .read<MessagesBloc>()
+          .add(MessagesEvent.loadConversations(userUID));
     }
   }
 
@@ -88,46 +91,57 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget build(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
     final userUID = authState.user?.uid ?? '';
-
+    final participantName = _selectedConversation?.participant1Name;
     return Container(
       decoration: const BoxDecoration(
         gradient: backgroundGradient,
       ),
       child: Scaffold(
-          appBar: AppBar(
-            title: BlocBuilder<MessagesBloc, MessagesState>(
-              buildWhen: (prev, curr) =>
-                  prev?.conversationId != curr.conversationId ||
-                  prev?.openWithUserName != curr.openWithUserName,
-              builder: (context, s) => Text(
-                s.conversationId.isEmpty && _selectedConversation == null
-                    ? 'Messages'
-                    : (s.openWithUserName ?? _selectedConversation?.participant2Name ?? _selectedConversation?.participant1Name ?? 'Conversation'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              
-            ),
-            elevation: 0,
-            iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
-            leading: BlocBuilder<MessagesBloc, MessagesState>(
-              buildWhen: (prev, curr) => prev?.conversationId != curr.conversationId,
-              builder: (context, s) {
-                if (s.conversationId.isEmpty && _selectedConversationId == null) {
-                  return const SizedBox.shrink();
-                }
-                return IconButton(
-                  icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
-                  onPressed: () {
-                    messagesScreenGlobalKey.currentState?.reset();
-                  },
-                );
-              },
+        appBar: AppBar(
+          title: BlocBuilder<MessagesBloc, MessagesState>(
+            buildWhen: (prev, curr) =>
+                prev.conversationId != curr.conversationId ||
+                prev.openWithUserName != curr.openWithUserName,
+            builder: (context, s) => Text(
+              s.conversationId.isEmpty && _selectedConversation == null
+                  ? 'Messages'
+                  : (s.openWithUserName ??
+                      _selectedConversation?.participant1Name ??
+                      participantName ??
+                      'Conversation'),
             ),
           ),
-          body: SafeArea(
-            child: BlocConsumer<MessagesBloc, MessagesState>(
-            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
+          centerTitle: false,
+          elevation: 0,
+          iconTheme:
+              IconThemeData(color: Theme.of(context).colorScheme.onBackground),
+          leading: BlocBuilder<MessagesBloc, MessagesState>(
+            buildWhen: (prev, curr) =>
+                prev.conversationId != curr.conversationId,
+            builder: (context, s) {
+              if (s.conversationId.isEmpty && _selectedConversationId == null) {
+                return IconButton(
+                  icon: Icon(Icons.arrow_back_ios_rounded,
+                      color: Theme.of(context).colorScheme.onSurface),
+                  onPressed: () {
+                    int homePageIndex = 0;
+                    _handleTabSelected(homePageIndex);
+                  },
+                );
+              }
+              return IconButton(
+                icon: Icon(Icons.arrow_back_ios_rounded,
+                    color: Theme.of(context).colorScheme.onSurface),
+                onPressed: () {
+                  messagesScreenGlobalKey.currentState?.reset();
+                },
+              );
+            },
+          ),
+        ),
+        body: SafeArea(
+          child: BlocConsumer<MessagesBloc, MessagesState>(
+            listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
             listener: (context, state) {
               if (state.errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -136,14 +150,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
               }
             },
             buildWhen: (prev, curr) =>
-                prev?.conversations != curr.conversations ||
-                prev?.messages != curr.messages ||
-                prev?.conversationId != curr.conversationId ||
-                prev?.isLoading != curr.isLoading ||
-                prev?.errorMessage != curr.errorMessage,
+                prev.conversations != curr.conversations ||
+                prev.messages != curr.messages ||
+                prev.conversationId != curr.conversationId ||
+                prev.isLoading != curr.isLoading ||
+                prev.errorMessage != curr.errorMessage,
             builder: (context, state) {
-              final activeConvId =
-                  _selectedConversationId ?? (state.conversationId.isNotEmpty ? state.conversationId : null);
+              final activeConvId = _selectedConversationId ??
+                  (state.conversationId.isNotEmpty
+                      ? state.conversationId
+                      : null);
               if (activeConvId != null) {
                 return _buildConversationView(
                   context,
@@ -157,7 +173,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
               if (state.isLoading && state.conversations.isEmpty) {
                 return Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onBackground),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.onBackground),
                   ),
                 );
               }
@@ -175,10 +192,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             size: 64,
                           ),
                           const SizedBox(height: spacingM),
-                          Text(
-                            'Error',
-                            style: headlineMedium
-                          ),
+                          Text('Error', style: headlineMedium),
                           const SizedBox(height: spacingS),
                           Text(
                             state.errorMessage!,
@@ -187,38 +201,43 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             maxLines: 10,
                             overflow: TextOverflow.ellipsis,
                           ),
-                        const SizedBox(height: spacingM),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.read<MessagesBloc>().add(MessagesEvent.loadConversations(userUID));
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            foregroundColor: surfaceColor,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: spacingL,
-                              vertical: spacingM,
+                          const SizedBox(height: spacingM),
+                          ElevatedButton(
+                            onPressed: () {
+                              context.read<MessagesBloc>().add(
+                                  MessagesEvent.loadConversations(userUID));
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: surfaceColor,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: spacingL,
+                                vertical: spacingM,
+                              ),
                             ),
+                            child: const Text('Retry'),
                           ),
-                          child: const Text('Retry'),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
+                );
               }
 
               if (state.conversations.isNotEmpty || !state.isLoading) {
                 if (state.conversations.isEmpty) {
                   return _NoMessagesYetWidget(
-                    onRetry: () => context.read<MessagesBloc>().add(MessagesEvent.loadConversations(userUID)),
+                    onRetry: () => context
+                        .read<MessagesBloc>()
+                        .add(MessagesEvent.loadConversations(userUID)),
                   );
                 }
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<MessagesBloc>().add(MessagesEvent.refreshConversations(userUID));
+                    context
+                        .read<MessagesBloc>()
+                        .add(MessagesEvent.refreshConversations(userUID));
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
                   color: accentPink,
@@ -234,8 +253,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             _selectedConversationId = conversation.id;
                             _selectedConversation = conversation;
                           });
-                          context.read<MessagesBloc>().add(MessagesEvent.loadMessages(conversation.id));
-                          context.read<MessagesBloc>().add(MessagesEvent.markAsRead(
+                          context
+                              .read<MessagesBloc>()
+                              .add(MessagesEvent.loadMessages(conversation.id));
+                          context
+                              .read<MessagesBloc>()
+                              .add(MessagesEvent.markAsRead(
                                 conversationId: conversation.id,
                                 userUID: userUID,
                               ));
@@ -253,16 +276,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
               );
             },
           ),
-          ),
-          bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
-            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
-            builder: (context, messagesState) => BottomNavigationWidget(
-              currentIndex: _currentTabIndex,
-              onTabSelected: _handleTabSelected,
-              unreadMessageCount: messagesState.unreadCount,
-            ),
-          ),
         ),
+        bottomNavigationBar: _selectedConversationId == null
+            ? BlocBuilder<MessagesBloc, MessagesState>(
+                buildWhen: (prev, curr) => prev.unreadCount != curr.unreadCount,
+                builder: (context, messagesState) => BottomNavigationWidget(
+                  currentIndex: _currentTabIndex,
+                  onTabSelected: _handleTabSelected,
+                  unreadMessageCount: messagesState.unreadCount,
+                ),
+              )
+            : null,
+      ),
     );
   }
 
@@ -276,9 +301,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
     final conversation = _selectedConversation;
     return BlocBuilder<MessagesBloc, MessagesState>(
       buildWhen: (prev, curr) =>
-          prev?.messages != curr.messages ||
-          prev?.conversationId != curr.conversationId ||
-          prev?.isLoading != curr.isLoading,
+          prev.messages != curr.messages ||
+          prev.conversationId != curr.conversationId ||
+          prev.isLoading != curr.isLoading,
       builder: (context, state) {
         if (state.isLoading && state.messages.isEmpty) {
           return const Center(
@@ -295,34 +320,39 @@ class _MessagesScreenState extends State<MessagesScreen> {
             resolvedOtherUID = otherUID;
             resolvedOtherName = otherName;
           } else if (conversation != null) {
-            resolvedOtherUID = userUID == conversation.participant1UID ? conversation.participant2UID : conversation.participant1UID;
-            resolvedOtherName = userUID == conversation.participant1UID ? conversation.participant2Name : conversation.participant1Name;
+            resolvedOtherUID = userUID == conversation.participant1UID
+                ? conversation.participant2UID
+                : conversation.participant1UID;
+            resolvedOtherName = userUID == conversation.participant1UID
+                ? conversation.participant2Name
+                : conversation.participant1Name;
           } else {
-            final other = _otherParticipantFromMessages(state.messages, userUID);
+            final other =
+                _otherParticipantFromMessages(state.messages, userUID);
             resolvedOtherUID = other.$1;
             resolvedOtherName = other.$2;
           }
           final senderName = _senderDisplayName(context);
-          
- 
+
           return Column(
             children: [
               Expanded(
                 child: state.messages.isEmpty
                     ? const _TypeFirstMessageWidget()
                     : ListView.builder(
-                  reverse: true,
-                  padding: const EdgeInsets.symmetric(vertical: spacingM),
-                  itemCount: state.messages.length,
-                  itemBuilder: (context, index) {
-                    final message = state.messages[state.messages.length - 1 - index];
-                    final isCurrentUser = message.senderUID == userUID;
-                    return MessageBubble(
-                      message: message,
-                      isCurrentUser: isCurrentUser,
-                    );
-                  },
-                ),
+                        reverse: true,
+                        padding: const EdgeInsets.symmetric(vertical: spacingM),
+                        itemCount: state.messages.length,
+                        itemBuilder: (context, index) {
+                          final message =
+                              state.messages[state.messages.length - 1 - index];
+                          final isCurrentUser = message.senderUID == userUID;
+                          return MessageBubble(
+                            message: message,
+                            isCurrentUser: isCurrentUser,
+                          );
+                        },
+                      ),
               ),
               _MessageInputBar(
                 conversationId: conversationId,
@@ -352,7 +382,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
     return 'You';
   }
 
-  (String, String) _otherParticipantFromMessages(List<Message> messages, String userUID) {
+  (String, String) _otherParticipantFromMessages(
+      List<Message> messages, String userUID) {
     for (final m in messages) {
       if (m.senderUID != userUID) return (m.senderUID, m.senderName);
       if (m.receiverUID != userUID) return (m.receiverUID, m.receiverName);
@@ -437,7 +468,9 @@ class _MessageInputBarState extends State<_MessageInputBar> {
                 content: text,
                 timestamp: DateTime.now(),
               );
-              context.read<MessagesBloc>().add(MessagesEvent.sendMessage(message, conversationId: widget.conversationId));
+              context.read<MessagesBloc>().add(MessagesEvent.sendMessage(
+                  message,
+                  conversationId: widget.conversationId));
               _controller.clear();
             },
           ),
@@ -501,12 +534,12 @@ class _NoMessagesYetWidget extends StatelessWidget {
                         ),
                       ),
                     ],
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
       },
     );
   }
@@ -551,4 +584,3 @@ class _TypeFirstMessageWidget extends StatelessWidget {
     );
   }
 }
-

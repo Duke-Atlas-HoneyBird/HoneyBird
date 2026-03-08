@@ -43,7 +43,11 @@ Future<void> init() async {
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(authDataSource: sl()),
+    () => AuthRepositoryImpl(
+      authDataSource: sl(),
+      userRepository: sl(),
+      preferenceRepository: sl(),
+    ),
   );
   sl.registerLazySingleton<PostRepository>(
     () => PostRepositoryImpl(firebaseDataSource: sl()),

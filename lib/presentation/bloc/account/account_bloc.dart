@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/utils/constants.dart';
 import '../../../core/utils/error_message_utils.dart';
 import '../../../domain/entities/user.dart';
-import '../../../domain/entities/user_preference.dart';
 import '../../../domain/repositories/user_repository.dart';
 import '../../../domain/repositories/user_preference_repository.dart';
 import 'account_event.dart';
@@ -29,7 +28,15 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     LoadAccountData event,
     Emitter<AccountState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, errorMessage: null));
+    emit(
+      state.copyWith(
+        isLoading: true,
+        errorMessage: null,
+        hasCompletedOnboarding: sharedPreferences
+                .getBool(StorageKeys.hasCompletedOnboardingThisInstall) ??
+            false,
+      ),
+    );
 
     final userResult = await userRepository.getUser(event.userUID);
     final prefResult = await preferenceRepository.getPreferences(event.userUID);
@@ -75,8 +82,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
           await sharedPreferences.setBool(
               StorageKeys.hasCompletedOnboardingThisInstall, true);
         }
-        emit(state.copyWith(
-            isSaving: false, preferences: prefsToSave));
+        emit(state.copyWith(isSaving: false, preferences: prefsToSave));
       },
     );
   }

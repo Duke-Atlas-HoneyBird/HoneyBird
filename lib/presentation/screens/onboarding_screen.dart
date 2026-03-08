@@ -62,16 +62,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _complete() {
     HapticFeedback.mediumImpact();
     context.read<AccountBloc>().add(
-          AccountEvent.updateUserPreferences(_prefs, markOnboardingComplete: true),
+          AccountEvent.updateUserPreferences(
+            _prefs,
+            markOnboardingComplete: true,
+          ),
         );
+
+    Navigator.of(context).pushNamed('/home');
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<AccountBloc, AccountState>(
       listenWhen: (prev, curr) =>
-          (prev?.isSaving == true && curr.isSaving == false) ||
-          (prev?.errorMessage != curr.errorMessage && curr.errorMessage != null),
+          (prev.isSaving == true && curr.isSaving == false) ||
+          (prev.errorMessage != curr.errorMessage && curr.errorMessage != null),
       listener: (context, state) {
         if (state.errorMessage != null && !state.isSaving) {
           SnackBarUtils.showError(
@@ -81,8 +86,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           return;
         }
         // Save completed successfully (was saving, now done, no error)
-        if (!state.isSaving && state.errorMessage == null) {
-          Navigator.of(context).pushReplacementNamed('/home');
+        if (!state.isSaving && state.errorMessage == null && state.hasCompletedOnboarding == true) {
+          Navigator.of(context).pushNamed('/home');
         }
       },
       child: Container(
@@ -94,93 +99,97 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Column(
               children: [
                 const SizedBox(height: spacingL),
-              Text(
-                'Tell us about your taste',
-                style: headlineMedium.copyWith(
-                  color: primaryColor,
-                  fontWeight: FontWeight.bold,
+                Text(
+                  'Tell us about your taste',
+                  style: headlineMedium.copyWith(
+                    color: primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: spacingS),
-              Text(
-                'We\'ll use this to personalize your feed',
-                style: bodyMedium.copyWith(color: textSecondary),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: spacingL),
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (i) => setState(() => _currentPage = i),
-                  children: [
-                    _buildCuisinesPage(),
-                    _buildDietPage(),
-                    _buildExperiencesPage(),
-                  ],
+                const SizedBox(height: spacingS),
+                Text(
+                  'We\'ll use this to personalize your feed',
+                  style: bodyMedium.copyWith(color: textSecondary),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(spacingL),
-                child: Row(
-                  children: [
-                    ...List.generate(3, (i) {
-                      return Container(
-                        margin: const EdgeInsets.only(right: 6),
-                        width: _currentPage == i ? 24 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          color: _currentPage == i
-                              ? accentPink
-                              : textSecondary.withValues(alpha: 0.3),
+                const SizedBox(height: spacingL),
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (i) => setState(() => _currentPage = i),
+                    children: [
+                      _buildCuisinesPage(),
+                      _buildDietPage(),
+                      _buildExperiencesPage(),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(spacingL),
+                  child: Row(
+                    children: [
+                      ...List.generate(3, (i) {
+                        return Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          width: _currentPage == i ? 24 : 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: _currentPage == i
+                                ? accentPink
+                                : textSecondary.withValues(alpha: 0.3),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      spacingL, 0, spacingL, spacingL),
+                  child: BlocBuilder<AccountBloc, AccountState>(
+                    buildWhen: (prev, curr) => prev.isSaving != curr.isSaving,
+                    builder: (context, state) {
+                      final isSaving = state.isSaving;
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: isSaving ? null : _next,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accentPink,
+                            foregroundColor: Colors.white,
+                            padding:
+                                const EdgeInsets.symmetric(vertical: spacingM),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(buttonBorderRadius),
+                            ),
+                            minimumSize: const Size.fromHeight(48),
+                          ),
+                          child: isSaving
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  _currentPage < 2 ? 'Next' : 'Get started',
+                                  style: labelLarge.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
                       );
-                    }),
-                  ],
+                    },
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(spacingL, 0, spacingL, spacingL),
-                child: BlocBuilder<AccountBloc, AccountState>(
-                  buildWhen: (prev, curr) => prev?.isSaving != curr.isSaving,
-                  builder: (context, state) {
-                    final isSaving = state.isSaving;
-                    return SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isSaving ? null : _next,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: accentPink,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: spacingM),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(buttonBorderRadius),
-                          ),
-                          minimumSize: const Size.fromHeight(48),
-                        ),
-                        child: isSaving
-                        ? const SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                            : Text(
-                                _currentPage < 2 ? 'Next' : 'Get started',
-                                style: labelLarge.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                    );
-                  },
-                ),
-              ),
               ],
             ),
           ),
@@ -205,9 +214,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Text(
             'What cuisines do you enjoy?',
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              color: primaryColor,
-              fontWeight: FontWeight.w600,
-            ),
+                  color: primaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: spacingM),
           Wrap(
@@ -250,9 +259,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Text(
             'Any dietary preferences?',
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              color: primaryColor,
-              fontWeight: FontWeight.w600,
-            ),
+                  color: primaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: spacingM),
           Wrap(
@@ -293,9 +302,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Text(
             'What experiences do you like?',
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              color: primaryColor,
-              fontWeight: FontWeight.w600,
-            ),
+                  color: primaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: spacingM),
           Wrap(

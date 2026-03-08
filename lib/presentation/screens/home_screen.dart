@@ -16,15 +16,13 @@ import '../bloc/messages/messages_state.dart';
 import '../theme/colours.dart';
 import '../theme/constants.dart';
 import '../theme/spacing.dart';
-import '../widgets/search_bar_widget.dart';
 import '../widgets/post_feed_widget.dart';
 import '../widgets/comments_bottom_sheet.dart';
 import '../widgets/bottom_navigation_widget.dart';
-import '../widgets/side_menu_drawer.dart';
 import 'post_creation_screen.dart';
 
 /// The main home screen of the HoneyBird app
-/// 
+///
 /// Displays a gradient background, search bar, post feed, bottom navigation,
 /// and provides access to the side menu and post creation.
 /// Includes haptic feedback and proper z-index for FAB.
@@ -37,9 +35,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentTabIndex = 0;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _hasRequestedLoad = false;
   bool _hasRequestedUnreadCount = false;
+
+  static const _menuItems = <_HomeMenuAction, String>{
+    _HomeMenuAction.account: 'Account',
+    _HomeMenuAction.manage: 'Manage',
+    _HomeMenuAction.timeline: 'Timeline',
+    _HomeMenuAction.feed: 'Feed',
+  };
 
   late final CommentBloc _commentBloc;
   late final CommentCountBloc _commentCountBloc;
@@ -68,8 +72,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -77,44 +79,31 @@ class _HomeScreenState extends State<HomeScreen> {
         gradient: backgroundGradient,
       ),
       child: Scaffold(
-        key: _scaffoldKey,
         backgroundColor: Colors.transparent,
-        endDrawer: SideMenuDrawer(
-          onNavigate: _handleSideMenuNavigation,
+        appBar: AppBar(
+          title: const Text('Honey Bird'),
+          centerTitle: false,
+          elevation: 0,
+          actions: [
+            PopupMenuButton<_HomeMenuAction>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: _onMenuItemSelected,
+              itemBuilder: (context) {
+                return _menuItems.entries
+                    .map(
+                      (entry) => PopupMenuItem<_HomeMenuAction>(
+                        value: entry.key,
+                        child: Text(entry.value),
+                      ),
+                    )
+                    .toList();
+              },
+            ),
+          ],
         ),
         body: SafeArea(
           child: Column(
             children: [
-              // Top bar with search and hamburger menu
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: spacingM,
-                  vertical: spacingS,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SearchBarWidget(
-                        onSearch: _handleSearch,
-                      ),
-                    ),
-                    const SizedBox(width: spacingS),
-                    IconButton(
-                      color: primaryColor,
-                      icon: const Icon(
-                        Icons.menu,
-                        size: 28,
-                      ),
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        _openSideMenu();
-                      },
-                      iconSize: 48, // Proper touch target
-                    ),
-                  ],
-                ),
-              ),
-              
               // Post feed in center area (CommentCountBloc so counts update and UI re-renders)
               Expanded(
                 child: Center(
@@ -122,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     value: _commentCountBloc,
                     child: BlocConsumer<AuthBloc, AuthState>(
                       listener: (context, state) {},
-                      buildWhen: (prev, curr) => prev?.user != curr.user,
+                      buildWhen: (prev, curr) => prev.user != curr.user,
                       builder: (context, authState) {
                         final currentUserUID = authState.user?.uid;
                         final currentUserName = authState.user != null
@@ -131,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             : null;
                         return BlocConsumer<FeedBloc, FeedState>(
                           listenWhen: (prev, curr) =>
-                              prev?.errorMessage != curr.errorMessage,
+                              prev.errorMessage != curr.errorMessage,
                           listener: (context, state) {
                             if (state.errorMessage != null) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -140,19 +129,24 @@ class _HomeScreenState extends State<HomeScreen> {
                             }
                           },
                           buildWhen: (prev, curr) =>
-                              prev?.posts != curr.posts ||
-                              prev?.isLoading != curr.isLoading,
+                              prev.posts != curr.posts ||
+                              prev.isLoading != curr.isLoading,
                           builder: (context, feedState) {
                             return PostFeedWidget(
                               posts: feedState.posts,
                               isLoading: feedState.isLoading,
                               onRefresh: () {
-                                final uid = context.read<AuthBloc>().state.user?.uid;
-                                context.read<FeedBloc>().add(FeedEvent.refreshFeedPosts(userUID: uid));
+                                final uid =
+                                    context.read<AuthBloc>().state.user?.uid;
+                                context.read<FeedBloc>().add(
+                                    FeedEvent.refreshFeedPosts(userUID: uid));
                               },
                               onRetry: () {
-                                final uid = context.read<AuthBloc>().state.user?.uid;
-                                context.read<FeedBloc>().add(FeedEvent.loadFeedPosts(userUID: uid));
+                                final uid =
+                                    context.read<AuthBloc>().state.user?.uid;
+                                context
+                                    .read<FeedBloc>()
+                                    .add(FeedEvent.loadFeedPosts(userUID: uid));
                               },
                               onLike: (postId, userId) {
                                 context.read<FeedBloc>().add(
@@ -192,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
-          buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+          buildWhen: (prev, curr) => prev.unreadCount != curr.unreadCount,
           builder: (context, messagesState) => BottomNavigationWidget(
             currentIndex: _currentTabIndex,
             onTabSelected: _handleTabSelected,
@@ -219,10 +213,6 @@ class _HomeScreenState extends State<HomeScreen> {
     debugPrint('Search query: $query');
   }
 
-  void _openSideMenu() {
-    _scaffoldKey.currentState?.openEndDrawer();
-  }
-
   void _handleTabSelected(int index) {
     // Don't update state if already on the selected tab
     if (_currentTabIndex == index) {
@@ -240,15 +230,15 @@ class _HomeScreenState extends State<HomeScreen> {
         break;
       case 1:
         // Navigate to Favorites screen
-        Navigator.pushReplacementNamed(context, '/favorites');
+        Navigator.pushNamed(context, '/favorites');
         break;
       case 2:
         // Navigate to Account screen
-        Navigator.pushReplacementNamed(context, '/account');
+        Navigator.pushNamed(context, '/account');
         break;
       case 3:
         // Navigate to Messages screen
-        Navigator.pushReplacementNamed(context, '/messages');
+        Navigator.pushNamed(context, '/messages');
         break;
     }
   }
@@ -264,6 +254,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleSideMenuNavigation(String route) {
     Navigator.pushNamed(context, route);
+  }
+
+  void _onMenuItemSelected(_HomeMenuAction action) {
+    HapticFeedback.selectionClick();
+    switch (action) {
+      case _HomeMenuAction.account:
+        Navigator.pushNamed(context, '/account');
+        break;
+      case _HomeMenuAction.manage:
+        Navigator.pushNamed(context, '/manage');
+        break;
+      case _HomeMenuAction.timeline:
+        Navigator.pushNamed(context, '/timeline');
+        break;
+      case _HomeMenuAction.feed:
+        Navigator.pushNamed(context, '/feed');
+        break;
+    }
   }
 
   void _openComments(
@@ -286,3 +294,5 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
+enum _HomeMenuAction { account, manage, timeline, feed }

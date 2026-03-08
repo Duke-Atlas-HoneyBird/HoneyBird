@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../core/error/exceptions.dart';
 import '../../core/utils/constants.dart';
 import '../models/user_model.dart';

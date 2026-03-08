@@ -72,16 +72,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushNamed(context, '/home');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/favorites');
+        Navigator.pushNamed(context, '/favorites');
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/account');
+        Navigator.pushNamed(context, '/account');
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/messages');
+        Navigator.pushNamed(context, '/messages');
         break;
     }
   }
@@ -101,13 +101,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
       ),
       child: Scaffold(
           appBar: AppBar(
+            centerTitle: false,
             title: const Text('Timeline'),
             elevation: 0,
             iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
           ),
           body: SafeArea(
             child: BlocConsumer<TimelineBloc, TimelineState>(
-            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
+            listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
             listener: (context, state) {
               if (state.errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -116,9 +117,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
               }
             },
             buildWhen: (prev, curr) =>
-                prev?.posts != curr.posts ||
-                prev?.isLoading != curr.isLoading ||
-                prev?.errorMessage != curr.errorMessage,
+                prev.posts != curr.posts ||
+                prev.isLoading != curr.isLoading ||
+                prev.errorMessage != curr.errorMessage,
             builder: (context, state) {
               if (state.isLoading && state.posts.isEmpty) {
                 return Center(
@@ -259,7 +260,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ),
           ),
           bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
-            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+            buildWhen: (prev, curr) => prev.unreadCount != curr.unreadCount,
             builder: (context, messagesState) => BottomNavigationWidget(
               currentIndex: _currentTabIndex,
               onTabSelected: _handleTabSelected,

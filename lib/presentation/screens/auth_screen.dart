@@ -30,6 +30,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         title: Text(_isSignUp ? 'Sign Up' : 'Sign In'),
       ),
       body: SafeArea(
@@ -49,7 +50,7 @@ class _AuthScreenState extends State<AuthScreen> {
             );
           }
           if (state.user != null) {
-            Navigator.of(context).pushReplacementNamed('/home');
+            Navigator.of(context).pushNamed('/home');
           }
           if (state.passwordResetEmail != null) {
             ScaffoldMessenger.of(context).showSnackBar(

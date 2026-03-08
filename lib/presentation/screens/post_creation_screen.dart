@@ -129,6 +129,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
         child: Scaffold(
           appBar: AppBar(
           elevation: 0,
+          centerTitle: false,
           leading: IconButton(
             icon: Icon(
               Icons.close,

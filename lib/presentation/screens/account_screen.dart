@@ -40,16 +40,16 @@ class _AccountScreenState extends State<AccountScreen> {
 
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushNamed(context, '/home');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/favorites');
+        Navigator.pushNamed(context, '/favorites');
         break;
       case 2:
         // Already on Account screen
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/messages');
+        Navigator.pushNamed(context, '/messages');
         break;
     }
   }
@@ -89,12 +89,13 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       child: Scaffold(
           appBar: AppBar(
+            centerTitle: false,
             title: const Text('Account'),
             elevation: 0,
           ),
           body: SafeArea(
             child: BlocConsumer<AccountBloc, AccountState>(
-            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
+            listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
             listener: (context, state) {
               if (state.errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -103,11 +104,11 @@ class _AccountScreenState extends State<AccountScreen> {
               }
             },
             buildWhen: (prev, curr) =>
-                prev?.user != curr.user ||
-                prev?.preferences != curr.preferences ||
-                prev?.isLoading != curr.isLoading ||
-                prev?.isSaving != curr.isSaving ||
-                prev?.errorMessage != curr.errorMessage,
+                prev.user != curr.user ||
+                prev.preferences != curr.preferences ||
+                prev.isLoading != curr.isLoading ||
+                prev.isSaving != curr.isSaving ||
+                prev.errorMessage != curr.errorMessage,
             builder: (context, state) {
               if (state.isLoading && state.user == null) {
                 return Center(
@@ -549,7 +550,7 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           ),
           bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
-            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+            buildWhen: (prev, curr) => prev.unreadCount != curr.unreadCount,
             builder: (context, messagesState) => BottomNavigationWidget(
               currentIndex: _currentTabIndex,
               onTabSelected: _handleTabSelected,

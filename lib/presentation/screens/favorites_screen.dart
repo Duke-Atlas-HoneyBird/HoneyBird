@@ -39,16 +39,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     // Navigate to different screens based on tab index
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushNamed(context, '/home');
         break;
       case 1:
         // Already on Favorites screen
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/account');
+        Navigator.pushNamed(context, '/account');
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/messages');
+        Navigator.pushNamed(context, '/messages');
         break;
     }
   }
@@ -71,7 +71,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     final userUID = _currentUserUID(context) ?? '';
     if (!_hasRequestedLoad && userUID.isNotEmpty) {
       _hasRequestedLoad = true;
-      context.read<FavoritesBloc>().add(FavoritesEvent.loadFavoritePosts(userUID));
+      context
+          .read<FavoritesBloc>()
+          .add(FavoritesEvent.loadFavoritePosts(userUID));
     }
     if (!_hasRequestedUnreadCount && userUID.isNotEmpty) {
       _hasRequestedUnreadCount = true;
@@ -93,13 +95,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         gradient: backgroundGradient,
       ),
       child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Favorites'),
-            elevation: 0,
-            iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
-          ),
-          body: SafeArea(
-            child: BlocConsumer<FavoritesBloc, FavoritesState>(
+        appBar: AppBar(
+          centerTitle: false,
+          title: const Text('Favorites'),
+          elevation: 0,
+          iconTheme:
+              IconThemeData(color: Theme.of(context).colorScheme.onBackground),
+        ),
+        body: SafeArea(
+          child: BlocConsumer<FavoritesBloc, FavoritesState>(
             listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
             listener: (context, state) {
               if (state.errorMessage != null) {
@@ -116,7 +120,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               if (state.isLoading && state.posts.isEmpty) {
                 return Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onBackground),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.onBackground),
                   ),
                 );
               }
@@ -151,7 +156,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         const SizedBox(height: spacingM),
                         ElevatedButton(
                           onPressed: () {
-                            context.read<FavoritesBloc>().add(FavoritesEvent.loadFavoritePosts(userUID));
+                            context
+                                .read<FavoritesBloc>()
+                                .add(FavoritesEvent.loadFavoritePosts(userUID));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentPink,
@@ -202,7 +209,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<FavoritesBloc>().add(FavoritesEvent.refreshFavoritePosts(userUID));
+                    context
+                        .read<FavoritesBloc>()
+                        .add(FavoritesEvent.refreshFavoritePosts(userUID));
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
                   color: accentPink,
@@ -213,12 +222,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       final post = state.posts[index];
                       return PostCard(
                         post: post,
-                        onLike: () => _handleUnstar(context, post.id ?? '', userUID),
+                        onLike: () =>
+                            _handleUnstar(context, post.id ?? '', userUID),
                         onAuthorTap: (userUID, userName) {
                           Navigator.pushNamed(
                             context,
                             '/profile',
-                            arguments: {'userUID': userUID, 'userName': userName},
+                            arguments: {
+                              'userUID': userUID,
+                              'userName': userName
+                            },
                           );
                         },
                         currentUserUID: userUID.isNotEmpty ? userUID : null,
@@ -235,16 +248,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               );
             },
           ),
-          ),
-          bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
-            buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
-            builder: (context, messagesState) => BottomNavigationWidget(
-              currentIndex: _currentTabIndex,
-              onTabSelected: _handleTabSelected,
-              unreadMessageCount: messagesState.unreadCount,
-            ),
+        ),
+        bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
+          buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
+          builder: (context, messagesState) => BottomNavigationWidget(
+            currentIndex: _currentTabIndex,
+            onTabSelected: _handleTabSelected,
+            unreadMessageCount: messagesState.unreadCount,
           ),
         ),
+      ),
     );
   }
 }

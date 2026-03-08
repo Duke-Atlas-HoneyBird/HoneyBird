@@ -60,7 +60,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           otherUserName: receiverName,
         ));
 
-    Navigator.pushReplacementNamed(context, '/messages');
+    Navigator.pushNamed(context, '/messages');
   }
 
   void _handleBlock() {
@@ -107,10 +107,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(   
-        title: Text(widget.targetUserName.isNotEmpty ? widget.targetUserName : 'Profile'),
+      appBar: AppBar(
+        centerTitle: false,
+        title: Text(widget.targetUserName.isNotEmpty
+            ? widget.targetUserName
+            : 'Profile'),
         elevation: 0,
-        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onBackground),
+        iconTheme:
+            IconThemeData(color: Theme.of(context).colorScheme.onBackground),
       ),
       body: Container(
         decoration: const BoxDecoration(gradient: backgroundGradient),
@@ -198,7 +202,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           children: [
                             if (showProfile) ...[
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(cardBorderRadius),
+                                borderRadius:
+                                    BorderRadius.circular(cardBorderRadius),
                                 child: Container(
                                   width: 96,
                                   height: 96,
@@ -226,7 +231,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 const SizedBox(height: spacingXs),
                                 Text(
                                   user.userEmail,
-                                  style: bodyMedium.copyWith(color: textSecondary),
+                                  style:
+                                      bodyMedium.copyWith(color: textSecondary),
                                   textAlign: TextAlign.center,
                                 ),
                               ],
@@ -235,7 +241,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               const SizedBox(height: spacingS),
                               Text(
                                 'This user has limited their profile visibility',
-                                style: bodyMedium.copyWith(color: textSecondary),
+                                style:
+                                    bodyMedium.copyWith(color: textSecondary),
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -279,8 +286,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 spacing: spacingS,
                                 runSpacing: spacingS,
                                 children: [
-                                  if (prefs.vegetarian)
-                                    _chip('Vegetarian'),
+                                  if (prefs.vegetarian) _chip('Vegetarian'),
                                   if (prefs.vegan) _chip('Vegan'),
                                   if (prefs.halaal) _chip('Halaal'),
                                   if (prefs.pork) _chip('No Pork'),
@@ -330,7 +336,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     ? Icons.block
                                     : Icons.block_outlined,
                               ),
-                              label: Text(state.isBlocked ? 'Unblock' : 'Block'),
+                              label:
+                                  Text(state.isBlocked ? 'Unblock' : 'Block'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: state.isBlocked
                                     ? accentPink

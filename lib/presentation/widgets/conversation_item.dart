@@ -35,10 +35,8 @@ class ConversationItem extends StatelessWidget {
     }
   }
 
-  String _getOtherParticipantName() {
-    // Assuming current user is participant1, return participant2 name
-    return conversation.participant2Name;
-  }
+  String _getOtherParticipantName() => conversation.participant1Name;
+  
 
   @override
   Widget build(BuildContext context) {
