@@ -1,6 +1,6 @@
 name: honey_bird
 description: "..."
-version: 2.0.12+21
+version: 2.0.13+22
 
 environment:
   sdk: ^3.6.0
@@ -57,10 +57,10 @@ flutter_native_splash:
 flutter:
   uses-material-design: true
 
-
   assets:
-    - assets/
-    - asset/privacy.md
+    - assets/privacy.md
+    - assets/logo/
+    - assets/fonts/
   #   - images/a_dot_ham.jpeg
 
   # fonts:

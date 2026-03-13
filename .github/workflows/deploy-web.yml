@@ -6,7 +6,7 @@ on:
       - develop
     paths:
       - 'lib/main.web.dart'
-      - 'asset/privacy.md'
+      - 'assets/privacy.md'
       - '.github/workflows/deploy-web.yml'
 
 permissions:
