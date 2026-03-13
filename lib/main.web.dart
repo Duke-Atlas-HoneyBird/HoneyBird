@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:markdown_widget/markdown_widget.dart';
 
 void main() {
   runApp(const HoneyBirdWebApp());
@@ -23,7 +24,7 @@ class HoneyBirdWebApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'HoneyBird Privacy',
+      title: 'HoneyBird',
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
       theme: ThemeData(
@@ -42,22 +43,22 @@ class _PrivacyScreen extends StatefulWidget {
 }
 
 class _PrivacyScreenState extends State<_PrivacyScreen> {
-  late final Future<String> _privacyFuture;
+  late final _scrollController;
 
   @override
   void initState() {
     super.initState();
-    _privacyFuture = rootBundle.loadString('assets/privacy.md');
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Privacy Policy'),
-      ),
       body: FutureBuilder<String>(
-        future: _privacyFuture,
+        future: rootBundle.loadString('assets/privacy.md'),
         builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -73,13 +74,21 @@ class _PrivacyScreenState extends State<_PrivacyScreen> {
           }
 
           final String text = snapshot.data ?? '';
-
-          return Scrollbar(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: SelectableText(
-                text,
-                style: Theme.of(context).textTheme.bodyMedium,
+          final double screenWidth = MediaQuery.of(context).size.width;
+          final double screenHeight = MediaQuery.of(context).size.height;
+          return SizedBox(
+            width: screenWidth,
+            height: screenHeight,
+            child: Scrollbar(
+              controller: _scrollController,
+              child: SingleChildScrollView(
+                  controller: _scrollController,
+                child: MarkdownWidget(
+                  data: text,
+                  shrinkWrap: true,
+                  selectable: true,
+                  padding: const EdgeInsets.all(16),
+                ),
               ),
             ),
           );

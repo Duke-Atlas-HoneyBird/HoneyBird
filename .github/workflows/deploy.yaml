@@ -1,4 +1,8 @@
 name: deploy
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     tags:
@@ -6,18 +10,49 @@ on:
     paths:
       - 'lib/main.web.dart'
       - 'assets/privacy.md'
-      - '.github/workflows/deploy-web.yml'
-jobs:
-  build:    
-    runs-on: ubuntu-latest
+      - '.github/workflows/deploy.yaml'
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-      - run: echo "${{toJSON(github.event)}}"
-      - run: flutter build web --release --target=lib/main.web.dart --base-href=/${{ github.event.repository.name }}/
-      - run: git config user.name github-actions
-      - run: git config user.email github-actions@github.com
-      - run: git --work-tree build/web add --all
-      - run: git commit -m "REF:${{github.event.head_commit.message }} - ${{ github.sha }}"
-      - run: git push origin HEAD:gh-pages --force
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.2'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build web app
+        run: flutter build web --release --target=lib/main.web.dart --base-href=/${{ github.event.repository.name }}/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,6 +1,6 @@
 name: honey_bird
 description: "..."
-version: 2.0.14+25
+version: 2.0.15+901
 
 environment:
   sdk: ^3.6.0
@@ -29,6 +29,7 @@ dependencies:
   image_picker: ^1.0.7
   package_info_plus: ^8.1.2
   flutter_native_splash: ^2.4.7
+  markdown_widget: ^2.3.2+8
 
 dev_dependencies:
   flutter_test:
