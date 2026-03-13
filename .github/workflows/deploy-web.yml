@@ -1,9 +1,12 @@
 name: Deploy Flutter web to GitHub Pages
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
-    branches:
-      - develop
+    tags:
+      - '*'
     paths:
       - 'lib/main.web.dart'
       - 'assets/privacy.md'
