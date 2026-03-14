@@ -1,0 +1,7 @@
+### Instructions for when you want to delete your data/account
+If you wish to delete your data or account, please follow the instructions below:
+1. **Contact Support**: Send an email to our support team at [support@honeybird.com](mailto:support@honeybird.com) with the subject line "Data/Account Deletion Request". Please include your account details and specify whether you want to delete your data, account, or both.
+2. **Verification**: For security purposes, we may require you to verify your identity before processing your request. This may involve providing additional information or answering security questions.
+3. **Processing Time**: Once we receive your request and verify your identity, we will process your request within 7-10 business days. You will receive a confirmation email once your data/account has been deleted.
+4. **Data Retention**: Please note that we may retain certain information for legal or regulatory purposes, even after your data/account has been deleted. However, we will ensure that any retained information is securely stored and not used for any other purposes.
+5. **Contact Information**: If you have any questions or concerns about the deletion process, please contact us at [support@honeybird.com](mailto:support@honeybird.com) or call us at 021 555 1234. We are here to assist you with any questions you may have.

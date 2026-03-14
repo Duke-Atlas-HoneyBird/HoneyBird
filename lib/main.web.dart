@@ -18,6 +18,21 @@ class HoneyBirdWebApp extends StatelessWidget {
         builder: (BuildContext context, GoRouterState state) =>
             const _PrivacyScreen(),
       ),
+      GoRoute(
+        path: '/delete',
+        builder: (BuildContext context, GoRouterState state) =>
+            const _DeleteScreen(),
+      ),
+      GoRoute(
+        path: '/terms',
+        builder: (BuildContext context, GoRouterState state) =>
+            const _TermsScreen(),
+      ),
+      GoRoute(
+        path: '/community-guidelines',
+        builder: (BuildContext context, GoRouterState state) =>
+            const _CommunityGuidelinesBody(),
+      ),
     ],
   );
 
@@ -28,21 +43,68 @@ class HoneyBirdWebApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color.fromARGB(255, 251, 230, 255)),
         useMaterial3: true,
       ),
     );
   }
 }
 
-class _PrivacyScreen extends StatefulWidget {
+class _TermsScreen extends StatelessWidget {
+  const _TermsScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return _MarkdownPageBody(
+      future: rootBundle.loadString('assets/docs/terms.md'),
+    );
+  }
+}
+
+class _CommunityGuidelinesBody extends StatelessWidget {
+  const _CommunityGuidelinesBody({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _MarkdownPageBody(
+      future: rootBundle.loadString('assets/docs/community_guidelines.md'),
+    );
+  }
+}
+
+class _DeleteScreen extends StatelessWidget {
+  const _DeleteScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return _MarkdownPageBody(
+      future: rootBundle.loadString('assets/docs/delete.md'),
+    );
+  }
+}
+
+class _PrivacyScreen extends StatelessWidget {
   const _PrivacyScreen();
 
   @override
-  State<_PrivacyScreen> createState() => _PrivacyScreenState();
+  Widget build(BuildContext context) {
+    return _MarkdownPageBody(
+      future: rootBundle.loadString('assets/docs/privacy.md'),
+    );
+  }
 }
 
-class _PrivacyScreenState extends State<_PrivacyScreen> {
+class _MarkdownPageBody extends StatefulWidget {
+  const _MarkdownPageBody({super.key, required this.future});
+
+  final Future<String> future;
+
+  @override
+  State<_MarkdownPageBody> createState() => _MarkdownPageBodyState();
+}
+
+class _MarkdownPageBodyState extends State<_MarkdownPageBody> {
   late final _scrollController;
 
   @override
@@ -58,7 +120,7 @@ class _PrivacyScreenState extends State<_PrivacyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder<String>(
-        future: rootBundle.loadString('assets/privacy.md'),
+        future: widget.future,
         builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -67,7 +129,7 @@ class _PrivacyScreenState extends State<_PrivacyScreen> {
           if (snapshot.hasError) {
             return Center(
               child: Text(
-                'Failed to load privacy policy.',
+                'Failed to load this page.',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             );
@@ -82,7 +144,7 @@ class _PrivacyScreenState extends State<_PrivacyScreen> {
             child: Scrollbar(
               controller: _scrollController,
               child: SingleChildScrollView(
-                  controller: _scrollController,
+                controller: _scrollController,
                 child: MarkdownWidget(
                   data: text,
                   shrinkWrap: true,

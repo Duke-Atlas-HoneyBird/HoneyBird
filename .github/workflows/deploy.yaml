@@ -9,7 +9,7 @@ on:
       - '*'
     paths:
       - 'lib/main.web.dart'
-      - 'assets/privacy.md'
+      - 'assets/docs/**'
       - '.github/workflows/deploy.yaml'
 
 permissions:

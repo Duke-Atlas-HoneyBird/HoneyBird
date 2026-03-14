@@ -1,5 +1,5 @@
 name: honey_bird
-description: "..."
+description: "a app for sharing and discovering recipes and cooking tips, allowing users to connect with a community of food enthusiasts and explore a wide range of culinary delights."
 version: 2.0.15+901
 
 environment:
@@ -59,7 +59,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/privacy.md
+    - assets/docs/
     - assets/logo/
     - assets/fonts/
   #   - images/a_dot_ham.jpeg
