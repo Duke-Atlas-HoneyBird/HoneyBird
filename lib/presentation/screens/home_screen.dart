@@ -78,7 +78,16 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: const BoxDecoration(
         gradient: backgroundGradient,
       ),
-      child: Scaffold(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          // For HomeScreen (root), we can show an exit confirmation if needed, 
+          // but for now let's just allow default behavior if they are at the root.
+          // However, here we might want to ensure it doesn't pop accidentally.
+          SystemNavigator.pop();
+        },
+        child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: const Text('Honey Bird'),
@@ -205,6 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
+      ),
     );
   }
 
@@ -213,12 +223,13 @@ class _HomeScreenState extends State<HomeScreen> {
     debugPrint('Search query: $query');
   }
 
-  void _handleTabSelected(int index) {
+  void _handleTabSelected(int index) async {
     // Don't update state if already on the selected tab
     if (_currentTabIndex == index) {
       return;
     }
 
+    final previousIndex = _currentTabIndex;
     setState(() {
       _currentTabIndex = index;
     });
@@ -226,20 +237,27 @@ class _HomeScreenState extends State<HomeScreen> {
     // Navigate to different screens based on tab index
     switch (index) {
       case 0:
-        // Already on Home screen, do nothing
+        // Already on Home screen, just ensure state is 0
         break;
       case 1:
         // Navigate to Favorites screen
-        Navigator.pushNamed(context, '/favorites');
+        await Navigator.pushNamed(context, '/favorites');
         break;
       case 2:
         // Navigate to Account screen
-        Navigator.pushNamed(context, '/account');
+        await Navigator.pushNamed(context, '/account');
         break;
       case 3:
         // Navigate to Messages screen
-        Navigator.pushNamed(context, '/messages');
+        await Navigator.pushNamed(context, '/messages');
         break;
+    }
+
+    // When returning to Home from any pushed screen, reset the tab index to 0
+    if (mounted) {
+      setState(() {
+        _currentTabIndex = 0;
+      });
     }
   }
 

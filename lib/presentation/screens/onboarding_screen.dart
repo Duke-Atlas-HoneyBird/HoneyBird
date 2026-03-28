@@ -68,7 +68,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         );
 
-    Navigator.of(context).pushNamed('/home');
+    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
   }
 
   @override
@@ -87,7 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         }
         // Save completed successfully (was saving, now done, no error)
         if (!state.isSaving && state.errorMessage == null && state.hasCompletedOnboarding == true) {
-          Navigator.of(context).pushNamed('/home');
+          Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
         }
       },
       child: Container(

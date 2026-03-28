@@ -50,6 +50,7 @@ flutter run
 ###tri
 
 ```bash
-VERSION=2.0.10
-git add . && git commit -m "Bump version to $VERSION" && git push origin develop && git tag v$VERSION -m "Release v$VERSION" && git push origin v$VERSION
+VERSION=2.0.16
+git commit -m "Bump version to $VERSION" && git push origin develop && git tag v$VERSION -m "Release v$VERSION" && git push origin v$VERSION
 ```
+

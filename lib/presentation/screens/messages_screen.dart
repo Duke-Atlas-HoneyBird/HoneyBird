@@ -54,13 +54,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
     // Navigate to different screens based on tab index
     switch (index) {
       case 0:
-        Navigator.popAndPushNamed(context, '/home');
+        Navigator.of(context).popUntil((route) => route.isFirst);
         break;
       case 1:
-        Navigator.popAndPushNamed(context, '/favorites');
+        Navigator.pushReplacementNamed(context, '/favorites');
         break;
       case 2:
-        Navigator.popAndPushNamed(context, '/account');
+        Navigator.pushReplacementNamed(context, '/account');
         break;
       case 3:
         // Already on Messages screen
@@ -96,7 +96,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
       decoration: const BoxDecoration(
         gradient: backgroundGradient,
       ),
-      child: Scaffold(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          // If a conversation is open, reset it. Otherwise go back to Home.
+          if (_selectedConversationId != null) {
+            reset();
+          } else {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          }
+        },
+        child: Scaffold(
         appBar: AppBar(
           title: BlocBuilder<MessagesBloc, MessagesState>(
             buildWhen: (prev, curr) =>
@@ -287,6 +298,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 ),
               )
             : null,
+      ),
       ),
     );
   }

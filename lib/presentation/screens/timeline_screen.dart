@@ -72,16 +72,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     switch (index) {
       case 0:
-        Navigator.pushNamed(context, '/home');
+        Navigator.of(context).popUntil((route) => route.isFirst);
         break;
       case 1:
-        Navigator.pushNamed(context, '/favorites');
+        Navigator.pushReplacementNamed(context, '/favorites');
         break;
       case 2:
-        Navigator.pushNamed(context, '/account');
+        Navigator.pushReplacementNamed(context, '/account');
         break;
       case 3:
-        Navigator.pushNamed(context, '/messages');
+        Navigator.pushReplacementNamed(context, '/messages');
         break;
     }
   }
@@ -99,7 +99,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
       decoration: const BoxDecoration(
         gradient: backgroundGradient,
       ),
-      child: Scaffold(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        },
+        child: Scaffold(
           appBar: AppBar(
             centerTitle: false,
             title: const Text('Timeline'),
@@ -267,6 +273,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               unreadMessageCount: messagesState.unreadCount,
             ),
           ),
+        ),
         ),
     );
   }

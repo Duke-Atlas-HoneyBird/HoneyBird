@@ -40,16 +40,17 @@ class _AccountScreenState extends State<AccountScreen> {
 
     switch (index) {
       case 0:
-        Navigator.pushNamed(context, '/home');
+        // Pop back to Home instead of pushing a new Home
+        Navigator.of(context).popUntil((route) => route.isFirst);
         break;
       case 1:
-        Navigator.pushNamed(context, '/favorites');
+        Navigator.pushReplacementNamed(context, '/favorites');
         break;
       case 2:
         // Already on Account screen
         break;
       case 3:
-        Navigator.pushNamed(context, '/messages');
+        Navigator.pushReplacementNamed(context, '/messages');
         break;
     }
   }
@@ -87,7 +88,14 @@ class _AccountScreenState extends State<AccountScreen> {
       decoration: const BoxDecoration(
         gradient: backgroundGradient,
       ),
-      child: Scaffold(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          // Return to Home screen (root) instead of exiting app
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        },
+        child: Scaffold(
           appBar: AppBar(
             centerTitle: false,
             title: const Text('Account'),
@@ -558,7 +566,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
         ),
-    
+      )
     );
   }
 
