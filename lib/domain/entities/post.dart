@@ -18,6 +18,9 @@ class Post extends Equatable {
   final List<String> likeIDs;
   final String userName;
   final String userUID;
+  /// Linked restaurant for B2C contact from this post.
+  final String? restaurantId;
+  final String? restaurantName;
 
   Post({
     String? id,
@@ -30,7 +33,15 @@ class Post extends Equatable {
     this.likeIDs = const [],
     required this.userName,
     required this.userUID,
+    this.restaurantId,
+    this.restaurantName,
   }) : id = id ?? UuidUtils.generate();
+
+  bool get hasLinkedRestaurant =>
+      restaurantId != null &&
+      restaurantId!.isNotEmpty &&
+      restaurantName != null &&
+      restaurantName!.isNotEmpty;
 
   @override
   List<Object?> get props => [
@@ -44,5 +55,7 @@ class Post extends Equatable {
         likeIDs,
         userName,
         userUID,
+        restaurantId,
+        restaurantName,
       ];
 }

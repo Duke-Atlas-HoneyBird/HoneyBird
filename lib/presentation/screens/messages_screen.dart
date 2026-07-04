@@ -8,16 +8,19 @@ import '../theme/spacing.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../widgets/conversation_item.dart';
 import '../widgets/message_bubble.dart';
+import '../widgets/merchant_channel_banner.dart';
+import '../widgets/restaurant_picker_sheet.dart';
 import '../bloc/messages/messages_bloc.dart';
 import '../bloc/messages/messages_event.dart';
 import '../bloc/messages/messages_state.dart';
 import '../../domain/entities/message.dart';
+import '../../domain/entities/restaurant.dart';
 import '../bloc/auth/auth_bloc.dart';
 
 /// Global key for [MessagesScreen] to allow resetting its state (e.g. from app bar leading).
 final messagesScreenGlobalKey = GlobalKey<_MessagesScreenState>();
 
-/// Messages screen displaying user conversations
+/// Messages screen for mediated B2C restaurant inquiries.
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
 
@@ -31,7 +34,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Conversation? _selectedConversation;
   bool _hasRequestedLoad = false;
 
-  /// Resets the screen state (e.g. when navigating back from a conversation).
   void reset() {
     setState(() {
       _selectedConversationId = null;
@@ -43,15 +45,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void _handleTabSelected(int index) {
-    if (_currentTabIndex == index) {
-      return;
-    }
+    if (_currentTabIndex == index) return;
 
     setState(() {
       _currentTabIndex = index;
     });
 
-    // Navigate to different screens based on tab index
     switch (index) {
       case 0:
         Navigator.of(context).popUntil((route) => route.isFirst);
@@ -63,9 +62,55 @@ class _MessagesScreenState extends State<MessagesScreen> {
         Navigator.pushReplacementNamed(context, '/account');
         break;
       case 3:
-        // Already on Messages screen
         break;
     }
+  }
+
+  void _openRestaurantPicker() {
+    final bloc = context.read<MessagesBloc>();
+    bloc.add(const MessagesEvent.loadRestaurants());
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: cardBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => BlocProvider.value(
+        value: bloc,
+        child: BlocBuilder<MessagesBloc, MessagesState>(
+          builder: (context, state) => RestaurantPickerSheet(
+            restaurants: state.restaurants,
+            isLoading: state.isLoadingRestaurants,
+            onRestaurantSelected: _startRestaurantConversation,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _startRestaurantConversation(Restaurant restaurant) {
+    HapticFeedback.lightImpact();
+    final authState = context.read<AuthBloc>().state;
+    final user = authState.user;
+    if (user == null) return;
+
+    final userName = user.displayName ?? user.email?.split('@').first ?? 'You';
+
+    context.read<MessagesBloc>().add(
+          MessagesEvent.openConversationWithRestaurant(
+            userUID: user.uid,
+            userName: userName,
+            restaurantId: restaurant.id,
+            restaurantName: restaurant.name,
+          ),
+        );
+
+    setState(() {
+      _selectedConversationId =
+          Conversation.idFor(user.uid, restaurant.id);
+      _selectedConversation = null;
+    });
   }
 
   @override
@@ -87,20 +132,26 @@ class _MessagesScreenState extends State<MessagesScreen> {
     super.deactivate();
   }
 
+  String _conversationTitle(MessagesState state) {
+    if (state.conversationId.isEmpty && _selectedConversation == null) {
+      return 'Restaurant Inquiries';
+    }
+    return state.openWithRestaurantName ??
+        _selectedConversation?.restaurantName ??
+        'Merchant';
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
     final userUID = authState.user?.uid ?? '';
-    final participantName = _selectedConversation?.participant1Name;
+
     return Container(
-      decoration: const BoxDecoration(
-        gradient: backgroundGradient,
-      ),
+      decoration: const BoxDecoration(gradient: backgroundGradient),
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return;
-          // If a conversation is open, reset it. Otherwise go back to Home.
           if (_selectedConversationId != null) {
             reset();
           } else {
@@ -108,147 +159,116 @@ class _MessagesScreenState extends State<MessagesScreen> {
           }
         },
         child: Scaffold(
-        appBar: AppBar(
-          title: BlocBuilder<MessagesBloc, MessagesState>(
-            buildWhen: (prev, curr) =>
-                prev.conversationId != curr.conversationId ||
-                prev.openWithUserName != curr.openWithUserName,
-            builder: (context, s) => Text(
-              s.conversationId.isEmpty && _selectedConversation == null
-                  ? 'Messages'
-                  : (s.openWithUserName ??
-                      _selectedConversation?.participant1Name ??
-                      participantName ??
-                      'Conversation'),
+          appBar: AppBar(
+            title: BlocBuilder<MessagesBloc, MessagesState>(
+              buildWhen: (prev, curr) =>
+                  prev.conversationId != curr.conversationId ||
+                  prev.openWithRestaurantName != curr.openWithRestaurantName,
+              builder: (context, s) => Text(_conversationTitle(s)),
             ),
-          ),
-          centerTitle: false,
-          elevation: 0,
-          iconTheme:
-              IconThemeData(color: Theme.of(context).colorScheme.onBackground),
-          leading: BlocBuilder<MessagesBloc, MessagesState>(
-            buildWhen: (prev, curr) =>
-                prev.conversationId != curr.conversationId,
-            builder: (context, s) {
-              if (s.conversationId.isEmpty && _selectedConversationId == null) {
+            centerTitle: false,
+            elevation: 0,
+            iconTheme: IconThemeData(
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+            leading: BlocBuilder<MessagesBloc, MessagesState>(
+              buildWhen: (prev, curr) =>
+                  prev.conversationId != curr.conversationId,
+              builder: (context, s) {
+                if (s.conversationId.isEmpty &&
+                    _selectedConversationId == null) {
+                  return IconButton(
+                    icon: Icon(Icons.arrow_back_ios_rounded,
+                        color: Theme.of(context).colorScheme.onSurface),
+                    onPressed: () => _handleTabSelected(0),
+                  );
+                }
                 return IconButton(
                   icon: Icon(Icons.arrow_back_ios_rounded,
                       color: Theme.of(context).colorScheme.onSurface),
                   onPressed: () {
-                    int homePageIndex = 0;
-                    _handleTabSelected(homePageIndex);
+                    messagesScreenGlobalKey.currentState?.reset();
                   },
                 );
-              }
-              return IconButton(
-                icon: Icon(Icons.arrow_back_ios_rounded,
-                    color: Theme.of(context).colorScheme.onSurface),
-                onPressed: () {
-                  messagesScreenGlobalKey.currentState?.reset();
-                },
-              );
-            },
+              },
+            ),
+            actions: [
+              if (_selectedConversationId == null)
+                IconButton(
+                  icon: const Icon(Icons.add_comment_outlined),
+                  tooltip: 'Contact a restaurant',
+                  onPressed: _openRestaurantPicker,
+                ),
+            ],
           ),
-        ),
-        body: SafeArea(
-          child: BlocConsumer<MessagesBloc, MessagesState>(
-            listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
-            listener: (context, state) {
-              if (state.errorMessage != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage!)),
-                );
-              }
-            },
-            buildWhen: (prev, curr) =>
-                prev.conversations != curr.conversations ||
-                prev.messages != curr.messages ||
-                prev.conversationId != curr.conversationId ||
-                prev.isLoading != curr.isLoading ||
-                prev.errorMessage != curr.errorMessage,
-            builder: (context, state) {
-              final activeConvId = _selectedConversationId ??
-                  (state.conversationId.isNotEmpty
-                      ? state.conversationId
-                      : null);
-              if (activeConvId != null) {
-                return _buildConversationView(
-                  context,
-                  activeConvId,
-                  userUID,
-                  otherUID: state.openWithUserUID,
-                  otherName: state.openWithUserName,
-                );
-              }
+          body: SafeArea(
+            child: BlocConsumer<MessagesBloc, MessagesState>(
+              listenWhen: (prev, curr) =>
+                  curr.errorMessage != prev.errorMessage ||
+                  curr.restaurants != prev.restaurants ||
+                  curr.isLoadingRestaurants != prev.isLoadingRestaurants,
+              listener: (context, state) {
+                if (state.errorMessage != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.errorMessage!)),
+                  );
+                }
+              },
+              buildWhen: (prev, curr) =>
+                  prev.conversations != curr.conversations ||
+                  prev.messages != curr.messages ||
+                  prev.conversationId != curr.conversationId ||
+                  prev.isLoading != curr.isLoading ||
+                  prev.errorMessage != curr.errorMessage,
+              builder: (context, state) {
+                final activeConvId = _selectedConversationId ??
+                    (state.conversationId.isNotEmpty
+                        ? state.conversationId
+                        : null);
 
-              if (state.isLoading && state.conversations.isEmpty) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).colorScheme.onBackground),
-                  ),
-                );
-              }
+                if (activeConvId != null) {
+                  return _buildConversationView(
+                    context,
+                    activeConvId,
+                    userUID,
+                    restaurantId: state.openWithRestaurantId,
+                    restaurantName: state.openWithRestaurantName,
+                  );
+                }
 
-              if (state.errorMessage != null && state.conversations.isEmpty) {
-                return SingleChildScrollView(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(spacingL),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            size: 64,
-                          ),
-                          const SizedBox(height: spacingM),
-                          Text('Error', style: headlineMedium),
-                          const SizedBox(height: spacingS),
-                          Text(
-                            state.errorMessage!,
-                            style: bodyLarge,
-                            textAlign: TextAlign.center,
-                            maxLines: 10,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: spacingM),
-                          ElevatedButton(
-                            onPressed: () {
-                              context.read<MessagesBloc>().add(
-                                  MessagesEvent.loadConversations(userUID));
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              foregroundColor: surfaceColor,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: spacingL,
-                                vertical: spacingM,
-                              ),
-                            ),
-                            child: const Text('Retry'),
-                          ),
-                        ],
+                if (state.isLoading && state.conversations.isEmpty) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.onBackground,
                       ),
                     ),
-                  ),
-                );
-              }
+                  );
+                }
 
-              if (state.conversations.isNotEmpty || !state.isLoading) {
+                if (state.errorMessage != null && state.conversations.isEmpty) {
+                  return _ErrorState(
+                    message: state.errorMessage!,
+                    onRetry: () => context.read<MessagesBloc>().add(
+                          MessagesEvent.loadConversations(userUID),
+                        ),
+                  );
+                }
+
                 if (state.conversations.isEmpty) {
-                  return _NoMessagesYetWidget(
-                    onRetry: () => context
-                        .read<MessagesBloc>()
-                        .add(MessagesEvent.loadConversations(userUID)),
+                  return _NoInquiriesYetWidget(
+                    onContactRestaurant: _openRestaurantPicker,
+                    onRetry: () => context.read<MessagesBloc>().add(
+                          MessagesEvent.loadConversations(userUID),
+                        ),
                   );
                 }
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context
-                        .read<MessagesBloc>()
-                        .add(MessagesEvent.refreshConversations(userUID));
+                    context.read<MessagesBloc>().add(
+                          MessagesEvent.refreshConversations(userUID),
+                        );
                     await Future.delayed(const Duration(milliseconds: 500));
                   },
                   color: accentPink,
@@ -264,41 +284,35 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             _selectedConversationId = conversation.id;
                             _selectedConversation = conversation;
                           });
-                          context
-                              .read<MessagesBloc>()
-                              .add(MessagesEvent.loadMessages(conversation.id));
-                          context
-                              .read<MessagesBloc>()
-                              .add(MessagesEvent.markAsRead(
-                                conversationId: conversation.id,
-                                userUID: userUID,
-                              ));
+                          context.read<MessagesBloc>().add(
+                                MessagesEvent.loadMessages(conversation.id),
+                              );
+                          context.read<MessagesBloc>().add(
+                                MessagesEvent.markAsRead(
+                                  conversationId: conversation.id,
+                                  userUID: userUID,
+                                ),
+                              );
                         },
                       );
                     },
                   ),
                 );
-              }
-
-              return const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
-                ),
-              );
-            },
+              },
+            ),
           ),
+          bottomNavigationBar: _selectedConversationId == null
+              ? BlocBuilder<MessagesBloc, MessagesState>(
+                  buildWhen: (prev, curr) =>
+                      prev.unreadCount != curr.unreadCount,
+                  builder: (context, messagesState) => BottomNavigationWidget(
+                    currentIndex: _currentTabIndex,
+                    onTabSelected: _handleTabSelected,
+                    unreadMessageCount: messagesState.unreadCount,
+                  ),
+                )
+              : null,
         ),
-        bottomNavigationBar: _selectedConversationId == null
-            ? BlocBuilder<MessagesBloc, MessagesState>(
-                buildWhen: (prev, curr) => prev.unreadCount != curr.unreadCount,
-                builder: (context, messagesState) => BottomNavigationWidget(
-                  currentIndex: _currentTabIndex,
-                  onTabSelected: _handleTabSelected,
-                  unreadMessageCount: messagesState.unreadCount,
-                ),
-              )
-            : null,
-      ),
       ),
     );
   }
@@ -307,10 +321,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
     BuildContext context,
     String conversationId,
     String userUID, {
-    String? otherUID,
-    String? otherName,
+    String? restaurantId,
+    String? restaurantName,
   }) {
     final conversation = _selectedConversation;
+    final resolvedRestaurantId = restaurantId ?? conversation?.restaurantId ?? '';
+    final resolvedRestaurantName =
+        restaurantName ?? conversation?.restaurantName ?? 'Restaurant';
+
     return BlocBuilder<MessagesBloc, MessagesState>(
       buildWhen: (prev, curr) =>
           prev.messages != curr.messages ||
@@ -326,39 +344,27 @@ class _MessagesScreenState extends State<MessagesScreen> {
         }
 
         if (state.conversationId == conversationId) {
-          String resolvedOtherUID;
-          String resolvedOtherName;
-          if (otherUID != null && otherName != null) {
-            resolvedOtherUID = otherUID;
-            resolvedOtherName = otherName;
-          } else if (conversation != null) {
-            resolvedOtherUID = userUID == conversation.participant1UID
-                ? conversation.participant2UID
-                : conversation.participant1UID;
-            resolvedOtherName = userUID == conversation.participant1UID
-                ? conversation.participant2Name
-                : conversation.participant1Name;
-          } else {
-            final other =
-                _otherParticipantFromMessages(state.messages, userUID);
-            resolvedOtherUID = other.$1;
-            resolvedOtherName = other.$2;
-          }
           final senderName = _senderDisplayName(context);
 
           return Column(
             children: [
+              MerchantChannelBanner(restaurantName: resolvedRestaurantName),
               Expanded(
                 child: state.messages.isEmpty
-                    ? const _TypeFirstMessageWidget()
+                    ? _TypeFirstInquiryWidget(
+                        restaurantName: resolvedRestaurantName,
+                      )
                     : ListView.builder(
                         reverse: true,
-                        padding: const EdgeInsets.symmetric(vertical: spacingM),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: spacingM),
                         itemCount: state.messages.length,
                         itemBuilder: (context, index) {
-                          final message =
-                              state.messages[state.messages.length - 1 - index];
-                          final isCurrentUser = message.senderUID == userUID;
+                          final message = state
+                              .messages[state.messages.length - 1 - index];
+                          final isCurrentUser =
+                              message.senderType == MessageSenderType.user &&
+                                  message.senderUID == userUID;
                           return MessageBubble(
                             message: message,
                             isCurrentUser: isCurrentUser,
@@ -370,8 +376,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 conversationId: conversationId,
                 userUID: userUID,
                 senderName: senderName,
-                receiverUID: resolvedOtherUID,
-                receiverName: resolvedOtherName,
+                restaurantId: resolvedRestaurantId,
+                restaurantName: resolvedRestaurantName,
               ),
             ],
           );
@@ -393,31 +399,21 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
     return 'You';
   }
-
-  (String, String) _otherParticipantFromMessages(
-      List<Message> messages, String userUID) {
-    for (final m in messages) {
-      if (m.senderUID != userUID) return (m.senderUID, m.senderName);
-      if (m.receiverUID != userUID) return (m.receiverUID, m.receiverName);
-    }
-    return ('', 'User');
-  }
 }
 
-/// Message input bar with its own controller so it is not recreated on every build.
 class _MessageInputBar extends StatefulWidget {
   final String conversationId;
   final String userUID;
   final String senderName;
-  final String receiverUID;
-  final String receiverName;
+  final String restaurantId;
+  final String restaurantName;
 
   const _MessageInputBar({
     required this.conversationId,
     required this.userUID,
     required this.senderName,
-    required this.receiverUID,
-    required this.receiverName,
+    required this.restaurantId,
+    required this.restaurantName,
   });
 
   @override
@@ -453,7 +449,7 @@ class _MessageInputBarState extends State<_MessageInputBar> {
             child: TextField(
               controller: _controller,
               decoration: InputDecoration(
-                hintText: 'Type a message...',
+                hintText: 'Ask about your order or reservation…',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(cardBorderRadius),
                 ),
@@ -473,16 +469,18 @@ class _MessageInputBarState extends State<_MessageInputBar> {
               if (text.isEmpty) return;
               HapticFeedback.lightImpact();
               final message = Message(
+                senderType: MessageSenderType.user,
                 senderUID: widget.userUID,
                 senderName: widget.senderName,
-                receiverUID: widget.receiverUID,
-                receiverName: widget.receiverName,
+                receiverUID: widget.restaurantId,
+                receiverName: widget.restaurantName,
                 content: text,
                 timestamp: DateTime.now(),
               );
               context.read<MessagesBloc>().add(MessagesEvent.sendMessage(
-                  message,
-                  conversationId: widget.conversationId));
+                    message,
+                    conversationId: widget.conversationId,
+                  ));
               _controller.clear();
             },
           ),
@@ -492,11 +490,14 @@ class _MessageInputBarState extends State<_MessageInputBar> {
   }
 }
 
-/// Empty state when the user has no conversations yet.
-class _NoMessagesYetWidget extends StatelessWidget {
+class _NoInquiriesYetWidget extends StatelessWidget {
+  final VoidCallback onContactRestaurant;
   final VoidCallback? onRetry;
 
-  const _NoMessagesYetWidget({this.onRetry});
+  const _NoInquiriesYetWidget({
+    required this.onContactRestaurant,
+    this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -505,9 +506,7 @@ class _NoMessagesYetWidget extends StatelessWidget {
         return SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: constraints.maxHeight,
-            ),
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: spacingL),
@@ -515,28 +514,40 @@ class _NoMessagesYetWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.chat_bubble_outline_rounded,
+                      Icons.storefront_outlined,
                       size: 80,
                       color: textSecondary,
                     ),
                     const SizedBox(height: spacingL),
                     Text(
-                      'No messages yet',
-                      style: headlineMedium.copyWith(
-                        color: textPrimary,
-                      ),
+                      'No restaurant inquiries yet',
+                      style: headlineMedium.copyWith(color: textPrimary),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: spacingM),
                     Text(
-                      'Visit someone\'s profile from the feed and tap Message to start a conversation.',
-                      style: bodyLarge.copyWith(
-                        color: textSecondary,
-                      ),
+                      'Contact a restaurant for order-related questions. '
+                      'Messages are routed through Honey Bird to the merchant — '
+                      'you are never chatting directly with other users.',
+                      style: bodyLarge.copyWith(color: textSecondary),
                       textAlign: TextAlign.center,
                     ),
+                    const SizedBox(height: spacingL),
+                    FilledButton.icon(
+                      onPressed: onContactRestaurant,
+                      icon: const Icon(Icons.add_comment_outlined),
+                      label: const Text('Contact a restaurant'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: accentPink,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: spacingL,
+                          vertical: spacingM,
+                        ),
+                      ),
+                    ),
                     if (onRetry != null) ...[
-                      const SizedBox(height: spacingL),
+                      const SizedBox(height: spacingM),
                       TextButton.icon(
                         onPressed: onRetry,
                         icon: Icon(Icons.refresh, color: textSecondary),
@@ -557,9 +568,10 @@ class _NoMessagesYetWidget extends StatelessWidget {
   }
 }
 
-/// Empty state when a conversation has no messages yet.
-class _TypeFirstMessageWidget extends StatelessWidget {
-  const _TypeFirstMessageWidget();
+class _TypeFirstInquiryWidget extends StatelessWidget {
+  final String restaurantName;
+
+  const _TypeFirstInquiryWidget({required this.restaurantName});
 
   @override
   Widget build(BuildContext context) {
@@ -569,25 +581,17 @@ class _TypeFirstMessageWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.chat_bubble_outline_rounded,
-              size: 64,
-              color: textSecondary,
-            ),
+            Icon(Icons.receipt_long_outlined, size: 64, color: textSecondary),
             const SizedBox(height: spacingL),
             Text(
-              'Type your first message',
-              style: headlineMedium.copyWith(
-                color: textPrimary,
-              ),
+              'Send your first inquiry',
+              style: headlineMedium.copyWith(color: textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: spacingM),
             Text(
-              'Say hello and start the conversation below.',
-              style: bodyLarge.copyWith(
-                color: textSecondary,
-              ),
+              'Ask $restaurantName about orders, reservations, or menu items below.',
+              style: bodyLarge.copyWith(color: textSecondary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -595,4 +599,75 @@ class _TypeFirstMessageWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _ErrorState({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(spacingL),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64),
+              const SizedBox(height: spacingM),
+              Text('Error', style: headlineMedium),
+              const SizedBox(height: spacingS),
+              Text(
+                message,
+                style: bodyLarge,
+                textAlign: TextAlign.center,
+                maxLines: 10,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: spacingM),
+              ElevatedButton(
+                onPressed: onRetry,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: surfaceColor,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: spacingL,
+                    vertical: spacingM,
+                  ),
+                ),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Opens a B2C conversation with a restaurant and navigates to messages.
+void openRestaurantConversation(
+  BuildContext context, {
+  required String restaurantId,
+  required String restaurantName,
+}) {
+  final authState = context.read<AuthBloc>().state;
+  final user = authState.user;
+  if (user == null) return;
+
+  final userName = user.displayName ?? user.email?.split('@').first ?? 'You';
+
+  context.read<MessagesBloc>().add(
+        MessagesEvent.openConversationWithRestaurant(
+          userUID: user.uid,
+          userName: userName,
+          restaurantId: restaurantId,
+          restaurantName: restaurantName,
+        ),
+      );
+
+  Navigator.pushNamed(context, '/messages');
 }

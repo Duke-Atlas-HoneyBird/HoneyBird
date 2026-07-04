@@ -9,13 +9,10 @@ import '../bloc/profile/profile_bloc.dart';
 import '../bloc/profile/profile_event.dart';
 import '../bloc/profile/profile_state.dart';
 import '../bloc/auth/auth_bloc.dart';
-import '../bloc/messages/messages_bloc.dart';
-import '../bloc/messages/messages_event.dart';
-import '../../domain/entities/message.dart';
 
 /// Screen for viewing another user's profile.
 /// Shows user details and preferences based on their visibility settings.
-/// Actions: Message, Block/Unblock.
+/// Actions: Block/Unblock.
 class UserProfileScreen extends StatefulWidget {
   final String targetUserUID;
   final String targetUserName;
@@ -41,26 +38,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             viewerUserUID: viewerUID,
           ));
     }
-  }
-
-  void _handleMessage() {
-    HapticFeedback.lightImpact();
-    final authState = context.read<AuthBloc>().state;
-    final user = authState.user;
-    if (user == null) return;
-
-    final senderName = user.displayName ?? user.email?.split('@').first ?? 'Me';
-    final receiverUID = widget.targetUserUID;
-    final receiverName = widget.targetUserName;
-
-    context.read<MessagesBloc>().add(MessagesEvent.openConversationWith(
-          currentUserUID: user.uid,
-          currentUserName: senderName,
-          otherUserUID: receiverUID,
-          otherUserName: receiverName,
-        ));
-
-    Navigator.pushNamed(context, '/messages');
   }
 
   void _handleBlock() {
@@ -308,55 +285,30 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ],
                     if (!isOwnProfile) ...[
                       const SizedBox(height: spacingL),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: FilledButton.icon(
-                              onPressed: _handleMessage,
-                              icon: const Icon(Icons.message),
-                              label: const Text('Message'),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: primaryColor,
-                                foregroundColor: surfaceColor,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: spacingM),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(buttonBorderRadius),
-                                ),
-                              ),
-                            ),
+                      OutlinedButton.icon(
+                        onPressed: _handleBlock,
+                        icon: Icon(
+                          state.isBlocked
+                              ? Icons.block
+                              : Icons.block_outlined,
+                        ),
+                        label: Text(state.isBlocked ? 'Unblock' : 'Block'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: state.isBlocked
+                              ? accentPink
+                              : textSecondary,
+                          side: BorderSide(
+                            color: state.isBlocked
+                                ? accentPink
+                                : textSecondary.withValues(alpha: 0.5),
                           ),
-                          const SizedBox(width: spacingM),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _handleBlock,
-                              icon: Icon(
-                                state.isBlocked
-                                    ? Icons.block
-                                    : Icons.block_outlined,
-                              ),
-                              label:
-                                  Text(state.isBlocked ? 'Unblock' : 'Block'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: state.isBlocked
-                                    ? accentPink
-                                    : textSecondary,
-                                side: BorderSide(
-                                  color: state.isBlocked
-                                      ? accentPink
-                                      : textSecondary.withValues(alpha: 0.5),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: spacingM),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(buttonBorderRadius),
-                                ),
-                              ),
-                            ),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: spacingM),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(buttonBorderRadius),
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ],

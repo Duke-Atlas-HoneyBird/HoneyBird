@@ -26,7 +26,7 @@ class BottomNavigationWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icons = [Icons.home, Icons.favorite, Icons.person, Icons.message];
-    final labels = ['Home', 'Favorites', 'Profile', 'Messages'];
+    final labels = ['Home', 'Favorites', 'Profile', 'Inquiries'];
     return Container(
       decoration: BoxDecoration(
         color: cardBackground,
