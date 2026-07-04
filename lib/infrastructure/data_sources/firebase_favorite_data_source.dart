@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/error/exceptions.dart';
 import '../../core/utils/constants.dart';
 import '../models/post_model.dart';
@@ -12,14 +13,29 @@ abstract class FirebaseFavoriteDataSource {
 
 class FirebaseFavoriteDataSourceImpl implements FirebaseFavoriteDataSource {
   final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
 
-  FirebaseFavoriteDataSourceImpl({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  FirebaseFavoriteDataSourceImpl({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _auth = auth ?? FirebaseAuth.instance;
+
+  void _assertOwnFavorites(String userUID) {
+    if (userUID.isEmpty) {
+      throw ServerException('User ID is required to access favorites');
+    }
+    final currentUid = _auth.currentUser?.uid;
+    if (currentUid == null || currentUid != userUID) {
+      throw ServerException('Not authorized to access favorites for this user');
+    }
+  }
 
   @override
   Future<List<PostModel>> getFavoritePosts(String userUID) async {
+    _assertOwnFavorites(userUID);
+
     try {
-      // Get favorite post IDs
       final snapshot = await _firestore
           .collection(FirebaseCollections.favorites)
           .doc(userUID)
@@ -34,17 +50,23 @@ class FirebaseFavoriteDataSourceImpl implements FirebaseFavoriteDataSource {
         return [];
       }
 
-      // Fetch the actual posts
-      // Note: Firestore 'whereIn' is limited to 10-30 items depending on version/config
-      // For a real app, you might want to fetch them individually or use a different structure
       final postsSnapshot = await _firestore
           .collection(FirebaseCollections.posts)
           .where(FieldPath.documentId, whereIn: favoriteIds)
           .get();
 
-      return postsSnapshot.docs
-          .map((doc) => PostModel.fromJson({...doc.data(), 'id': doc.id}))
+      final postsById = {
+        for (final doc in postsSnapshot.docs)
+          doc.id: PostModel.fromJson({...doc.data(), 'id': doc.id}),
+      };
+
+      // Preserve the user's favorite order; omit deleted posts.
+      return favoriteIds
+          .map((id) => postsById[id])
+          .whereType<PostModel>()
           .toList();
+    } on ServerException {
+      rethrow;
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
@@ -54,6 +76,8 @@ class FirebaseFavoriteDataSourceImpl implements FirebaseFavoriteDataSource {
 
   @override
   Future<void> addToFavorites(String postId, String userUID) async {
+    _assertOwnFavorites(userUID);
+
     try {
       await _firestore
           .collection(FirebaseCollections.favorites)
@@ -61,6 +85,8 @@ class FirebaseFavoriteDataSourceImpl implements FirebaseFavoriteDataSource {
           .set({
         'postIds': FieldValue.arrayUnion([postId])
       }, SetOptions(merge: true));
+    } on ServerException {
+      rethrow;
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
@@ -70,6 +96,8 @@ class FirebaseFavoriteDataSourceImpl implements FirebaseFavoriteDataSource {
 
   @override
   Future<void> removeFromFavorites(String postId, String userUID) async {
+    _assertOwnFavorites(userUID);
+
     try {
       await _firestore
           .collection(FirebaseCollections.favorites)
@@ -77,6 +105,8 @@ class FirebaseFavoriteDataSourceImpl implements FirebaseFavoriteDataSource {
           .update({
         'postIds': FieldValue.arrayRemove([postId])
       });
+    } on ServerException {
+      rethrow;
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
@@ -86,6 +116,8 @@ class FirebaseFavoriteDataSourceImpl implements FirebaseFavoriteDataSource {
 
   @override
   Future<bool> isFavorited(String postId, String userUID) async {
+    _assertOwnFavorites(userUID);
+
     try {
       final snapshot = await _firestore
           .collection(FirebaseCollections.favorites)
@@ -98,6 +130,8 @@ class FirebaseFavoriteDataSourceImpl implements FirebaseFavoriteDataSource {
 
       final favoriteIds = List<String>.from(snapshot.data()?['postIds'] ?? []);
       return favoriteIds.contains(postId);
+    } on ServerException {
+      rethrow;
     } on FirebaseException catch (e) {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {

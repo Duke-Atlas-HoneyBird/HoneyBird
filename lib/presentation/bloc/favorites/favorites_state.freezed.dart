@@ -20,6 +20,9 @@ mixin _$FavoritesState {
   List<Post> get posts => throw _privateConstructorUsedError;
   String? get errorMessage => throw _privateConstructorUsedError;
 
+  /// UID of the authenticated user whose favorites are loaded (null when cleared).
+  String? get userUID => throw _privateConstructorUsedError;
+
   /// Create a copy of FavoritesState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -33,7 +36,11 @@ abstract class $FavoritesStateCopyWith<$Res> {
           FavoritesState value, $Res Function(FavoritesState) then) =
       _$FavoritesStateCopyWithImpl<$Res, FavoritesState>;
   @useResult
-  $Res call({bool isLoading, List<Post> posts, String? errorMessage});
+  $Res call(
+      {bool isLoading,
+      List<Post> posts,
+      String? errorMessage,
+      String? userUID});
 }
 
 /// @nodoc
@@ -54,6 +61,7 @@ class _$FavoritesStateCopyWithImpl<$Res, $Val extends FavoritesState>
     Object? isLoading = null,
     Object? posts = null,
     Object? errorMessage = freezed,
+    Object? userUID = freezed,
   }) {
     return _then(_value.copyWith(
       isLoading: null == isLoading
@@ -68,6 +76,10 @@ class _$FavoritesStateCopyWithImpl<$Res, $Val extends FavoritesState>
           ? _value.errorMessage
           : errorMessage // ignore: cast_nullable_to_non_nullable
               as String?,
+      userUID: freezed == userUID
+          ? _value.userUID
+          : userUID // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -80,7 +92,11 @@ abstract class _$$FavoritesStateImplCopyWith<$Res>
       __$$FavoritesStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({bool isLoading, List<Post> posts, String? errorMessage});
+  $Res call(
+      {bool isLoading,
+      List<Post> posts,
+      String? errorMessage,
+      String? userUID});
 }
 
 /// @nodoc
@@ -99,6 +115,7 @@ class __$$FavoritesStateImplCopyWithImpl<$Res>
     Object? isLoading = null,
     Object? posts = null,
     Object? errorMessage = freezed,
+    Object? userUID = freezed,
   }) {
     return _then(_$FavoritesStateImpl(
       isLoading: null == isLoading
@@ -113,6 +130,10 @@ class __$$FavoritesStateImplCopyWithImpl<$Res>
           ? _value.errorMessage
           : errorMessage // ignore: cast_nullable_to_non_nullable
               as String?,
+      userUID: freezed == userUID
+          ? _value.userUID
+          : userUID // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -123,7 +144,8 @@ class _$FavoritesStateImpl implements _FavoritesState {
   const _$FavoritesStateImpl(
       {this.isLoading = false,
       final List<Post> posts = const [],
-      this.errorMessage})
+      this.errorMessage,
+      this.userUID})
       : _posts = posts;
 
   @override
@@ -141,9 +163,13 @@ class _$FavoritesStateImpl implements _FavoritesState {
   @override
   final String? errorMessage;
 
+  /// UID of the authenticated user whose favorites are loaded (null when cleared).
+  @override
+  final String? userUID;
+
   @override
   String toString() {
-    return 'FavoritesState(isLoading: $isLoading, posts: $posts, errorMessage: $errorMessage)';
+    return 'FavoritesState(isLoading: $isLoading, posts: $posts, errorMessage: $errorMessage, userUID: $userUID)';
   }
 
   @override
@@ -155,12 +181,13 @@ class _$FavoritesStateImpl implements _FavoritesState {
                 other.isLoading == isLoading) &&
             const DeepCollectionEquality().equals(other._posts, _posts) &&
             (identical(other.errorMessage, errorMessage) ||
-                other.errorMessage == errorMessage));
+                other.errorMessage == errorMessage) &&
+            (identical(other.userUID, userUID) || other.userUID == userUID));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, isLoading,
-      const DeepCollectionEquality().hash(_posts), errorMessage);
+      const DeepCollectionEquality().hash(_posts), errorMessage, userUID);
 
   /// Create a copy of FavoritesState
   /// with the given fields replaced by the non-null parameter values.
@@ -176,7 +203,8 @@ abstract class _FavoritesState implements FavoritesState {
   const factory _FavoritesState(
       {final bool isLoading,
       final List<Post> posts,
-      final String? errorMessage}) = _$FavoritesStateImpl;
+      final String? errorMessage,
+      final String? userUID}) = _$FavoritesStateImpl;
 
   @override
   bool get isLoading;
@@ -184,6 +212,10 @@ abstract class _FavoritesState implements FavoritesState {
   List<Post> get posts;
   @override
   String? get errorMessage;
+
+  /// UID of the authenticated user whose favorites are loaded (null when cleared).
+  @override
+  String? get userUID;
 
   /// Create a copy of FavoritesState
   /// with the given fields replaced by the non-null parameter values.

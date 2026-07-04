@@ -9,5 +9,7 @@ class FavoritesState with _$FavoritesState {
     @Default(false) bool isLoading,
     @Default([]) List<Post> posts,
     String? errorMessage,
+    /// UID of the authenticated user whose favorites are loaded (null when cleared).
+    String? userUID,
   }) = _FavoritesState;
 }

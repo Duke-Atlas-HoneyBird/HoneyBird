@@ -23,9 +23,9 @@ service cloud.firestore {
       allow write: if true;
     }
 
-    // Favorites collection: Anyone can read/write (for seeding)
+    // Favorites collection: each user may only access their own favorites doc
     match /favorites/{userId} {
-      allow read, write: if true;
+      allow read, write: if isOwner(userId);
     }
 
     // Preferences collection: Anyone can read/write (for seeding/preferences)
