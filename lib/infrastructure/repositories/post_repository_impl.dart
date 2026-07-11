@@ -28,6 +28,22 @@ class PostRepositoryImpl implements PostRepository {
   }
 
   @override
+  Future<Either<Failure, List<Post>>> getPostsByUserUID(String userUID) async {
+    try {
+      final postModels = await _firebaseDataSource.getPostsByUserUID(userUID);
+      return Right(postModels.map((model) => model.toDomain()).toList());
+    } on ServerException catch (e) {
+      print(
+          '[PostRepositoryImpl] getPostsByUserUID ServerException: ${e.message}');
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      print(
+          '[PostRepositoryImpl] getPostsByUserUID unexpected: ${e.toString()}');
+      return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Either<Failure, Post>> getPost(String postId) async {
     try {
       final postModel = await _firebaseDataSource.getPost(postId);

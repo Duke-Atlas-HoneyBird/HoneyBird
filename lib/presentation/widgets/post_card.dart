@@ -26,6 +26,8 @@ class PostCard extends StatelessWidget {
   final String? currentUserUID;
   /// Number of comments to show on the comment button (defaults to 0).
   final int commentCount;
+  /// When set, wraps the primary media in a [Hero] for shared-element transitions.
+  final String? heroTag;
 
   const PostCard({
     super.key,
@@ -36,7 +38,19 @@ class PostCard extends StatelessWidget {
     this.onContactRestaurant,
     this.currentUserUID,
     this.commentCount = 0,
+    this.heroTag,
   });
+
+  Widget _wrapHero(bool enabled, Widget child) {
+    if (!enabled || heroTag == null) return child;
+    return Hero(
+      tag: heroTag!,
+      child: Material(
+        type: MaterialType.transparency,
+        child: child,
+      ),
+    );
+  }
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
@@ -57,6 +71,14 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Match grid priority: image > video > text (only one Hero per tag).
+    final heroOnImage = heroTag != null && post.imageURL != null;
+    final heroOnVideo =
+        heroTag != null && post.imageURL == null && post.videoURL != null;
+    final heroOnText = heroTag != null &&
+        post.imageURL == null &&
+        post.videoURL == null;
+
     return Card(
       margin: const EdgeInsets.symmetric(
         horizontal: spacingM,
@@ -115,38 +137,41 @@ class PostCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: spacingM),
-            
-            // Caption (optional)
-            if (post.text.isNotEmpty)
+
+            // Caption (optional) — skipped when text-only Hero owns the text
+            if (post.text.isNotEmpty && !heroOnText)
               Text(
                 post.text,
                 style: bodyLarge,
               ),
-            
+
             // Video (if available) — show placeholder; video_player can be added later
             if (post.videoURL != null) ...[
               const SizedBox(height: spacingM),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(buttonBorderRadius),
-                child: AspectRatio(
-                  aspectRatio: _feedImageAspectRatio,
-                  child: Container(
-                    color: textSecondary.withOpacity(0.15),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.videocam,
-                            size: 48,
-                            color: textSecondary,
-                          ),
-                          const SizedBox(height: spacingS),
-                          Text(
-                            'Video',
-                            style: bodyMedium.copyWith(color: textSecondary),
-                          ),
-                        ],
+              _wrapHero(
+                heroOnVideo,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(buttonBorderRadius),
+                  child: AspectRatio(
+                    aspectRatio: _feedImageAspectRatio,
+                    child: Container(
+                      color: textSecondary.withOpacity(0.15),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.videocam,
+                              size: 48,
+                              color: textSecondary,
+                            ),
+                            const SizedBox(height: spacingS),
+                            Text(
+                              'Video',
+                              style: bodyMedium.copyWith(color: textSecondary),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -156,39 +181,61 @@ class PostCard extends StatelessWidget {
             // Post image (if available) — mobile-first aspect ratio
             if (post.imageURL != null) ...[
               const SizedBox(height: spacingM),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(buttonBorderRadius),
-                child: AspectRatio(
-                  aspectRatio: _feedImageAspectRatio,
-                  child: Image.network(
-                    post.imageURL!.toString(),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: textSecondary.withOpacity(0.1),
-                        child: const Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            size: 48,
-                            color: textSecondary,
+              _wrapHero(
+                heroOnImage,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(buttonBorderRadius),
+                  child: AspectRatio(
+                    aspectRatio: _feedImageAspectRatio,
+                    child: Image.network(
+                      post.imageURL!.toString(),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: textSecondary.withOpacity(0.1),
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 48,
+                              color: textSecondary,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        color: textSecondary.withOpacity(0.1),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: textSecondary.withOpacity(0.1),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            // Text-only posts: hero the caption block so grid transitions still work
+            if (heroOnText) ...[
+              const SizedBox(height: spacingM),
+              _wrapHero(
+                true,
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(spacingM),
+                  decoration: BoxDecoration(
+                    color: primaryPurple.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(buttonBorderRadius),
+                  ),
+                  child: Text(
+                    post.text.trim().isNotEmpty ? post.text : 'Post',
+                    style: bodyLarge,
                   ),
                 ),
               ),

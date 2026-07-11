@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/utils/constants.dart';
 import '../../../core/utils/error_message_utils.dart';
+import '../../../domain/entities/post.dart';
 import '../../../domain/entities/user.dart';
+import '../../../domain/repositories/favorite_repository.dart';
+import '../../../domain/repositories/post_repository.dart';
 import '../../../domain/repositories/user_repository.dart';
 import '../../../domain/repositories/user_preference_repository.dart';
 import 'account_event.dart';
@@ -11,17 +16,23 @@ import 'account_state.dart';
 class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final UserRepository userRepository;
   final UserPreferenceRepository preferenceRepository;
+  final PostRepository postRepository;
+  final FavoriteRepository favoriteRepository;
   final SharedPreferences sharedPreferences;
 
   AccountBloc({
     required this.userRepository,
     required this.preferenceRepository,
+    required this.postRepository,
+    required this.favoriteRepository,
     required this.sharedPreferences,
   }) : super(const AccountState()) {
     on<LoadAccountData>(_onLoadAccountData);
     on<UpdateUserPreferences>(_onUpdateUserPreferences);
     on<UpdateUserProfile>(_onUpdateUserProfile);
     on<CheckOnboardingStatus>(_onCheckOnboardingStatus);
+    on<LikePostInAccount>(_onLikePostInAccount);
+    on<AddOrUpdatePostInAccount>(_onAddOrUpdatePostInAccount);
   }
 
   Future<void> _onLoadAccountData(
@@ -31,6 +42,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     emit(
       state.copyWith(
         isLoading: true,
+        isLoadingPosts: true,
         errorMessage: null,
         hasCompletedOnboarding: sharedPreferences
                 .getBool(StorageKeys.hasCompletedOnboardingThisInstall) ??
@@ -40,18 +52,29 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
     final userResult = await userRepository.getUser(event.userUID);
     final prefResult = await preferenceRepository.getPreferences(event.userUID);
+    final postsResult = await postRepository.getPostsByUserUID(event.userUID);
+
+    final posts = postsResult.fold((_) => <Post>[], (list) => list);
 
     userResult.fold(
       (failure) => emit(state.copyWith(
           isLoading: false,
+          isLoadingPosts: false,
           errorMessage: ErrorMessageUtils.forUi('load_account'))),
       (user) {
         prefResult.fold(
           (failure) => emit(state.copyWith(
               isLoading: false,
+              isLoadingPosts: false,
+              posts: posts,
               errorMessage: ErrorMessageUtils.forUi('load_preferences'))),
           (preferences) => emit(state.copyWith(
-              isLoading: false, user: user, preferences: preferences)),
+                isLoading: false,
+                isLoadingPosts: false,
+                user: user,
+                preferences: preferences,
+                posts: posts,
+              )),
         );
       },
     );
@@ -139,5 +162,37 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
             isLoading: false, hasCompletedOnboarding: hasCompleted));
       },
     );
+  }
+
+  Future<void> _onLikePostInAccount(
+    LikePostInAccount event,
+    Emitter<AccountState> emit,
+  ) async {
+    final result =
+        await postRepository.likePost(event.postId, event.userUID);
+
+    await result.fold(
+      (failure) async => emit(state.copyWith(
+          errorMessage: ErrorMessageUtils.forUi('favorites'))),
+      (updatedPost) async {
+        if (updatedPost.likeIDs.contains(event.userUID)) {
+          await favoriteRepository.addToFavorites(event.postId, event.userUID);
+        } else {
+          await favoriteRepository.removeFromFavorites(
+              event.postId, event.userUID);
+        }
+        add(AccountEvent.addOrUpdatePostInAccount(updatedPost));
+      },
+    );
+  }
+
+  FutureOr<void> _onAddOrUpdatePostInAccount(
+    AddOrUpdatePostInAccount event,
+    Emitter<AccountState> emit,
+  ) {
+    final updatedPosts = state.posts.map((post) {
+      return post.id == event.post.id ? event.post : post;
+    }).toList();
+    emit(state.copyWith(posts: updatedPosts, errorMessage: null));
   }
 }

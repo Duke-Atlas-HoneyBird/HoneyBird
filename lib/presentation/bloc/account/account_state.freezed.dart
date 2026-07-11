@@ -17,9 +17,11 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$AccountState {
   bool get isLoading => throw _privateConstructorUsedError;
+  bool get isLoadingPosts => throw _privateConstructorUsedError;
   bool get isSaving => throw _privateConstructorUsedError;
   User? get user => throw _privateConstructorUsedError;
   UserPreference? get preferences => throw _privateConstructorUsedError;
+  List<Post> get posts => throw _privateConstructorUsedError;
   String? get errorMessage => throw _privateConstructorUsedError;
 
   /// True if user has completed onboarding (has saved preferences).
@@ -40,9 +42,11 @@ abstract class $AccountStateCopyWith<$Res> {
   @useResult
   $Res call(
       {bool isLoading,
+      bool isLoadingPosts,
       bool isSaving,
       User? user,
       UserPreference? preferences,
+      List<Post> posts,
       String? errorMessage,
       bool? hasCompletedOnboarding});
 }
@@ -63,9 +67,11 @@ class _$AccountStateCopyWithImpl<$Res, $Val extends AccountState>
   @override
   $Res call({
     Object? isLoading = null,
+    Object? isLoadingPosts = null,
     Object? isSaving = null,
     Object? user = freezed,
     Object? preferences = freezed,
+    Object? posts = null,
     Object? errorMessage = freezed,
     Object? hasCompletedOnboarding = freezed,
   }) {
@@ -73,6 +79,10 @@ class _$AccountStateCopyWithImpl<$Res, $Val extends AccountState>
       isLoading: null == isLoading
           ? _value.isLoading
           : isLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isLoadingPosts: null == isLoadingPosts
+          ? _value.isLoadingPosts
+          : isLoadingPosts // ignore: cast_nullable_to_non_nullable
               as bool,
       isSaving: null == isSaving
           ? _value.isSaving
@@ -86,6 +96,10 @@ class _$AccountStateCopyWithImpl<$Res, $Val extends AccountState>
           ? _value.preferences
           : preferences // ignore: cast_nullable_to_non_nullable
               as UserPreference?,
+      posts: null == posts
+          ? _value.posts
+          : posts // ignore: cast_nullable_to_non_nullable
+              as List<Post>,
       errorMessage: freezed == errorMessage
           ? _value.errorMessage
           : errorMessage // ignore: cast_nullable_to_non_nullable
@@ -108,9 +122,11 @@ abstract class _$$AccountStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {bool isLoading,
+      bool isLoadingPosts,
       bool isSaving,
       User? user,
       UserPreference? preferences,
+      List<Post> posts,
       String? errorMessage,
       bool? hasCompletedOnboarding});
 }
@@ -129,9 +145,11 @@ class __$$AccountStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? isLoading = null,
+    Object? isLoadingPosts = null,
     Object? isSaving = null,
     Object? user = freezed,
     Object? preferences = freezed,
+    Object? posts = null,
     Object? errorMessage = freezed,
     Object? hasCompletedOnboarding = freezed,
   }) {
@@ -139,6 +157,10 @@ class __$$AccountStateImplCopyWithImpl<$Res>
       isLoading: null == isLoading
           ? _value.isLoading
           : isLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isLoadingPosts: null == isLoadingPosts
+          ? _value.isLoadingPosts
+          : isLoadingPosts // ignore: cast_nullable_to_non_nullable
               as bool,
       isSaving: null == isSaving
           ? _value.isSaving
@@ -152,6 +174,10 @@ class __$$AccountStateImplCopyWithImpl<$Res>
           ? _value.preferences
           : preferences // ignore: cast_nullable_to_non_nullable
               as UserPreference?,
+      posts: null == posts
+          ? _value._posts
+          : posts // ignore: cast_nullable_to_non_nullable
+              as List<Post>,
       errorMessage: freezed == errorMessage
           ? _value.errorMessage
           : errorMessage // ignore: cast_nullable_to_non_nullable
@@ -169,15 +195,21 @@ class __$$AccountStateImplCopyWithImpl<$Res>
 class _$AccountStateImpl implements _AccountState {
   const _$AccountStateImpl(
       {this.isLoading = false,
+      this.isLoadingPosts = false,
       this.isSaving = false,
       this.user,
       this.preferences,
+      final List<Post> posts = const [],
       this.errorMessage,
-      this.hasCompletedOnboarding});
+      this.hasCompletedOnboarding})
+      : _posts = posts;
 
   @override
   @JsonKey()
   final bool isLoading;
+  @override
+  @JsonKey()
+  final bool isLoadingPosts;
   @override
   @JsonKey()
   final bool isSaving;
@@ -185,6 +217,15 @@ class _$AccountStateImpl implements _AccountState {
   final User? user;
   @override
   final UserPreference? preferences;
+  final List<Post> _posts;
+  @override
+  @JsonKey()
+  List<Post> get posts {
+    if (_posts is EqualUnmodifiableListView) return _posts;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_posts);
+  }
+
   @override
   final String? errorMessage;
 
@@ -194,7 +235,7 @@ class _$AccountStateImpl implements _AccountState {
 
   @override
   String toString() {
-    return 'AccountState(isLoading: $isLoading, isSaving: $isSaving, user: $user, preferences: $preferences, errorMessage: $errorMessage, hasCompletedOnboarding: $hasCompletedOnboarding)';
+    return 'AccountState(isLoading: $isLoading, isLoadingPosts: $isLoadingPosts, isSaving: $isSaving, user: $user, preferences: $preferences, posts: $posts, errorMessage: $errorMessage, hasCompletedOnboarding: $hasCompletedOnboarding)';
   }
 
   @override
@@ -204,11 +245,14 @@ class _$AccountStateImpl implements _AccountState {
             other is _$AccountStateImpl &&
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
+            (identical(other.isLoadingPosts, isLoadingPosts) ||
+                other.isLoadingPosts == isLoadingPosts) &&
             (identical(other.isSaving, isSaving) ||
                 other.isSaving == isSaving) &&
             (identical(other.user, user) || other.user == user) &&
             (identical(other.preferences, preferences) ||
                 other.preferences == preferences) &&
+            const DeepCollectionEquality().equals(other._posts, _posts) &&
             (identical(other.errorMessage, errorMessage) ||
                 other.errorMessage == errorMessage) &&
             (identical(other.hasCompletedOnboarding, hasCompletedOnboarding) ||
@@ -216,8 +260,16 @@ class _$AccountStateImpl implements _AccountState {
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, isLoading, isSaving, user,
-      preferences, errorMessage, hasCompletedOnboarding);
+  int get hashCode => Object.hash(
+      runtimeType,
+      isLoading,
+      isLoadingPosts,
+      isSaving,
+      user,
+      preferences,
+      const DeepCollectionEquality().hash(_posts),
+      errorMessage,
+      hasCompletedOnboarding);
 
   /// Create a copy of AccountState
   /// with the given fields replaced by the non-null parameter values.
@@ -231,20 +283,26 @@ class _$AccountStateImpl implements _AccountState {
 abstract class _AccountState implements AccountState {
   const factory _AccountState(
       {final bool isLoading,
+      final bool isLoadingPosts,
       final bool isSaving,
       final User? user,
       final UserPreference? preferences,
+      final List<Post> posts,
       final String? errorMessage,
       final bool? hasCompletedOnboarding}) = _$AccountStateImpl;
 
   @override
   bool get isLoading;
   @override
+  bool get isLoadingPosts;
+  @override
   bool get isSaving;
   @override
   User? get user;
   @override
   UserPreference? get preferences;
+  @override
+  List<Post> get posts;
   @override
   String? get errorMessage;
 

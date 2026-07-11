@@ -26,6 +26,8 @@ mixin _$AccountEvent {
             String userName, String userBio, String userBioLink)
         updateUserProfile,
     required TResult Function(String userUID) checkOnboardingStatus,
+    required TResult Function(String postId, String userUID) likePostInAccount,
+    required TResult Function(Post post) addOrUpdatePostInAccount,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -36,6 +38,8 @@ mixin _$AccountEvent {
     TResult? Function(String userName, String userBio, String userBioLink)?
         updateUserProfile,
     TResult? Function(String userUID)? checkOnboardingStatus,
+    TResult? Function(String postId, String userUID)? likePostInAccount,
+    TResult? Function(Post post)? addOrUpdatePostInAccount,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -46,6 +50,8 @@ mixin _$AccountEvent {
     TResult Function(String userName, String userBio, String userBioLink)?
         updateUserProfile,
     TResult Function(String userUID)? checkOnboardingStatus,
+    TResult Function(String postId, String userUID)? likePostInAccount,
+    TResult Function(Post post)? addOrUpdatePostInAccount,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -57,6 +63,9 @@ mixin _$AccountEvent {
     required TResult Function(UpdateUserProfile value) updateUserProfile,
     required TResult Function(CheckOnboardingStatus value)
         checkOnboardingStatus,
+    required TResult Function(LikePostInAccount value) likePostInAccount,
+    required TResult Function(AddOrUpdatePostInAccount value)
+        addOrUpdatePostInAccount,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -65,6 +74,8 @@ mixin _$AccountEvent {
     TResult? Function(UpdateUserPreferences value)? updateUserPreferences,
     TResult? Function(UpdateUserProfile value)? updateUserProfile,
     TResult? Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult? Function(LikePostInAccount value)? likePostInAccount,
+    TResult? Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -73,6 +84,8 @@ mixin _$AccountEvent {
     TResult Function(UpdateUserPreferences value)? updateUserPreferences,
     TResult Function(UpdateUserProfile value)? updateUserProfile,
     TResult Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult Function(LikePostInAccount value)? likePostInAccount,
+    TResult Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -176,6 +189,8 @@ class _$LoadAccountDataImpl implements LoadAccountData {
             String userName, String userBio, String userBioLink)
         updateUserProfile,
     required TResult Function(String userUID) checkOnboardingStatus,
+    required TResult Function(String postId, String userUID) likePostInAccount,
+    required TResult Function(Post post) addOrUpdatePostInAccount,
   }) {
     return loadAccountData(userUID);
   }
@@ -189,6 +204,8 @@ class _$LoadAccountDataImpl implements LoadAccountData {
     TResult? Function(String userName, String userBio, String userBioLink)?
         updateUserProfile,
     TResult? Function(String userUID)? checkOnboardingStatus,
+    TResult? Function(String postId, String userUID)? likePostInAccount,
+    TResult? Function(Post post)? addOrUpdatePostInAccount,
   }) {
     return loadAccountData?.call(userUID);
   }
@@ -202,6 +219,8 @@ class _$LoadAccountDataImpl implements LoadAccountData {
     TResult Function(String userName, String userBio, String userBioLink)?
         updateUserProfile,
     TResult Function(String userUID)? checkOnboardingStatus,
+    TResult Function(String postId, String userUID)? likePostInAccount,
+    TResult Function(Post post)? addOrUpdatePostInAccount,
     required TResult orElse(),
   }) {
     if (loadAccountData != null) {
@@ -219,6 +238,9 @@ class _$LoadAccountDataImpl implements LoadAccountData {
     required TResult Function(UpdateUserProfile value) updateUserProfile,
     required TResult Function(CheckOnboardingStatus value)
         checkOnboardingStatus,
+    required TResult Function(LikePostInAccount value) likePostInAccount,
+    required TResult Function(AddOrUpdatePostInAccount value)
+        addOrUpdatePostInAccount,
   }) {
     return loadAccountData(this);
   }
@@ -230,6 +252,8 @@ class _$LoadAccountDataImpl implements LoadAccountData {
     TResult? Function(UpdateUserPreferences value)? updateUserPreferences,
     TResult? Function(UpdateUserProfile value)? updateUserProfile,
     TResult? Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult? Function(LikePostInAccount value)? likePostInAccount,
+    TResult? Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
   }) {
     return loadAccountData?.call(this);
   }
@@ -241,6 +265,8 @@ class _$LoadAccountDataImpl implements LoadAccountData {
     TResult Function(UpdateUserPreferences value)? updateUserPreferences,
     TResult Function(UpdateUserProfile value)? updateUserProfile,
     TResult Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult Function(LikePostInAccount value)? likePostInAccount,
+    TResult Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
     required TResult orElse(),
   }) {
     if (loadAccountData != null) {
@@ -353,6 +379,8 @@ class _$UpdateUserPreferencesImpl implements UpdateUserPreferences {
             String userName, String userBio, String userBioLink)
         updateUserProfile,
     required TResult Function(String userUID) checkOnboardingStatus,
+    required TResult Function(String postId, String userUID) likePostInAccount,
+    required TResult Function(Post post) addOrUpdatePostInAccount,
   }) {
     return updateUserPreferences(preferences, markOnboardingComplete);
   }
@@ -366,6 +394,8 @@ class _$UpdateUserPreferencesImpl implements UpdateUserPreferences {
     TResult? Function(String userName, String userBio, String userBioLink)?
         updateUserProfile,
     TResult? Function(String userUID)? checkOnboardingStatus,
+    TResult? Function(String postId, String userUID)? likePostInAccount,
+    TResult? Function(Post post)? addOrUpdatePostInAccount,
   }) {
     return updateUserPreferences?.call(preferences, markOnboardingComplete);
   }
@@ -379,6 +409,8 @@ class _$UpdateUserPreferencesImpl implements UpdateUserPreferences {
     TResult Function(String userName, String userBio, String userBioLink)?
         updateUserProfile,
     TResult Function(String userUID)? checkOnboardingStatus,
+    TResult Function(String postId, String userUID)? likePostInAccount,
+    TResult Function(Post post)? addOrUpdatePostInAccount,
     required TResult orElse(),
   }) {
     if (updateUserPreferences != null) {
@@ -396,6 +428,9 @@ class _$UpdateUserPreferencesImpl implements UpdateUserPreferences {
     required TResult Function(UpdateUserProfile value) updateUserProfile,
     required TResult Function(CheckOnboardingStatus value)
         checkOnboardingStatus,
+    required TResult Function(LikePostInAccount value) likePostInAccount,
+    required TResult Function(AddOrUpdatePostInAccount value)
+        addOrUpdatePostInAccount,
   }) {
     return updateUserPreferences(this);
   }
@@ -407,6 +442,8 @@ class _$UpdateUserPreferencesImpl implements UpdateUserPreferences {
     TResult? Function(UpdateUserPreferences value)? updateUserPreferences,
     TResult? Function(UpdateUserProfile value)? updateUserProfile,
     TResult? Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult? Function(LikePostInAccount value)? likePostInAccount,
+    TResult? Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
   }) {
     return updateUserPreferences?.call(this);
   }
@@ -418,6 +455,8 @@ class _$UpdateUserPreferencesImpl implements UpdateUserPreferences {
     TResult Function(UpdateUserPreferences value)? updateUserPreferences,
     TResult Function(UpdateUserProfile value)? updateUserProfile,
     TResult Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult Function(LikePostInAccount value)? likePostInAccount,
+    TResult Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
     required TResult orElse(),
   }) {
     if (updateUserPreferences != null) {
@@ -539,6 +578,8 @@ class _$UpdateUserProfileImpl implements UpdateUserProfile {
             String userName, String userBio, String userBioLink)
         updateUserProfile,
     required TResult Function(String userUID) checkOnboardingStatus,
+    required TResult Function(String postId, String userUID) likePostInAccount,
+    required TResult Function(Post post) addOrUpdatePostInAccount,
   }) {
     return updateUserProfile(userName, userBio, userBioLink);
   }
@@ -552,6 +593,8 @@ class _$UpdateUserProfileImpl implements UpdateUserProfile {
     TResult? Function(String userName, String userBio, String userBioLink)?
         updateUserProfile,
     TResult? Function(String userUID)? checkOnboardingStatus,
+    TResult? Function(String postId, String userUID)? likePostInAccount,
+    TResult? Function(Post post)? addOrUpdatePostInAccount,
   }) {
     return updateUserProfile?.call(userName, userBio, userBioLink);
   }
@@ -565,6 +608,8 @@ class _$UpdateUserProfileImpl implements UpdateUserProfile {
     TResult Function(String userName, String userBio, String userBioLink)?
         updateUserProfile,
     TResult Function(String userUID)? checkOnboardingStatus,
+    TResult Function(String postId, String userUID)? likePostInAccount,
+    TResult Function(Post post)? addOrUpdatePostInAccount,
     required TResult orElse(),
   }) {
     if (updateUserProfile != null) {
@@ -582,6 +627,9 @@ class _$UpdateUserProfileImpl implements UpdateUserProfile {
     required TResult Function(UpdateUserProfile value) updateUserProfile,
     required TResult Function(CheckOnboardingStatus value)
         checkOnboardingStatus,
+    required TResult Function(LikePostInAccount value) likePostInAccount,
+    required TResult Function(AddOrUpdatePostInAccount value)
+        addOrUpdatePostInAccount,
   }) {
     return updateUserProfile(this);
   }
@@ -593,6 +641,8 @@ class _$UpdateUserProfileImpl implements UpdateUserProfile {
     TResult? Function(UpdateUserPreferences value)? updateUserPreferences,
     TResult? Function(UpdateUserProfile value)? updateUserProfile,
     TResult? Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult? Function(LikePostInAccount value)? likePostInAccount,
+    TResult? Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
   }) {
     return updateUserProfile?.call(this);
   }
@@ -604,6 +654,8 @@ class _$UpdateUserProfileImpl implements UpdateUserProfile {
     TResult Function(UpdateUserPreferences value)? updateUserPreferences,
     TResult Function(UpdateUserProfile value)? updateUserProfile,
     TResult Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult Function(LikePostInAccount value)? likePostInAccount,
+    TResult Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
     required TResult orElse(),
   }) {
     if (updateUserProfile != null) {
@@ -708,6 +760,8 @@ class _$CheckOnboardingStatusImpl implements CheckOnboardingStatus {
             String userName, String userBio, String userBioLink)
         updateUserProfile,
     required TResult Function(String userUID) checkOnboardingStatus,
+    required TResult Function(String postId, String userUID) likePostInAccount,
+    required TResult Function(Post post) addOrUpdatePostInAccount,
   }) {
     return checkOnboardingStatus(userUID);
   }
@@ -721,6 +775,8 @@ class _$CheckOnboardingStatusImpl implements CheckOnboardingStatus {
     TResult? Function(String userName, String userBio, String userBioLink)?
         updateUserProfile,
     TResult? Function(String userUID)? checkOnboardingStatus,
+    TResult? Function(String postId, String userUID)? likePostInAccount,
+    TResult? Function(Post post)? addOrUpdatePostInAccount,
   }) {
     return checkOnboardingStatus?.call(userUID);
   }
@@ -734,6 +790,8 @@ class _$CheckOnboardingStatusImpl implements CheckOnboardingStatus {
     TResult Function(String userName, String userBio, String userBioLink)?
         updateUserProfile,
     TResult Function(String userUID)? checkOnboardingStatus,
+    TResult Function(String postId, String userUID)? likePostInAccount,
+    TResult Function(Post post)? addOrUpdatePostInAccount,
     required TResult orElse(),
   }) {
     if (checkOnboardingStatus != null) {
@@ -751,6 +809,9 @@ class _$CheckOnboardingStatusImpl implements CheckOnboardingStatus {
     required TResult Function(UpdateUserProfile value) updateUserProfile,
     required TResult Function(CheckOnboardingStatus value)
         checkOnboardingStatus,
+    required TResult Function(LikePostInAccount value) likePostInAccount,
+    required TResult Function(AddOrUpdatePostInAccount value)
+        addOrUpdatePostInAccount,
   }) {
     return checkOnboardingStatus(this);
   }
@@ -762,6 +823,8 @@ class _$CheckOnboardingStatusImpl implements CheckOnboardingStatus {
     TResult? Function(UpdateUserPreferences value)? updateUserPreferences,
     TResult? Function(UpdateUserProfile value)? updateUserProfile,
     TResult? Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult? Function(LikePostInAccount value)? likePostInAccount,
+    TResult? Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
   }) {
     return checkOnboardingStatus?.call(this);
   }
@@ -773,6 +836,8 @@ class _$CheckOnboardingStatusImpl implements CheckOnboardingStatus {
     TResult Function(UpdateUserPreferences value)? updateUserPreferences,
     TResult Function(UpdateUserProfile value)? updateUserProfile,
     TResult Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult Function(LikePostInAccount value)? likePostInAccount,
+    TResult Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
     required TResult orElse(),
   }) {
     if (checkOnboardingStatus != null) {
@@ -792,5 +857,371 @@ abstract class CheckOnboardingStatus implements AccountEvent {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CheckOnboardingStatusImplCopyWith<_$CheckOnboardingStatusImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$LikePostInAccountImplCopyWith<$Res> {
+  factory _$$LikePostInAccountImplCopyWith(_$LikePostInAccountImpl value,
+          $Res Function(_$LikePostInAccountImpl) then) =
+      __$$LikePostInAccountImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String postId, String userUID});
+}
+
+/// @nodoc
+class __$$LikePostInAccountImplCopyWithImpl<$Res>
+    extends _$AccountEventCopyWithImpl<$Res, _$LikePostInAccountImpl>
+    implements _$$LikePostInAccountImplCopyWith<$Res> {
+  __$$LikePostInAccountImplCopyWithImpl(_$LikePostInAccountImpl _value,
+      $Res Function(_$LikePostInAccountImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AccountEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? postId = null,
+    Object? userUID = null,
+  }) {
+    return _then(_$LikePostInAccountImpl(
+      postId: null == postId
+          ? _value.postId
+          : postId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userUID: null == userUID
+          ? _value.userUID
+          : userUID // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$LikePostInAccountImpl implements LikePostInAccount {
+  const _$LikePostInAccountImpl({required this.postId, required this.userUID});
+
+  @override
+  final String postId;
+  @override
+  final String userUID;
+
+  @override
+  String toString() {
+    return 'AccountEvent.likePostInAccount(postId: $postId, userUID: $userUID)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$LikePostInAccountImpl &&
+            (identical(other.postId, postId) || other.postId == postId) &&
+            (identical(other.userUID, userUID) || other.userUID == userUID));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, postId, userUID);
+
+  /// Create a copy of AccountEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$LikePostInAccountImplCopyWith<_$LikePostInAccountImpl> get copyWith =>
+      __$$LikePostInAccountImplCopyWithImpl<_$LikePostInAccountImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String userUID) loadAccountData,
+    required TResult Function(
+            UserPreference preferences, bool markOnboardingComplete)
+        updateUserPreferences,
+    required TResult Function(
+            String userName, String userBio, String userBioLink)
+        updateUserProfile,
+    required TResult Function(String userUID) checkOnboardingStatus,
+    required TResult Function(String postId, String userUID) likePostInAccount,
+    required TResult Function(Post post) addOrUpdatePostInAccount,
+  }) {
+    return likePostInAccount(postId, userUID);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String userUID)? loadAccountData,
+    TResult? Function(UserPreference preferences, bool markOnboardingComplete)?
+        updateUserPreferences,
+    TResult? Function(String userName, String userBio, String userBioLink)?
+        updateUserProfile,
+    TResult? Function(String userUID)? checkOnboardingStatus,
+    TResult? Function(String postId, String userUID)? likePostInAccount,
+    TResult? Function(Post post)? addOrUpdatePostInAccount,
+  }) {
+    return likePostInAccount?.call(postId, userUID);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String userUID)? loadAccountData,
+    TResult Function(UserPreference preferences, bool markOnboardingComplete)?
+        updateUserPreferences,
+    TResult Function(String userName, String userBio, String userBioLink)?
+        updateUserProfile,
+    TResult Function(String userUID)? checkOnboardingStatus,
+    TResult Function(String postId, String userUID)? likePostInAccount,
+    TResult Function(Post post)? addOrUpdatePostInAccount,
+    required TResult orElse(),
+  }) {
+    if (likePostInAccount != null) {
+      return likePostInAccount(postId, userUID);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(LoadAccountData value) loadAccountData,
+    required TResult Function(UpdateUserPreferences value)
+        updateUserPreferences,
+    required TResult Function(UpdateUserProfile value) updateUserProfile,
+    required TResult Function(CheckOnboardingStatus value)
+        checkOnboardingStatus,
+    required TResult Function(LikePostInAccount value) likePostInAccount,
+    required TResult Function(AddOrUpdatePostInAccount value)
+        addOrUpdatePostInAccount,
+  }) {
+    return likePostInAccount(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(LoadAccountData value)? loadAccountData,
+    TResult? Function(UpdateUserPreferences value)? updateUserPreferences,
+    TResult? Function(UpdateUserProfile value)? updateUserProfile,
+    TResult? Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult? Function(LikePostInAccount value)? likePostInAccount,
+    TResult? Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
+  }) {
+    return likePostInAccount?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(LoadAccountData value)? loadAccountData,
+    TResult Function(UpdateUserPreferences value)? updateUserPreferences,
+    TResult Function(UpdateUserProfile value)? updateUserProfile,
+    TResult Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult Function(LikePostInAccount value)? likePostInAccount,
+    TResult Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
+    required TResult orElse(),
+  }) {
+    if (likePostInAccount != null) {
+      return likePostInAccount(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class LikePostInAccount implements AccountEvent {
+  const factory LikePostInAccount(
+      {required final String postId,
+      required final String userUID}) = _$LikePostInAccountImpl;
+
+  String get postId;
+  String get userUID;
+
+  /// Create a copy of AccountEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$LikePostInAccountImplCopyWith<_$LikePostInAccountImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$AddOrUpdatePostInAccountImplCopyWith<$Res> {
+  factory _$$AddOrUpdatePostInAccountImplCopyWith(
+          _$AddOrUpdatePostInAccountImpl value,
+          $Res Function(_$AddOrUpdatePostInAccountImpl) then) =
+      __$$AddOrUpdatePostInAccountImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({Post post});
+}
+
+/// @nodoc
+class __$$AddOrUpdatePostInAccountImplCopyWithImpl<$Res>
+    extends _$AccountEventCopyWithImpl<$Res, _$AddOrUpdatePostInAccountImpl>
+    implements _$$AddOrUpdatePostInAccountImplCopyWith<$Res> {
+  __$$AddOrUpdatePostInAccountImplCopyWithImpl(
+      _$AddOrUpdatePostInAccountImpl _value,
+      $Res Function(_$AddOrUpdatePostInAccountImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AccountEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? post = null,
+  }) {
+    return _then(_$AddOrUpdatePostInAccountImpl(
+      null == post
+          ? _value.post
+          : post // ignore: cast_nullable_to_non_nullable
+              as Post,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$AddOrUpdatePostInAccountImpl implements AddOrUpdatePostInAccount {
+  const _$AddOrUpdatePostInAccountImpl(this.post);
+
+  @override
+  final Post post;
+
+  @override
+  String toString() {
+    return 'AccountEvent.addOrUpdatePostInAccount(post: $post)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AddOrUpdatePostInAccountImpl &&
+            (identical(other.post, post) || other.post == post));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, post);
+
+  /// Create a copy of AccountEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AddOrUpdatePostInAccountImplCopyWith<_$AddOrUpdatePostInAccountImpl>
+      get copyWith => __$$AddOrUpdatePostInAccountImplCopyWithImpl<
+          _$AddOrUpdatePostInAccountImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String userUID) loadAccountData,
+    required TResult Function(
+            UserPreference preferences, bool markOnboardingComplete)
+        updateUserPreferences,
+    required TResult Function(
+            String userName, String userBio, String userBioLink)
+        updateUserProfile,
+    required TResult Function(String userUID) checkOnboardingStatus,
+    required TResult Function(String postId, String userUID) likePostInAccount,
+    required TResult Function(Post post) addOrUpdatePostInAccount,
+  }) {
+    return addOrUpdatePostInAccount(post);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String userUID)? loadAccountData,
+    TResult? Function(UserPreference preferences, bool markOnboardingComplete)?
+        updateUserPreferences,
+    TResult? Function(String userName, String userBio, String userBioLink)?
+        updateUserProfile,
+    TResult? Function(String userUID)? checkOnboardingStatus,
+    TResult? Function(String postId, String userUID)? likePostInAccount,
+    TResult? Function(Post post)? addOrUpdatePostInAccount,
+  }) {
+    return addOrUpdatePostInAccount?.call(post);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String userUID)? loadAccountData,
+    TResult Function(UserPreference preferences, bool markOnboardingComplete)?
+        updateUserPreferences,
+    TResult Function(String userName, String userBio, String userBioLink)?
+        updateUserProfile,
+    TResult Function(String userUID)? checkOnboardingStatus,
+    TResult Function(String postId, String userUID)? likePostInAccount,
+    TResult Function(Post post)? addOrUpdatePostInAccount,
+    required TResult orElse(),
+  }) {
+    if (addOrUpdatePostInAccount != null) {
+      return addOrUpdatePostInAccount(post);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(LoadAccountData value) loadAccountData,
+    required TResult Function(UpdateUserPreferences value)
+        updateUserPreferences,
+    required TResult Function(UpdateUserProfile value) updateUserProfile,
+    required TResult Function(CheckOnboardingStatus value)
+        checkOnboardingStatus,
+    required TResult Function(LikePostInAccount value) likePostInAccount,
+    required TResult Function(AddOrUpdatePostInAccount value)
+        addOrUpdatePostInAccount,
+  }) {
+    return addOrUpdatePostInAccount(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(LoadAccountData value)? loadAccountData,
+    TResult? Function(UpdateUserPreferences value)? updateUserPreferences,
+    TResult? Function(UpdateUserProfile value)? updateUserProfile,
+    TResult? Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult? Function(LikePostInAccount value)? likePostInAccount,
+    TResult? Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
+  }) {
+    return addOrUpdatePostInAccount?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(LoadAccountData value)? loadAccountData,
+    TResult Function(UpdateUserPreferences value)? updateUserPreferences,
+    TResult Function(UpdateUserProfile value)? updateUserProfile,
+    TResult Function(CheckOnboardingStatus value)? checkOnboardingStatus,
+    TResult Function(LikePostInAccount value)? likePostInAccount,
+    TResult Function(AddOrUpdatePostInAccount value)? addOrUpdatePostInAccount,
+    required TResult orElse(),
+  }) {
+    if (addOrUpdatePostInAccount != null) {
+      return addOrUpdatePostInAccount(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class AddOrUpdatePostInAccount implements AccountEvent {
+  const factory AddOrUpdatePostInAccount(final Post post) =
+      _$AddOrUpdatePostInAccountImpl;
+
+  Post get post;
+
+  /// Create a copy of AccountEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AddOrUpdatePostInAccountImplCopyWith<_$AddOrUpdatePostInAccountImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

@@ -8,6 +8,9 @@ abstract class FirebasePostDataSource {
   /// Retrieves all posts from Firestore
   Future<List<PostModel>> getPosts();
 
+  /// Retrieves posts authored by [userUID], newest first.
+  Future<List<PostModel>> getPostsByUserUID(String userUID);
+
   /// Retrieves a single post from Firestore by post ID
   Future<PostModel> getPost(String postId);
 
@@ -46,6 +49,26 @@ class FirebasePostDataSourceImpl implements FirebasePostDataSource {
       throw ServerException('Firebase error: ${e.message ?? e.code}');
     } catch (e) {
       throw ServerException('Failed to get posts: $e');
+    }
+  }
+
+  @override
+  Future<List<PostModel>> getPostsByUserUID(String userUID) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection(FirebaseCollections.posts)
+          .where('userUID', isEqualTo: userUID)
+          .get();
+
+      final posts = querySnapshot.docs
+          .map((doc) => PostModel.fromJson({...doc.data(), 'id': doc.id}))
+          .toList();
+      posts.sort((a, b) => b.publishedDate.compareTo(a.publishedDate));
+      return posts;
+    } on FirebaseException catch (e) {
+      throw ServerException('Firebase error: ${e.message ?? e.code}');
+    } catch (e) {
+      throw ServerException('Failed to get posts for user: $e');
     }
   }
 

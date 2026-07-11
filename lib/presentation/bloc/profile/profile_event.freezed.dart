@@ -16,11 +16,12 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$ProfileEvent {
-  String get targetUserUID => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String targetUserUID, String viewerUserUID)
         loadUserProfile,
+    required TResult Function(String postId, String userUID) likePostInProfile,
+    required TResult Function(Post post) addOrUpdatePostInProfile,
     required TResult Function(String currentUserUID, String targetUserUID)
         blockUser,
     required TResult Function(String currentUserUID, String targetUserUID)
@@ -31,6 +32,8 @@ mixin _$ProfileEvent {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String targetUserUID, String viewerUserUID)?
         loadUserProfile,
+    TResult? Function(String postId, String userUID)? likePostInProfile,
+    TResult? Function(Post post)? addOrUpdatePostInProfile,
     TResult? Function(String currentUserUID, String targetUserUID)? blockUser,
     TResult? Function(String currentUserUID, String targetUserUID)? unblockUser,
   }) =>
@@ -39,6 +42,8 @@ mixin _$ProfileEvent {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String targetUserUID, String viewerUserUID)?
         loadUserProfile,
+    TResult Function(String postId, String userUID)? likePostInProfile,
+    TResult Function(Post post)? addOrUpdatePostInProfile,
     TResult Function(String currentUserUID, String targetUserUID)? blockUser,
     TResult Function(String currentUserUID, String targetUserUID)? unblockUser,
     required TResult orElse(),
@@ -47,6 +52,9 @@ mixin _$ProfileEvent {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(LoadUserProfile value) loadUserProfile,
+    required TResult Function(LikePostInProfile value) likePostInProfile,
+    required TResult Function(AddOrUpdatePostInProfile value)
+        addOrUpdatePostInProfile,
     required TResult Function(BlockUser value) blockUser,
     required TResult Function(UnblockUser value) unblockUser,
   }) =>
@@ -54,6 +62,8 @@ mixin _$ProfileEvent {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(LoadUserProfile value)? loadUserProfile,
+    TResult? Function(LikePostInProfile value)? likePostInProfile,
+    TResult? Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
     TResult? Function(BlockUser value)? blockUser,
     TResult? Function(UnblockUser value)? unblockUser,
   }) =>
@@ -61,16 +71,12 @@ mixin _$ProfileEvent {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(LoadUserProfile value)? loadUserProfile,
+    TResult Function(LikePostInProfile value)? likePostInProfile,
+    TResult Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
     TResult Function(BlockUser value)? blockUser,
     TResult Function(UnblockUser value)? unblockUser,
     required TResult orElse(),
   }) =>
-      throw _privateConstructorUsedError;
-
-  /// Create a copy of ProfileEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ProfileEventCopyWith<ProfileEvent> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -79,8 +85,6 @@ abstract class $ProfileEventCopyWith<$Res> {
   factory $ProfileEventCopyWith(
           ProfileEvent value, $Res Function(ProfileEvent) then) =
       _$ProfileEventCopyWithImpl<$Res, ProfileEvent>;
-  @useResult
-  $Res call({String targetUserUID});
 }
 
 /// @nodoc
@@ -95,27 +99,13 @@ class _$ProfileEventCopyWithImpl<$Res, $Val extends ProfileEvent>
 
   /// Create a copy of ProfileEvent
   /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? targetUserUID = null,
-  }) {
-    return _then(_value.copyWith(
-      targetUserUID: null == targetUserUID
-          ? _value.targetUserUID
-          : targetUserUID // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
-  }
 }
 
 /// @nodoc
-abstract class _$$LoadUserProfileImplCopyWith<$Res>
-    implements $ProfileEventCopyWith<$Res> {
+abstract class _$$LoadUserProfileImplCopyWith<$Res> {
   factory _$$LoadUserProfileImplCopyWith(_$LoadUserProfileImpl value,
           $Res Function(_$LoadUserProfileImpl) then) =
       __$$LoadUserProfileImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call({String targetUserUID, String viewerUserUID});
 }
@@ -193,6 +183,8 @@ class _$LoadUserProfileImpl implements LoadUserProfile {
   TResult when<TResult extends Object?>({
     required TResult Function(String targetUserUID, String viewerUserUID)
         loadUserProfile,
+    required TResult Function(String postId, String userUID) likePostInProfile,
+    required TResult Function(Post post) addOrUpdatePostInProfile,
     required TResult Function(String currentUserUID, String targetUserUID)
         blockUser,
     required TResult Function(String currentUserUID, String targetUserUID)
@@ -206,6 +198,8 @@ class _$LoadUserProfileImpl implements LoadUserProfile {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String targetUserUID, String viewerUserUID)?
         loadUserProfile,
+    TResult? Function(String postId, String userUID)? likePostInProfile,
+    TResult? Function(Post post)? addOrUpdatePostInProfile,
     TResult? Function(String currentUserUID, String targetUserUID)? blockUser,
     TResult? Function(String currentUserUID, String targetUserUID)? unblockUser,
   }) {
@@ -217,6 +211,8 @@ class _$LoadUserProfileImpl implements LoadUserProfile {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String targetUserUID, String viewerUserUID)?
         loadUserProfile,
+    TResult Function(String postId, String userUID)? likePostInProfile,
+    TResult Function(Post post)? addOrUpdatePostInProfile,
     TResult Function(String currentUserUID, String targetUserUID)? blockUser,
     TResult Function(String currentUserUID, String targetUserUID)? unblockUser,
     required TResult orElse(),
@@ -231,6 +227,9 @@ class _$LoadUserProfileImpl implements LoadUserProfile {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(LoadUserProfile value) loadUserProfile,
+    required TResult Function(LikePostInProfile value) likePostInProfile,
+    required TResult Function(AddOrUpdatePostInProfile value)
+        addOrUpdatePostInProfile,
     required TResult Function(BlockUser value) blockUser,
     required TResult Function(UnblockUser value) unblockUser,
   }) {
@@ -241,6 +240,8 @@ class _$LoadUserProfileImpl implements LoadUserProfile {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(LoadUserProfile value)? loadUserProfile,
+    TResult? Function(LikePostInProfile value)? likePostInProfile,
+    TResult? Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
     TResult? Function(BlockUser value)? blockUser,
     TResult? Function(UnblockUser value)? unblockUser,
   }) {
@@ -251,6 +252,8 @@ class _$LoadUserProfileImpl implements LoadUserProfile {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(LoadUserProfile value)? loadUserProfile,
+    TResult Function(LikePostInProfile value)? likePostInProfile,
+    TResult Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
     TResult Function(BlockUser value)? blockUser,
     TResult Function(UnblockUser value)? unblockUser,
     required TResult orElse(),
@@ -267,25 +270,365 @@ abstract class LoadUserProfile implements ProfileEvent {
       {required final String targetUserUID,
       required final String viewerUserUID}) = _$LoadUserProfileImpl;
 
-  @override
   String get targetUserUID;
   String get viewerUserUID;
 
   /// Create a copy of ProfileEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LoadUserProfileImplCopyWith<_$LoadUserProfileImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$BlockUserImplCopyWith<$Res>
-    implements $ProfileEventCopyWith<$Res> {
+abstract class _$$LikePostInProfileImplCopyWith<$Res> {
+  factory _$$LikePostInProfileImplCopyWith(_$LikePostInProfileImpl value,
+          $Res Function(_$LikePostInProfileImpl) then) =
+      __$$LikePostInProfileImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String postId, String userUID});
+}
+
+/// @nodoc
+class __$$LikePostInProfileImplCopyWithImpl<$Res>
+    extends _$ProfileEventCopyWithImpl<$Res, _$LikePostInProfileImpl>
+    implements _$$LikePostInProfileImplCopyWith<$Res> {
+  __$$LikePostInProfileImplCopyWithImpl(_$LikePostInProfileImpl _value,
+      $Res Function(_$LikePostInProfileImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ProfileEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? postId = null,
+    Object? userUID = null,
+  }) {
+    return _then(_$LikePostInProfileImpl(
+      postId: null == postId
+          ? _value.postId
+          : postId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userUID: null == userUID
+          ? _value.userUID
+          : userUID // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$LikePostInProfileImpl implements LikePostInProfile {
+  const _$LikePostInProfileImpl({required this.postId, required this.userUID});
+
+  @override
+  final String postId;
+  @override
+  final String userUID;
+
+  @override
+  String toString() {
+    return 'ProfileEvent.likePostInProfile(postId: $postId, userUID: $userUID)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$LikePostInProfileImpl &&
+            (identical(other.postId, postId) || other.postId == postId) &&
+            (identical(other.userUID, userUID) || other.userUID == userUID));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, postId, userUID);
+
+  /// Create a copy of ProfileEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$LikePostInProfileImplCopyWith<_$LikePostInProfileImpl> get copyWith =>
+      __$$LikePostInProfileImplCopyWithImpl<_$LikePostInProfileImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String targetUserUID, String viewerUserUID)
+        loadUserProfile,
+    required TResult Function(String postId, String userUID) likePostInProfile,
+    required TResult Function(Post post) addOrUpdatePostInProfile,
+    required TResult Function(String currentUserUID, String targetUserUID)
+        blockUser,
+    required TResult Function(String currentUserUID, String targetUserUID)
+        unblockUser,
+  }) {
+    return likePostInProfile(postId, userUID);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String targetUserUID, String viewerUserUID)?
+        loadUserProfile,
+    TResult? Function(String postId, String userUID)? likePostInProfile,
+    TResult? Function(Post post)? addOrUpdatePostInProfile,
+    TResult? Function(String currentUserUID, String targetUserUID)? blockUser,
+    TResult? Function(String currentUserUID, String targetUserUID)? unblockUser,
+  }) {
+    return likePostInProfile?.call(postId, userUID);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String targetUserUID, String viewerUserUID)?
+        loadUserProfile,
+    TResult Function(String postId, String userUID)? likePostInProfile,
+    TResult Function(Post post)? addOrUpdatePostInProfile,
+    TResult Function(String currentUserUID, String targetUserUID)? blockUser,
+    TResult Function(String currentUserUID, String targetUserUID)? unblockUser,
+    required TResult orElse(),
+  }) {
+    if (likePostInProfile != null) {
+      return likePostInProfile(postId, userUID);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(LoadUserProfile value) loadUserProfile,
+    required TResult Function(LikePostInProfile value) likePostInProfile,
+    required TResult Function(AddOrUpdatePostInProfile value)
+        addOrUpdatePostInProfile,
+    required TResult Function(BlockUser value) blockUser,
+    required TResult Function(UnblockUser value) unblockUser,
+  }) {
+    return likePostInProfile(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(LoadUserProfile value)? loadUserProfile,
+    TResult? Function(LikePostInProfile value)? likePostInProfile,
+    TResult? Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
+    TResult? Function(BlockUser value)? blockUser,
+    TResult? Function(UnblockUser value)? unblockUser,
+  }) {
+    return likePostInProfile?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(LoadUserProfile value)? loadUserProfile,
+    TResult Function(LikePostInProfile value)? likePostInProfile,
+    TResult Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
+    TResult Function(BlockUser value)? blockUser,
+    TResult Function(UnblockUser value)? unblockUser,
+    required TResult orElse(),
+  }) {
+    if (likePostInProfile != null) {
+      return likePostInProfile(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class LikePostInProfile implements ProfileEvent {
+  const factory LikePostInProfile(
+      {required final String postId,
+      required final String userUID}) = _$LikePostInProfileImpl;
+
+  String get postId;
+  String get userUID;
+
+  /// Create a copy of ProfileEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$LikePostInProfileImplCopyWith<_$LikePostInProfileImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$AddOrUpdatePostInProfileImplCopyWith<$Res> {
+  factory _$$AddOrUpdatePostInProfileImplCopyWith(
+          _$AddOrUpdatePostInProfileImpl value,
+          $Res Function(_$AddOrUpdatePostInProfileImpl) then) =
+      __$$AddOrUpdatePostInProfileImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({Post post});
+}
+
+/// @nodoc
+class __$$AddOrUpdatePostInProfileImplCopyWithImpl<$Res>
+    extends _$ProfileEventCopyWithImpl<$Res, _$AddOrUpdatePostInProfileImpl>
+    implements _$$AddOrUpdatePostInProfileImplCopyWith<$Res> {
+  __$$AddOrUpdatePostInProfileImplCopyWithImpl(
+      _$AddOrUpdatePostInProfileImpl _value,
+      $Res Function(_$AddOrUpdatePostInProfileImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ProfileEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? post = null,
+  }) {
+    return _then(_$AddOrUpdatePostInProfileImpl(
+      null == post
+          ? _value.post
+          : post // ignore: cast_nullable_to_non_nullable
+              as Post,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$AddOrUpdatePostInProfileImpl implements AddOrUpdatePostInProfile {
+  const _$AddOrUpdatePostInProfileImpl(this.post);
+
+  @override
+  final Post post;
+
+  @override
+  String toString() {
+    return 'ProfileEvent.addOrUpdatePostInProfile(post: $post)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AddOrUpdatePostInProfileImpl &&
+            (identical(other.post, post) || other.post == post));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, post);
+
+  /// Create a copy of ProfileEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AddOrUpdatePostInProfileImplCopyWith<_$AddOrUpdatePostInProfileImpl>
+      get copyWith => __$$AddOrUpdatePostInProfileImplCopyWithImpl<
+          _$AddOrUpdatePostInProfileImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String targetUserUID, String viewerUserUID)
+        loadUserProfile,
+    required TResult Function(String postId, String userUID) likePostInProfile,
+    required TResult Function(Post post) addOrUpdatePostInProfile,
+    required TResult Function(String currentUserUID, String targetUserUID)
+        blockUser,
+    required TResult Function(String currentUserUID, String targetUserUID)
+        unblockUser,
+  }) {
+    return addOrUpdatePostInProfile(post);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String targetUserUID, String viewerUserUID)?
+        loadUserProfile,
+    TResult? Function(String postId, String userUID)? likePostInProfile,
+    TResult? Function(Post post)? addOrUpdatePostInProfile,
+    TResult? Function(String currentUserUID, String targetUserUID)? blockUser,
+    TResult? Function(String currentUserUID, String targetUserUID)? unblockUser,
+  }) {
+    return addOrUpdatePostInProfile?.call(post);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String targetUserUID, String viewerUserUID)?
+        loadUserProfile,
+    TResult Function(String postId, String userUID)? likePostInProfile,
+    TResult Function(Post post)? addOrUpdatePostInProfile,
+    TResult Function(String currentUserUID, String targetUserUID)? blockUser,
+    TResult Function(String currentUserUID, String targetUserUID)? unblockUser,
+    required TResult orElse(),
+  }) {
+    if (addOrUpdatePostInProfile != null) {
+      return addOrUpdatePostInProfile(post);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(LoadUserProfile value) loadUserProfile,
+    required TResult Function(LikePostInProfile value) likePostInProfile,
+    required TResult Function(AddOrUpdatePostInProfile value)
+        addOrUpdatePostInProfile,
+    required TResult Function(BlockUser value) blockUser,
+    required TResult Function(UnblockUser value) unblockUser,
+  }) {
+    return addOrUpdatePostInProfile(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(LoadUserProfile value)? loadUserProfile,
+    TResult? Function(LikePostInProfile value)? likePostInProfile,
+    TResult? Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
+    TResult? Function(BlockUser value)? blockUser,
+    TResult? Function(UnblockUser value)? unblockUser,
+  }) {
+    return addOrUpdatePostInProfile?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(LoadUserProfile value)? loadUserProfile,
+    TResult Function(LikePostInProfile value)? likePostInProfile,
+    TResult Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
+    TResult Function(BlockUser value)? blockUser,
+    TResult Function(UnblockUser value)? unblockUser,
+    required TResult orElse(),
+  }) {
+    if (addOrUpdatePostInProfile != null) {
+      return addOrUpdatePostInProfile(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class AddOrUpdatePostInProfile implements ProfileEvent {
+  const factory AddOrUpdatePostInProfile(final Post post) =
+      _$AddOrUpdatePostInProfileImpl;
+
+  Post get post;
+
+  /// Create a copy of ProfileEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AddOrUpdatePostInProfileImplCopyWith<_$AddOrUpdatePostInProfileImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$BlockUserImplCopyWith<$Res> {
   factory _$$BlockUserImplCopyWith(
           _$BlockUserImpl value, $Res Function(_$BlockUserImpl) then) =
       __$$BlockUserImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call({String currentUserUID, String targetUserUID});
 }
@@ -362,6 +705,8 @@ class _$BlockUserImpl implements BlockUser {
   TResult when<TResult extends Object?>({
     required TResult Function(String targetUserUID, String viewerUserUID)
         loadUserProfile,
+    required TResult Function(String postId, String userUID) likePostInProfile,
+    required TResult Function(Post post) addOrUpdatePostInProfile,
     required TResult Function(String currentUserUID, String targetUserUID)
         blockUser,
     required TResult Function(String currentUserUID, String targetUserUID)
@@ -375,6 +720,8 @@ class _$BlockUserImpl implements BlockUser {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String targetUserUID, String viewerUserUID)?
         loadUserProfile,
+    TResult? Function(String postId, String userUID)? likePostInProfile,
+    TResult? Function(Post post)? addOrUpdatePostInProfile,
     TResult? Function(String currentUserUID, String targetUserUID)? blockUser,
     TResult? Function(String currentUserUID, String targetUserUID)? unblockUser,
   }) {
@@ -386,6 +733,8 @@ class _$BlockUserImpl implements BlockUser {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String targetUserUID, String viewerUserUID)?
         loadUserProfile,
+    TResult Function(String postId, String userUID)? likePostInProfile,
+    TResult Function(Post post)? addOrUpdatePostInProfile,
     TResult Function(String currentUserUID, String targetUserUID)? blockUser,
     TResult Function(String currentUserUID, String targetUserUID)? unblockUser,
     required TResult orElse(),
@@ -400,6 +749,9 @@ class _$BlockUserImpl implements BlockUser {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(LoadUserProfile value) loadUserProfile,
+    required TResult Function(LikePostInProfile value) likePostInProfile,
+    required TResult Function(AddOrUpdatePostInProfile value)
+        addOrUpdatePostInProfile,
     required TResult Function(BlockUser value) blockUser,
     required TResult Function(UnblockUser value) unblockUser,
   }) {
@@ -410,6 +762,8 @@ class _$BlockUserImpl implements BlockUser {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(LoadUserProfile value)? loadUserProfile,
+    TResult? Function(LikePostInProfile value)? likePostInProfile,
+    TResult? Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
     TResult? Function(BlockUser value)? blockUser,
     TResult? Function(UnblockUser value)? unblockUser,
   }) {
@@ -420,6 +774,8 @@ class _$BlockUserImpl implements BlockUser {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(LoadUserProfile value)? loadUserProfile,
+    TResult Function(LikePostInProfile value)? likePostInProfile,
+    TResult Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
     TResult Function(BlockUser value)? blockUser,
     TResult Function(UnblockUser value)? unblockUser,
     required TResult orElse(),
@@ -437,24 +793,20 @@ abstract class BlockUser implements ProfileEvent {
       required final String targetUserUID}) = _$BlockUserImpl;
 
   String get currentUserUID;
-  @override
   String get targetUserUID;
 
   /// Create a copy of ProfileEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$BlockUserImplCopyWith<_$BlockUserImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$UnblockUserImplCopyWith<$Res>
-    implements $ProfileEventCopyWith<$Res> {
+abstract class _$$UnblockUserImplCopyWith<$Res> {
   factory _$$UnblockUserImplCopyWith(
           _$UnblockUserImpl value, $Res Function(_$UnblockUserImpl) then) =
       __$$UnblockUserImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call({String currentUserUID, String targetUserUID});
 }
@@ -531,6 +883,8 @@ class _$UnblockUserImpl implements UnblockUser {
   TResult when<TResult extends Object?>({
     required TResult Function(String targetUserUID, String viewerUserUID)
         loadUserProfile,
+    required TResult Function(String postId, String userUID) likePostInProfile,
+    required TResult Function(Post post) addOrUpdatePostInProfile,
     required TResult Function(String currentUserUID, String targetUserUID)
         blockUser,
     required TResult Function(String currentUserUID, String targetUserUID)
@@ -544,6 +898,8 @@ class _$UnblockUserImpl implements UnblockUser {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String targetUserUID, String viewerUserUID)?
         loadUserProfile,
+    TResult? Function(String postId, String userUID)? likePostInProfile,
+    TResult? Function(Post post)? addOrUpdatePostInProfile,
     TResult? Function(String currentUserUID, String targetUserUID)? blockUser,
     TResult? Function(String currentUserUID, String targetUserUID)? unblockUser,
   }) {
@@ -555,6 +911,8 @@ class _$UnblockUserImpl implements UnblockUser {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String targetUserUID, String viewerUserUID)?
         loadUserProfile,
+    TResult Function(String postId, String userUID)? likePostInProfile,
+    TResult Function(Post post)? addOrUpdatePostInProfile,
     TResult Function(String currentUserUID, String targetUserUID)? blockUser,
     TResult Function(String currentUserUID, String targetUserUID)? unblockUser,
     required TResult orElse(),
@@ -569,6 +927,9 @@ class _$UnblockUserImpl implements UnblockUser {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(LoadUserProfile value) loadUserProfile,
+    required TResult Function(LikePostInProfile value) likePostInProfile,
+    required TResult Function(AddOrUpdatePostInProfile value)
+        addOrUpdatePostInProfile,
     required TResult Function(BlockUser value) blockUser,
     required TResult Function(UnblockUser value) unblockUser,
   }) {
@@ -579,6 +940,8 @@ class _$UnblockUserImpl implements UnblockUser {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(LoadUserProfile value)? loadUserProfile,
+    TResult? Function(LikePostInProfile value)? likePostInProfile,
+    TResult? Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
     TResult? Function(BlockUser value)? blockUser,
     TResult? Function(UnblockUser value)? unblockUser,
   }) {
@@ -589,6 +952,8 @@ class _$UnblockUserImpl implements UnblockUser {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(LoadUserProfile value)? loadUserProfile,
+    TResult Function(LikePostInProfile value)? likePostInProfile,
+    TResult Function(AddOrUpdatePostInProfile value)? addOrUpdatePostInProfile,
     TResult Function(BlockUser value)? blockUser,
     TResult Function(UnblockUser value)? unblockUser,
     required TResult orElse(),
@@ -606,12 +971,10 @@ abstract class UnblockUser implements ProfileEvent {
       required final String targetUserUID}) = _$UnblockUserImpl;
 
   String get currentUserUID;
-  @override
   String get targetUserUID;
 
   /// Create a copy of ProfileEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UnblockUserImplCopyWith<_$UnblockUserImpl> get copyWith =>
       throw _privateConstructorUsedError;

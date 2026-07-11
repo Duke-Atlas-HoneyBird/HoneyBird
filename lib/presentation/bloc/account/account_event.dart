@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../domain/entities/post.dart';
 import '../../../domain/entities/user_preference.dart';
 
 part 'account_event.freezed.dart';
@@ -17,4 +18,10 @@ class AccountEvent with _$AccountEvent {
   }) = UpdateUserProfile;
   const factory AccountEvent.checkOnboardingStatus(String userUID) =
       CheckOnboardingStatus;
+  const factory AccountEvent.likePostInAccount({
+    required String postId,
+    required String userUID,
+  }) = LikePostInAccount;
+  const factory AccountEvent.addOrUpdatePostInAccount(Post post) =
+      AddOrUpdatePostInAccount;
 }
