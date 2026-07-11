@@ -16,7 +16,6 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$FavoritesEvent {
-  String get userUID => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String userUID) loadFavoritePosts,
@@ -25,6 +24,7 @@ mixin _$FavoritesEvent {
         removeFromFavorites,
     required TResult Function(String userUID) refreshFavoritePosts,
     required TResult Function(String postId, String userUID) unstarPost,
+    required TResult Function() clearFavorites,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -34,6 +34,7 @@ mixin _$FavoritesEvent {
     TResult? Function(String postId, String userUID)? removeFromFavorites,
     TResult? Function(String userUID)? refreshFavoritePosts,
     TResult? Function(String postId, String userUID)? unstarPost,
+    TResult? Function()? clearFavorites,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -43,6 +44,7 @@ mixin _$FavoritesEvent {
     TResult Function(String postId, String userUID)? removeFromFavorites,
     TResult Function(String userUID)? refreshFavoritePosts,
     TResult Function(String postId, String userUID)? unstarPost,
+    TResult Function()? clearFavorites,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -53,6 +55,7 @@ mixin _$FavoritesEvent {
     required TResult Function(RemoveFromFavorites value) removeFromFavorites,
     required TResult Function(RefreshFavoritePosts value) refreshFavoritePosts,
     required TResult Function(UnstarPost value) unstarPost,
+    required TResult Function(ClearFavorites value) clearFavorites,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -62,6 +65,7 @@ mixin _$FavoritesEvent {
     TResult? Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult? Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult? Function(UnstarPost value)? unstarPost,
+    TResult? Function(ClearFavorites value)? clearFavorites,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -71,14 +75,9 @@ mixin _$FavoritesEvent {
     TResult Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult Function(UnstarPost value)? unstarPost,
+    TResult Function(ClearFavorites value)? clearFavorites,
     required TResult orElse(),
   }) =>
-      throw _privateConstructorUsedError;
-
-  /// Create a copy of FavoritesEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $FavoritesEventCopyWith<FavoritesEvent> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -87,8 +86,6 @@ abstract class $FavoritesEventCopyWith<$Res> {
   factory $FavoritesEventCopyWith(
           FavoritesEvent value, $Res Function(FavoritesEvent) then) =
       _$FavoritesEventCopyWithImpl<$Res, FavoritesEvent>;
-  @useResult
-  $Res call({String userUID});
 }
 
 /// @nodoc
@@ -103,27 +100,13 @@ class _$FavoritesEventCopyWithImpl<$Res, $Val extends FavoritesEvent>
 
   /// Create a copy of FavoritesEvent
   /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? userUID = null,
-  }) {
-    return _then(_value.copyWith(
-      userUID: null == userUID
-          ? _value.userUID
-          : userUID // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
-  }
 }
 
 /// @nodoc
-abstract class _$$LoadFavoritePostsImplCopyWith<$Res>
-    implements $FavoritesEventCopyWith<$Res> {
+abstract class _$$LoadFavoritePostsImplCopyWith<$Res> {
   factory _$$LoadFavoritePostsImplCopyWith(_$LoadFavoritePostsImpl value,
           $Res Function(_$LoadFavoritePostsImpl) then) =
       __$$LoadFavoritePostsImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call({String userUID});
 }
@@ -194,6 +177,7 @@ class _$LoadFavoritePostsImpl implements LoadFavoritePosts {
         removeFromFavorites,
     required TResult Function(String userUID) refreshFavoritePosts,
     required TResult Function(String postId, String userUID) unstarPost,
+    required TResult Function() clearFavorites,
   }) {
     return loadFavoritePosts(userUID);
   }
@@ -206,6 +190,7 @@ class _$LoadFavoritePostsImpl implements LoadFavoritePosts {
     TResult? Function(String postId, String userUID)? removeFromFavorites,
     TResult? Function(String userUID)? refreshFavoritePosts,
     TResult? Function(String postId, String userUID)? unstarPost,
+    TResult? Function()? clearFavorites,
   }) {
     return loadFavoritePosts?.call(userUID);
   }
@@ -218,6 +203,7 @@ class _$LoadFavoritePostsImpl implements LoadFavoritePosts {
     TResult Function(String postId, String userUID)? removeFromFavorites,
     TResult Function(String userUID)? refreshFavoritePosts,
     TResult Function(String postId, String userUID)? unstarPost,
+    TResult Function()? clearFavorites,
     required TResult orElse(),
   }) {
     if (loadFavoritePosts != null) {
@@ -234,6 +220,7 @@ class _$LoadFavoritePostsImpl implements LoadFavoritePosts {
     required TResult Function(RemoveFromFavorites value) removeFromFavorites,
     required TResult Function(RefreshFavoritePosts value) refreshFavoritePosts,
     required TResult Function(UnstarPost value) unstarPost,
+    required TResult Function(ClearFavorites value) clearFavorites,
   }) {
     return loadFavoritePosts(this);
   }
@@ -246,6 +233,7 @@ class _$LoadFavoritePostsImpl implements LoadFavoritePosts {
     TResult? Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult? Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult? Function(UnstarPost value)? unstarPost,
+    TResult? Function(ClearFavorites value)? clearFavorites,
   }) {
     return loadFavoritePosts?.call(this);
   }
@@ -258,6 +246,7 @@ class _$LoadFavoritePostsImpl implements LoadFavoritePosts {
     TResult Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult Function(UnstarPost value)? unstarPost,
+    TResult Function(ClearFavorites value)? clearFavorites,
     required TResult orElse(),
   }) {
     if (loadFavoritePosts != null) {
@@ -271,24 +260,20 @@ abstract class LoadFavoritePosts implements FavoritesEvent {
   const factory LoadFavoritePosts(final String userUID) =
       _$LoadFavoritePostsImpl;
 
-  @override
   String get userUID;
 
   /// Create a copy of FavoritesEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LoadFavoritePostsImplCopyWith<_$LoadFavoritePostsImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$AddToFavoritesImplCopyWith<$Res>
-    implements $FavoritesEventCopyWith<$Res> {
+abstract class _$$AddToFavoritesImplCopyWith<$Res> {
   factory _$$AddToFavoritesImplCopyWith(_$AddToFavoritesImpl value,
           $Res Function(_$AddToFavoritesImpl) then) =
       __$$AddToFavoritesImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call({String postId, String userUID});
 }
@@ -367,6 +352,7 @@ class _$AddToFavoritesImpl implements AddToFavorites {
         removeFromFavorites,
     required TResult Function(String userUID) refreshFavoritePosts,
     required TResult Function(String postId, String userUID) unstarPost,
+    required TResult Function() clearFavorites,
   }) {
     return addToFavorites(postId, userUID);
   }
@@ -379,6 +365,7 @@ class _$AddToFavoritesImpl implements AddToFavorites {
     TResult? Function(String postId, String userUID)? removeFromFavorites,
     TResult? Function(String userUID)? refreshFavoritePosts,
     TResult? Function(String postId, String userUID)? unstarPost,
+    TResult? Function()? clearFavorites,
   }) {
     return addToFavorites?.call(postId, userUID);
   }
@@ -391,6 +378,7 @@ class _$AddToFavoritesImpl implements AddToFavorites {
     TResult Function(String postId, String userUID)? removeFromFavorites,
     TResult Function(String userUID)? refreshFavoritePosts,
     TResult Function(String postId, String userUID)? unstarPost,
+    TResult Function()? clearFavorites,
     required TResult orElse(),
   }) {
     if (addToFavorites != null) {
@@ -407,6 +395,7 @@ class _$AddToFavoritesImpl implements AddToFavorites {
     required TResult Function(RemoveFromFavorites value) removeFromFavorites,
     required TResult Function(RefreshFavoritePosts value) refreshFavoritePosts,
     required TResult Function(UnstarPost value) unstarPost,
+    required TResult Function(ClearFavorites value) clearFavorites,
   }) {
     return addToFavorites(this);
   }
@@ -419,6 +408,7 @@ class _$AddToFavoritesImpl implements AddToFavorites {
     TResult? Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult? Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult? Function(UnstarPost value)? unstarPost,
+    TResult? Function(ClearFavorites value)? clearFavorites,
   }) {
     return addToFavorites?.call(this);
   }
@@ -431,6 +421,7 @@ class _$AddToFavoritesImpl implements AddToFavorites {
     TResult Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult Function(UnstarPost value)? unstarPost,
+    TResult Function(ClearFavorites value)? clearFavorites,
     required TResult orElse(),
   }) {
     if (addToFavorites != null) {
@@ -446,24 +437,20 @@ abstract class AddToFavorites implements FavoritesEvent {
       required final String userUID}) = _$AddToFavoritesImpl;
 
   String get postId;
-  @override
   String get userUID;
 
   /// Create a copy of FavoritesEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AddToFavoritesImplCopyWith<_$AddToFavoritesImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$RemoveFromFavoritesImplCopyWith<$Res>
-    implements $FavoritesEventCopyWith<$Res> {
+abstract class _$$RemoveFromFavoritesImplCopyWith<$Res> {
   factory _$$RemoveFromFavoritesImplCopyWith(_$RemoveFromFavoritesImpl value,
           $Res Function(_$RemoveFromFavoritesImpl) then) =
       __$$RemoveFromFavoritesImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call({String postId, String userUID});
 }
@@ -543,6 +530,7 @@ class _$RemoveFromFavoritesImpl implements RemoveFromFavorites {
         removeFromFavorites,
     required TResult Function(String userUID) refreshFavoritePosts,
     required TResult Function(String postId, String userUID) unstarPost,
+    required TResult Function() clearFavorites,
   }) {
     return removeFromFavorites(postId, userUID);
   }
@@ -555,6 +543,7 @@ class _$RemoveFromFavoritesImpl implements RemoveFromFavorites {
     TResult? Function(String postId, String userUID)? removeFromFavorites,
     TResult? Function(String userUID)? refreshFavoritePosts,
     TResult? Function(String postId, String userUID)? unstarPost,
+    TResult? Function()? clearFavorites,
   }) {
     return removeFromFavorites?.call(postId, userUID);
   }
@@ -567,6 +556,7 @@ class _$RemoveFromFavoritesImpl implements RemoveFromFavorites {
     TResult Function(String postId, String userUID)? removeFromFavorites,
     TResult Function(String userUID)? refreshFavoritePosts,
     TResult Function(String postId, String userUID)? unstarPost,
+    TResult Function()? clearFavorites,
     required TResult orElse(),
   }) {
     if (removeFromFavorites != null) {
@@ -583,6 +573,7 @@ class _$RemoveFromFavoritesImpl implements RemoveFromFavorites {
     required TResult Function(RemoveFromFavorites value) removeFromFavorites,
     required TResult Function(RefreshFavoritePosts value) refreshFavoritePosts,
     required TResult Function(UnstarPost value) unstarPost,
+    required TResult Function(ClearFavorites value) clearFavorites,
   }) {
     return removeFromFavorites(this);
   }
@@ -595,6 +586,7 @@ class _$RemoveFromFavoritesImpl implements RemoveFromFavorites {
     TResult? Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult? Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult? Function(UnstarPost value)? unstarPost,
+    TResult? Function(ClearFavorites value)? clearFavorites,
   }) {
     return removeFromFavorites?.call(this);
   }
@@ -607,6 +599,7 @@ class _$RemoveFromFavoritesImpl implements RemoveFromFavorites {
     TResult Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult Function(UnstarPost value)? unstarPost,
+    TResult Function(ClearFavorites value)? clearFavorites,
     required TResult orElse(),
   }) {
     if (removeFromFavorites != null) {
@@ -622,24 +615,20 @@ abstract class RemoveFromFavorites implements FavoritesEvent {
       required final String userUID}) = _$RemoveFromFavoritesImpl;
 
   String get postId;
-  @override
   String get userUID;
 
   /// Create a copy of FavoritesEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$RemoveFromFavoritesImplCopyWith<_$RemoveFromFavoritesImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$RefreshFavoritePostsImplCopyWith<$Res>
-    implements $FavoritesEventCopyWith<$Res> {
+abstract class _$$RefreshFavoritePostsImplCopyWith<$Res> {
   factory _$$RefreshFavoritePostsImplCopyWith(_$RefreshFavoritePostsImpl value,
           $Res Function(_$RefreshFavoritePostsImpl) then) =
       __$$RefreshFavoritePostsImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call({String userUID});
 }
@@ -711,6 +700,7 @@ class _$RefreshFavoritePostsImpl implements RefreshFavoritePosts {
         removeFromFavorites,
     required TResult Function(String userUID) refreshFavoritePosts,
     required TResult Function(String postId, String userUID) unstarPost,
+    required TResult Function() clearFavorites,
   }) {
     return refreshFavoritePosts(userUID);
   }
@@ -723,6 +713,7 @@ class _$RefreshFavoritePostsImpl implements RefreshFavoritePosts {
     TResult? Function(String postId, String userUID)? removeFromFavorites,
     TResult? Function(String userUID)? refreshFavoritePosts,
     TResult? Function(String postId, String userUID)? unstarPost,
+    TResult? Function()? clearFavorites,
   }) {
     return refreshFavoritePosts?.call(userUID);
   }
@@ -735,6 +726,7 @@ class _$RefreshFavoritePostsImpl implements RefreshFavoritePosts {
     TResult Function(String postId, String userUID)? removeFromFavorites,
     TResult Function(String userUID)? refreshFavoritePosts,
     TResult Function(String postId, String userUID)? unstarPost,
+    TResult Function()? clearFavorites,
     required TResult orElse(),
   }) {
     if (refreshFavoritePosts != null) {
@@ -751,6 +743,7 @@ class _$RefreshFavoritePostsImpl implements RefreshFavoritePosts {
     required TResult Function(RemoveFromFavorites value) removeFromFavorites,
     required TResult Function(RefreshFavoritePosts value) refreshFavoritePosts,
     required TResult Function(UnstarPost value) unstarPost,
+    required TResult Function(ClearFavorites value) clearFavorites,
   }) {
     return refreshFavoritePosts(this);
   }
@@ -763,6 +756,7 @@ class _$RefreshFavoritePostsImpl implements RefreshFavoritePosts {
     TResult? Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult? Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult? Function(UnstarPost value)? unstarPost,
+    TResult? Function(ClearFavorites value)? clearFavorites,
   }) {
     return refreshFavoritePosts?.call(this);
   }
@@ -775,6 +769,7 @@ class _$RefreshFavoritePostsImpl implements RefreshFavoritePosts {
     TResult Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult Function(UnstarPost value)? unstarPost,
+    TResult Function(ClearFavorites value)? clearFavorites,
     required TResult orElse(),
   }) {
     if (refreshFavoritePosts != null) {
@@ -788,24 +783,20 @@ abstract class RefreshFavoritePosts implements FavoritesEvent {
   const factory RefreshFavoritePosts(final String userUID) =
       _$RefreshFavoritePostsImpl;
 
-  @override
   String get userUID;
 
   /// Create a copy of FavoritesEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$RefreshFavoritePostsImplCopyWith<_$RefreshFavoritePostsImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$UnstarPostImplCopyWith<$Res>
-    implements $FavoritesEventCopyWith<$Res> {
+abstract class _$$UnstarPostImplCopyWith<$Res> {
   factory _$$UnstarPostImplCopyWith(
           _$UnstarPostImpl value, $Res Function(_$UnstarPostImpl) then) =
       __$$UnstarPostImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call({String postId, String userUID});
 }
@@ -883,6 +874,7 @@ class _$UnstarPostImpl implements UnstarPost {
         removeFromFavorites,
     required TResult Function(String userUID) refreshFavoritePosts,
     required TResult Function(String postId, String userUID) unstarPost,
+    required TResult Function() clearFavorites,
   }) {
     return unstarPost(postId, userUID);
   }
@@ -895,6 +887,7 @@ class _$UnstarPostImpl implements UnstarPost {
     TResult? Function(String postId, String userUID)? removeFromFavorites,
     TResult? Function(String userUID)? refreshFavoritePosts,
     TResult? Function(String postId, String userUID)? unstarPost,
+    TResult? Function()? clearFavorites,
   }) {
     return unstarPost?.call(postId, userUID);
   }
@@ -907,6 +900,7 @@ class _$UnstarPostImpl implements UnstarPost {
     TResult Function(String postId, String userUID)? removeFromFavorites,
     TResult Function(String userUID)? refreshFavoritePosts,
     TResult Function(String postId, String userUID)? unstarPost,
+    TResult Function()? clearFavorites,
     required TResult orElse(),
   }) {
     if (unstarPost != null) {
@@ -923,6 +917,7 @@ class _$UnstarPostImpl implements UnstarPost {
     required TResult Function(RemoveFromFavorites value) removeFromFavorites,
     required TResult Function(RefreshFavoritePosts value) refreshFavoritePosts,
     required TResult Function(UnstarPost value) unstarPost,
+    required TResult Function(ClearFavorites value) clearFavorites,
   }) {
     return unstarPost(this);
   }
@@ -935,6 +930,7 @@ class _$UnstarPostImpl implements UnstarPost {
     TResult? Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult? Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult? Function(UnstarPost value)? unstarPost,
+    TResult? Function(ClearFavorites value)? clearFavorites,
   }) {
     return unstarPost?.call(this);
   }
@@ -947,6 +943,7 @@ class _$UnstarPostImpl implements UnstarPost {
     TResult Function(RemoveFromFavorites value)? removeFromFavorites,
     TResult Function(RefreshFavoritePosts value)? refreshFavoritePosts,
     TResult Function(UnstarPost value)? unstarPost,
+    TResult Function(ClearFavorites value)? clearFavorites,
     required TResult orElse(),
   }) {
     if (unstarPost != null) {
@@ -962,13 +959,141 @@ abstract class UnstarPost implements FavoritesEvent {
       required final String userUID}) = _$UnstarPostImpl;
 
   String get postId;
-  @override
   String get userUID;
 
   /// Create a copy of FavoritesEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UnstarPostImplCopyWith<_$UnstarPostImpl> get copyWith =>
       throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ClearFavoritesImplCopyWith<$Res> {
+  factory _$$ClearFavoritesImplCopyWith(_$ClearFavoritesImpl value,
+          $Res Function(_$ClearFavoritesImpl) then) =
+      __$$ClearFavoritesImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ClearFavoritesImplCopyWithImpl<$Res>
+    extends _$FavoritesEventCopyWithImpl<$Res, _$ClearFavoritesImpl>
+    implements _$$ClearFavoritesImplCopyWith<$Res> {
+  __$$ClearFavoritesImplCopyWithImpl(
+      _$ClearFavoritesImpl _value, $Res Function(_$ClearFavoritesImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of FavoritesEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$ClearFavoritesImpl implements ClearFavorites {
+  const _$ClearFavoritesImpl();
+
+  @override
+  String toString() {
+    return 'FavoritesEvent.clearFavorites()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$ClearFavoritesImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String userUID) loadFavoritePosts,
+    required TResult Function(String postId, String userUID) addToFavorites,
+    required TResult Function(String postId, String userUID)
+        removeFromFavorites,
+    required TResult Function(String userUID) refreshFavoritePosts,
+    required TResult Function(String postId, String userUID) unstarPost,
+    required TResult Function() clearFavorites,
+  }) {
+    return clearFavorites();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String userUID)? loadFavoritePosts,
+    TResult? Function(String postId, String userUID)? addToFavorites,
+    TResult? Function(String postId, String userUID)? removeFromFavorites,
+    TResult? Function(String userUID)? refreshFavoritePosts,
+    TResult? Function(String postId, String userUID)? unstarPost,
+    TResult? Function()? clearFavorites,
+  }) {
+    return clearFavorites?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String userUID)? loadFavoritePosts,
+    TResult Function(String postId, String userUID)? addToFavorites,
+    TResult Function(String postId, String userUID)? removeFromFavorites,
+    TResult Function(String userUID)? refreshFavoritePosts,
+    TResult Function(String postId, String userUID)? unstarPost,
+    TResult Function()? clearFavorites,
+    required TResult orElse(),
+  }) {
+    if (clearFavorites != null) {
+      return clearFavorites();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(LoadFavoritePosts value) loadFavoritePosts,
+    required TResult Function(AddToFavorites value) addToFavorites,
+    required TResult Function(RemoveFromFavorites value) removeFromFavorites,
+    required TResult Function(RefreshFavoritePosts value) refreshFavoritePosts,
+    required TResult Function(UnstarPost value) unstarPost,
+    required TResult Function(ClearFavorites value) clearFavorites,
+  }) {
+    return clearFavorites(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(LoadFavoritePosts value)? loadFavoritePosts,
+    TResult? Function(AddToFavorites value)? addToFavorites,
+    TResult? Function(RemoveFromFavorites value)? removeFromFavorites,
+    TResult? Function(RefreshFavoritePosts value)? refreshFavoritePosts,
+    TResult? Function(UnstarPost value)? unstarPost,
+    TResult? Function(ClearFavorites value)? clearFavorites,
+  }) {
+    return clearFavorites?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(LoadFavoritePosts value)? loadFavoritePosts,
+    TResult Function(AddToFavorites value)? addToFavorites,
+    TResult Function(RemoveFromFavorites value)? removeFromFavorites,
+    TResult Function(RefreshFavoritePosts value)? refreshFavoritePosts,
+    TResult Function(UnstarPost value)? unstarPost,
+    TResult Function(ClearFavorites value)? clearFavorites,
+    required TResult orElse(),
+  }) {
+    if (clearFavorites != null) {
+      return clearFavorites(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ClearFavorites implements FavoritesEvent {
+  const factory ClearFavorites() = _$ClearFavoritesImpl;
 }

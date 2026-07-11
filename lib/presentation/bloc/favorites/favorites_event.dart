@@ -20,4 +20,5 @@ class FavoritesEvent with _$FavoritesEvent {
     required String postId,
     required String userUID,
   }) = UnstarPost;
+  const factory FavoritesEvent.clearFavorites() = ClearFavorites;
 }

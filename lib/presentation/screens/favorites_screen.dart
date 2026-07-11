@@ -14,7 +14,7 @@ import '../bloc/messages/messages_bloc.dart';
 import '../bloc/messages/messages_event.dart';
 import '../bloc/messages/messages_state.dart';
 
-/// Favorites screen displaying user's starred (favorited) posts — all from API.
+/// Favorites screen displaying posts starred by the signed-in user only.
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
 
@@ -24,7 +24,7 @@ class FavoritesScreen extends StatefulWidget {
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
   int _currentTabIndex = 1;
-  bool _hasRequestedLoad = false;
+  String? _lastLoadedUserUID;
   bool _hasRequestedUnreadCount = false;
 
   void _handleTabSelected(int index) {
@@ -36,13 +36,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       _currentTabIndex = index;
     });
 
-    // Navigate to different screens based on tab index
     switch (index) {
       case 0:
         Navigator.of(context).popUntil((route) => route.isFirst);
         break;
       case 1:
-        // Already on Favorites screen
         break;
       case 2:
         Navigator.pushReplacementNamed(context, '/account');
@@ -57,6 +55,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return context.read<AuthBloc>().state.user?.uid;
   }
 
+  void _loadFavoritesForUser(String userUID) {
+    if (userUID.isEmpty) return;
+    context
+        .read<FavoritesBloc>()
+        .add(FavoritesEvent.loadFavoritePosts(userUID));
+  }
+
   void _handleUnstar(BuildContext context, String postId, String userUID) {
     if (userUID.isEmpty) return;
     context.read<FavoritesBloc>().add(FavoritesEvent.unstarPost(
@@ -65,16 +70,25 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         ));
   }
 
+  void _onAuthUserChanged(String? userUID) {
+    if (userUID == null || userUID.isEmpty) {
+      _lastLoadedUserUID = null;
+      context.read<FavoritesBloc>().add(const FavoritesEvent.clearFavorites());
+      return;
+    }
+
+    if (_lastLoadedUserUID == userUID) return;
+
+    _lastLoadedUserUID = userUID;
+    _loadFavoritesForUser(userUID);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final userUID = _currentUserUID(context) ?? '';
-    if (!_hasRequestedLoad && userUID.isNotEmpty) {
-      _hasRequestedLoad = true;
-      context
-          .read<FavoritesBloc>()
-          .add(FavoritesEvent.loadFavoritePosts(userUID));
-    }
+    _onAuthUserChanged(userUID.isEmpty ? null : userUID);
+
     if (!_hasRequestedUnreadCount && userUID.isNotEmpty) {
       _hasRequestedUnreadCount = true;
       context.read<MessagesBloc>().add(MessagesEvent.loadUnreadCount(userUID));
@@ -83,7 +97,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   void deactivate() {
-    _hasRequestedLoad = false;
+    _lastLoadedUserUID = null;
     super.deactivate();
   }
 
@@ -100,171 +114,250 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           if (didPop) return;
           Navigator.of(context).popUntil((route) => route.isFirst);
         },
-        child: Scaffold(
-        appBar: AppBar(
-          centerTitle: false,
-          title: const Text('Favorites'),
-          elevation: 0,
-          iconTheme:
-              IconThemeData(color: Theme.of(context).colorScheme.onBackground),
-        ),
-        body: SafeArea(
-          child: BlocConsumer<FavoritesBloc, FavoritesState>(
-            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
-            listener: (context, state) {
-              if (state.errorMessage != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage!)),
-                );
-              }
-            },
-            buildWhen: (prev, curr) =>
-                prev?.posts != curr.posts ||
-                prev?.isLoading != curr.isLoading ||
-                prev?.errorMessage != curr.errorMessage,
-            builder: (context, state) {
-              if (state.isLoading && state.posts.isEmpty) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).colorScheme.onBackground),
-                  ),
-                );
-              }
+        child: BlocListener<AuthBloc, AuthState>(
+          listenWhen: (prev, curr) => prev?.user?.uid != curr.user?.uid,
+          listener: (context, authState) {
+            _onAuthUserChanged(authState.user?.uid);
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              centerTitle: false,
+              title: const Text('Favorites'),
+              elevation: 0,
+              iconTheme: IconThemeData(
+                  color: Theme.of(context).colorScheme.onBackground),
+            ),
+            body: SafeArea(
+              child: BlocConsumer<FavoritesBloc, FavoritesState>(
+                listenWhen: (prev, curr) =>
+                    curr.errorMessage != prev?.errorMessage,
+                listener: (context, state) {
+                  if (state.errorMessage != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.errorMessage!)),
+                    );
+                  }
+                },
+                buildWhen: (prev, curr) =>
+                    prev?.posts != curr.posts ||
+                    prev?.isLoading != curr.isLoading ||
+                    prev?.errorMessage != curr.errorMessage ||
+                    prev?.userUID != curr.userUID,
+                builder: (context, state) {
+                  final isSegregated =
+                      userUID.isNotEmpty && state.userUID == userUID;
+                  final visiblePosts =
+                      isSegregated ? state.posts : const [];
 
-              if (state.errorMessage != null && state.posts.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(spacingL),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: textPrimary,
+                  if (!isSegregated &&
+                      (state.isLoading || state.userUID == null)) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).colorScheme.onBackground,
                         ),
-                        const SizedBox(height: spacingM),
-                        Text(
-                          'Error',
-                          style: headlineMedium.copyWith(
-                            color: textPrimary,
-                          ),
+                      ),
+                    );
+                  }
+
+                  if (state.isLoading && visiblePosts.isEmpty) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).colorScheme.onBackground,
                         ),
-                        const SizedBox(height: spacingS),
-                        Text(
-                          state.errorMessage!,
-                          style: bodyLarge.copyWith(
-                            color: textSecondary,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: spacingM),
-                        ElevatedButton(
-                          onPressed: () {
-                            context
-                                .read<FavoritesBloc>()
-                                .add(FavoritesEvent.loadFavoritePosts(userUID));
+                      ),
+                    );
+                  }
+
+                  if (state.errorMessage != null && visiblePosts.isEmpty) {
+                    return _FavoritesErrorWidget(
+                      message: state.errorMessage!,
+                      onRetry: () => _loadFavoritesForUser(userUID),
+                    );
+                  }
+
+                  if (visiblePosts.isEmpty) {
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        _loadFavoritesForUser(userUID);
+                        await Future.delayed(
+                            const Duration(milliseconds: 500));
+                      },
+                      color: accentPink,
+                      child: _NoFavoritesYetWidget(
+                        onRefresh: () => _loadFavoritesForUser(userUID),
+                      ),
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<FavoritesBloc>().add(
+                          FavoritesEvent.refreshFavoritePosts(userUID));
+                      await Future.delayed(const Duration(milliseconds: 500));
+                    },
+                    color: accentPink,
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: visiblePosts.length,
+                      itemBuilder: (context, index) {
+                        final post = visiblePosts[index];
+                        return PostCard(
+                          post: post,
+                          onLike: () =>
+                              _handleUnstar(context, post.id, userUID),
+                          onAuthorTap: (authorUID, userName) {
+                            Navigator.pushNamed(
+                              context,
+                              '/profile',
+                              arguments: {
+                                'userUID': authorUID,
+                                'userName': userName,
+                              },
+                            );
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: accentPink,
-                            foregroundColor: surfaceColor,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: spacingL,
-                              vertical: spacingM,
-                            ),
-                          ),
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-
-              if (state.posts.isNotEmpty || !state.isLoading) {
-                if (state.posts.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.favorite_border,
-                          size: 64,
-                          color: textSecondary,
-                        ),
-                        const SizedBox(height: spacingL),
-                        Text(
-                          'No favorites yet',
-                          style: headlineMedium.copyWith(
-                            color: textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: spacingM),
-                        Text(
-                          'Posts you favorite will appear here',
-                          style: bodyLarge.copyWith(
-                            color: textSecondary,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                          currentUserUID:
+                              userUID.isNotEmpty ? userUID : null,
+                        );
+                      },
                     ),
                   );
-                }
+                },
+              ),
+            ),
+            bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
+              buildWhen: (prev, curr) =>
+                  prev?.unreadCount != curr.unreadCount,
+              builder: (context, messagesState) => BottomNavigationWidget(
+                currentIndex: _currentTabIndex,
+                onTabSelected: _handleTabSelected,
+                unreadMessageCount: messagesState.unreadCount,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    context
-                        .read<FavoritesBloc>()
-                        .add(FavoritesEvent.refreshFavoritePosts(userUID));
-                    await Future.delayed(const Duration(milliseconds: 500));
-                  },
-                  color: accentPink,
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: state.posts.length,
-                    itemBuilder: (context, index) {
-                      final post = state.posts[index];
-                      return PostCard(
-                        post: post,
-                        onLike: () =>
-                            _handleUnstar(context, post.id ?? '', userUID),
-                        onAuthorTap: (userUID, userName) {
-                          Navigator.pushNamed(
-                            context,
-                            '/profile',
-                            arguments: {
-                              'userUID': userUID,
-                              'userName': userName
-                            },
-                          );
-                        },
-                        currentUserUID: userUID.isNotEmpty ? userUID : null,
-                      );
-                    },
-                  ),
-                );
-              }
+class _FavoritesErrorWidget extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
 
-              return const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
+  const _FavoritesErrorWidget({
+    required this.message,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(spacingL),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: textPrimary,
+            ),
+            const SizedBox(height: spacingM),
+            Text(
+              'Error',
+              style: headlineMedium.copyWith(
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(height: spacingS),
+            Text(
+              message,
+              style: bodyLarge.copyWith(
+                color: textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: spacingM),
+            ElevatedButton(
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentPink,
+                foregroundColor: surfaceColor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: spacingL,
+                  vertical: spacingM,
                 ),
-              );
-            },
-          ),
-        ),
-        bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
-          buildWhen: (prev, curr) => prev?.unreadCount != curr.unreadCount,
-          builder: (context, messagesState) => BottomNavigationWidget(
-            currentIndex: _currentTabIndex,
-            onTabSelected: _handleTabSelected,
-            unreadMessageCount: messagesState.unreadCount,
-          ),
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
         ),
       ),
-      ),
+    );
+  }
+}
+
+/// Empty state when the signed-in user has no favourited posts.
+class _NoFavoritesYetWidget extends StatelessWidget {
+  final VoidCallback? onRefresh;
+
+  const _NoFavoritesYetWidget({this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: spacingL),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.favorite_border,
+                      size: 80,
+                      color: textSecondary,
+                    ),
+                    const SizedBox(height: spacingL),
+                    Text(
+                      'No favorites yet',
+                      style: headlineMedium.copyWith(
+                        color: textPrimary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: spacingM),
+                    Text(
+                      'Star posts from the feed and they will appear here.',
+                      style: bodyLarge.copyWith(
+                        color: textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    if (onRefresh != null) ...[
+                      const SizedBox(height: spacingL),
+                      TextButton.icon(
+                        onPressed: onRefresh,
+                        icon: Icon(Icons.refresh, color: textSecondary),
+                        label: const Text('Refresh'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: textSecondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

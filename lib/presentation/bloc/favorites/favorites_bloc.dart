@@ -18,21 +18,43 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     on<RemoveFromFavorites>(_onRemoveFromFavorites);
     on<RefreshFavoritePosts>(_onRefreshFavoritePosts);
     on<UnstarPost>(_onUnstarPost);
+    on<ClearFavorites>(_onClearFavorites);
   }
+
+  bool _isCurrentUser(String userUID) =>
+      userUID.isNotEmpty &&
+      (state.userUID == null || state.userUID == userUID);
 
   Future<void> _onLoadFavoritePosts(
     LoadFavoritePosts event,
     Emitter<FavoritesState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, errorMessage: null));
+    if (event.userUID.isEmpty) {
+      emit(const FavoritesState());
+      return;
+    }
 
-    final result = await favoriteRepository.getFavoritePosts(event.userUID);
+    final userChanged =
+        state.userUID != null && state.userUID != event.userUID;
+    final loadForUid = event.userUID;
+
+    emit(state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      userUID: loadForUid,
+      posts: userChanged ? [] : state.posts,
+    ));
+
+    final result = await favoriteRepository.getFavoritePosts(loadForUid);
+
+    if (state.userUID != loadForUid) return;
 
     result.fold(
       (failure) => emit(state.copyWith(
-          isLoading: false,
-          errorMessage: 'Failed to load favorite posts',
-          posts: [])),
+        isLoading: false,
+        errorMessage: 'Failed to load favorite posts',
+        posts: [],
+      )),
       (posts) => emit(state.copyWith(isLoading: false, posts: posts)),
     );
   }
@@ -41,6 +63,8 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     AddToFavorites event,
     Emitter<FavoritesState> emit,
   ) async {
+    if (!_isCurrentUser(event.userUID)) return;
+
     final result = await favoriteRepository.addToFavorites(
         event.postId, event.userUID);
 
@@ -55,6 +79,8 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     RemoveFromFavorites event,
     Emitter<FavoritesState> emit,
   ) async {
+    if (!_isCurrentUser(event.userUID)) return;
+
     final result = await favoriteRepository.removeFromFavorites(
         event.postId, event.userUID);
 
@@ -69,7 +95,12 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     RefreshFavoritePosts event,
     Emitter<FavoritesState> emit,
   ) async {
-    final result = await favoriteRepository.getFavoritePosts(event.userUID);
+    if (event.userUID.isEmpty) return;
+
+    final refreshForUid = event.userUID;
+    final result = await favoriteRepository.getFavoritePosts(refreshForUid);
+
+    if (state.userUID != refreshForUid) return;
 
     result.fold(
       (failure) => emit(state.copyWith(
@@ -82,6 +113,8 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     UnstarPost event,
     Emitter<FavoritesState> emit,
   ) async {
+    if (!_isCurrentUser(event.userUID)) return;
+
     final likeResult =
         await postRepository.likePost(event.postId, event.userUID);
 
@@ -94,5 +127,12 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
         add(FavoritesEvent.refreshFavoritePosts(event.userUID));
       },
     );
+  }
+
+  void _onClearFavorites(
+    ClearFavorites event,
+    Emitter<FavoritesState> emit,
+  ) {
+    emit(const FavoritesState());
   }
 }
