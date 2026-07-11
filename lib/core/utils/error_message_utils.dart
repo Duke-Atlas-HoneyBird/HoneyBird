@@ -20,6 +20,10 @@ class ErrorMessageUtils {
         return 'Could not send message. Please try again.';
       case 'refresh_conversations':
         return 'Could not refresh. Please try again.';
+      case 'load_restaurants':
+        return 'Could not load restaurants. Please try again.';
+      case 'open_conversation':
+        return 'Could not open restaurant conversation. Please try again.';
       case 'load_timeline':
         return 'Could not load timeline. Please try again.';
       case 'refresh_timeline':

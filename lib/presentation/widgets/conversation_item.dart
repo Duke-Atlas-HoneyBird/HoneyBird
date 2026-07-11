@@ -4,10 +4,9 @@ import '../../domain/entities/message.dart';
 import '../theme/colours.dart';
 import '../theme/spacing.dart';
 import '../theme/text_styles.dart';
-import '../theme/constants.dart';
 import '../theme/border_radius.dart';
 
-/// Widget for displaying a conversation item in the messages list
+/// Widget for displaying a B2C restaurant conversation in the messages list.
 class ConversationItem extends StatelessWidget {
   final Conversation conversation;
   final VoidCallback onTap;
@@ -35,12 +34,9 @@ class ConversationItem extends StatelessWidget {
     }
   }
 
-  String _getOtherParticipantName() => conversation.participant1Name;
-  
-
   @override
   Widget build(BuildContext context) {
-    final otherName = _getOtherParticipantName();
+    final restaurantName = conversation.restaurantName;
     final hasUnread = conversation.unreadCount > 0;
 
     return Card(
@@ -56,26 +52,35 @@ class ConversationItem extends StatelessWidget {
             height: 56,
             color: primaryPurple,
             alignment: Alignment.center,
-            child: Text(
-              otherName.isNotEmpty ? otherName[0].toUpperCase() : '?',
-              style: const TextStyle(
-                fontSize: 20,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+            child: const Icon(
+              Icons.storefront,
+              color: Colors.white,
+              size: 28,
             ),
           ),
         ),
         title: Row(
           children: [
             Expanded(
-              child: Text(
-                otherName,
-                style: labelLarge.copyWith(
-                  fontWeight: hasUnread ? FontWeight.w600 : FontWeight.normal,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    restaurantName,
+                    style: labelLarge.copyWith(
+                      fontWeight: hasUnread ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    'Merchant · Order inquiries',
+                    style: bodyMedium.copyWith(
+                      color: textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
             ),
             if (conversation.lastMessage != null)
@@ -92,9 +97,12 @@ class ConversationItem extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      conversation.lastMessage!.content,
+                      conversation.lastMessage!.isSystemMessage
+                          ? 'Merchant channel opened'
+                          : conversation.lastMessage!.content,
                       style: bodyMedium.copyWith(
-                        fontWeight: hasUnread ? FontWeight.w500 : FontWeight.normal,
+                        fontWeight:
+                            hasUnread ? FontWeight.w500 : FontWeight.normal,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -118,7 +126,7 @@ class ConversationItem extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      ),
+                    ),
                 ],
               )
             : null,
@@ -127,4 +135,3 @@ class ConversationItem extends StatelessWidget {
     );
   }
 }
-

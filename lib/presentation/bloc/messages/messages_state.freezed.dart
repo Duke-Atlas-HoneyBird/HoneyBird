@@ -22,10 +22,12 @@ mixin _$MessagesState {
   List<Message> get messages => throw _privateConstructorUsedError;
   String get conversationId => throw _privateConstructorUsedError;
   String? get errorMessage => throw _privateConstructorUsedError;
+  List<Restaurant> get restaurants => throw _privateConstructorUsedError;
+  bool get isLoadingRestaurants => throw _privateConstructorUsedError;
 
-  /// When opening conversation from profile (new or existing)
-  String? get openWithUserUID => throw _privateConstructorUsedError;
-  String? get openWithUserName => throw _privateConstructorUsedError;
+  /// When opening a restaurant conversation (new or existing)
+  String? get openWithRestaurantId => throw _privateConstructorUsedError;
+  String? get openWithRestaurantName => throw _privateConstructorUsedError;
 
   /// Create a copy of MessagesState
   /// with the given fields replaced by the non-null parameter values.
@@ -47,8 +49,10 @@ abstract class $MessagesStateCopyWith<$Res> {
       List<Message> messages,
       String conversationId,
       String? errorMessage,
-      String? openWithUserUID,
-      String? openWithUserName});
+      List<Restaurant> restaurants,
+      bool isLoadingRestaurants,
+      String? openWithRestaurantId,
+      String? openWithRestaurantName});
 }
 
 /// @nodoc
@@ -72,8 +76,10 @@ class _$MessagesStateCopyWithImpl<$Res, $Val extends MessagesState>
     Object? messages = null,
     Object? conversationId = null,
     Object? errorMessage = freezed,
-    Object? openWithUserUID = freezed,
-    Object? openWithUserName = freezed,
+    Object? restaurants = null,
+    Object? isLoadingRestaurants = null,
+    Object? openWithRestaurantId = freezed,
+    Object? openWithRestaurantName = freezed,
   }) {
     return _then(_value.copyWith(
       isLoading: null == isLoading
@@ -100,13 +106,21 @@ class _$MessagesStateCopyWithImpl<$Res, $Val extends MessagesState>
           ? _value.errorMessage
           : errorMessage // ignore: cast_nullable_to_non_nullable
               as String?,
-      openWithUserUID: freezed == openWithUserUID
-          ? _value.openWithUserUID
-          : openWithUserUID // ignore: cast_nullable_to_non_nullable
+      restaurants: null == restaurants
+          ? _value.restaurants
+          : restaurants // ignore: cast_nullable_to_non_nullable
+              as List<Restaurant>,
+      isLoadingRestaurants: null == isLoadingRestaurants
+          ? _value.isLoadingRestaurants
+          : isLoadingRestaurants // ignore: cast_nullable_to_non_nullable
+              as bool,
+      openWithRestaurantId: freezed == openWithRestaurantId
+          ? _value.openWithRestaurantId
+          : openWithRestaurantId // ignore: cast_nullable_to_non_nullable
               as String?,
-      openWithUserName: freezed == openWithUserName
-          ? _value.openWithUserName
-          : openWithUserName // ignore: cast_nullable_to_non_nullable
+      openWithRestaurantName: freezed == openWithRestaurantName
+          ? _value.openWithRestaurantName
+          : openWithRestaurantName // ignore: cast_nullable_to_non_nullable
               as String?,
     ) as $Val);
   }
@@ -127,8 +141,10 @@ abstract class _$$MessagesStateImplCopyWith<$Res>
       List<Message> messages,
       String conversationId,
       String? errorMessage,
-      String? openWithUserUID,
-      String? openWithUserName});
+      List<Restaurant> restaurants,
+      bool isLoadingRestaurants,
+      String? openWithRestaurantId,
+      String? openWithRestaurantName});
 }
 
 /// @nodoc
@@ -150,8 +166,10 @@ class __$$MessagesStateImplCopyWithImpl<$Res>
     Object? messages = null,
     Object? conversationId = null,
     Object? errorMessage = freezed,
-    Object? openWithUserUID = freezed,
-    Object? openWithUserName = freezed,
+    Object? restaurants = null,
+    Object? isLoadingRestaurants = null,
+    Object? openWithRestaurantId = freezed,
+    Object? openWithRestaurantName = freezed,
   }) {
     return _then(_$MessagesStateImpl(
       isLoading: null == isLoading
@@ -178,13 +196,21 @@ class __$$MessagesStateImplCopyWithImpl<$Res>
           ? _value.errorMessage
           : errorMessage // ignore: cast_nullable_to_non_nullable
               as String?,
-      openWithUserUID: freezed == openWithUserUID
-          ? _value.openWithUserUID
-          : openWithUserUID // ignore: cast_nullable_to_non_nullable
+      restaurants: null == restaurants
+          ? _value._restaurants
+          : restaurants // ignore: cast_nullable_to_non_nullable
+              as List<Restaurant>,
+      isLoadingRestaurants: null == isLoadingRestaurants
+          ? _value.isLoadingRestaurants
+          : isLoadingRestaurants // ignore: cast_nullable_to_non_nullable
+              as bool,
+      openWithRestaurantId: freezed == openWithRestaurantId
+          ? _value.openWithRestaurantId
+          : openWithRestaurantId // ignore: cast_nullable_to_non_nullable
               as String?,
-      openWithUserName: freezed == openWithUserName
-          ? _value.openWithUserName
-          : openWithUserName // ignore: cast_nullable_to_non_nullable
+      openWithRestaurantName: freezed == openWithRestaurantName
+          ? _value.openWithRestaurantName
+          : openWithRestaurantName // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
   }
@@ -200,10 +226,13 @@ class _$MessagesStateImpl implements _MessagesState {
       final List<Message> messages = const [],
       this.conversationId = '',
       this.errorMessage,
-      this.openWithUserUID,
-      this.openWithUserName})
+      final List<Restaurant> restaurants = const [],
+      this.isLoadingRestaurants = false,
+      this.openWithRestaurantId,
+      this.openWithRestaurantName})
       : _conversations = conversations,
-        _messages = messages;
+        _messages = messages,
+        _restaurants = restaurants;
 
   @override
   @JsonKey()
@@ -234,16 +263,28 @@ class _$MessagesStateImpl implements _MessagesState {
   final String conversationId;
   @override
   final String? errorMessage;
+  final List<Restaurant> _restaurants;
+  @override
+  @JsonKey()
+  List<Restaurant> get restaurants {
+    if (_restaurants is EqualUnmodifiableListView) return _restaurants;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_restaurants);
+  }
 
-  /// When opening conversation from profile (new or existing)
   @override
-  final String? openWithUserUID;
+  @JsonKey()
+  final bool isLoadingRestaurants;
+
+  /// When opening a restaurant conversation (new or existing)
   @override
-  final String? openWithUserName;
+  final String? openWithRestaurantId;
+  @override
+  final String? openWithRestaurantName;
 
   @override
   String toString() {
-    return 'MessagesState(isLoading: $isLoading, conversations: $conversations, unreadCount: $unreadCount, messages: $messages, conversationId: $conversationId, errorMessage: $errorMessage, openWithUserUID: $openWithUserUID, openWithUserName: $openWithUserName)';
+    return 'MessagesState(isLoading: $isLoading, conversations: $conversations, unreadCount: $unreadCount, messages: $messages, conversationId: $conversationId, errorMessage: $errorMessage, restaurants: $restaurants, isLoadingRestaurants: $isLoadingRestaurants, openWithRestaurantId: $openWithRestaurantId, openWithRestaurantName: $openWithRestaurantName)';
   }
 
   @override
@@ -262,10 +303,14 @@ class _$MessagesStateImpl implements _MessagesState {
                 other.conversationId == conversationId) &&
             (identical(other.errorMessage, errorMessage) ||
                 other.errorMessage == errorMessage) &&
-            (identical(other.openWithUserUID, openWithUserUID) ||
-                other.openWithUserUID == openWithUserUID) &&
-            (identical(other.openWithUserName, openWithUserName) ||
-                other.openWithUserName == openWithUserName));
+            const DeepCollectionEquality()
+                .equals(other._restaurants, _restaurants) &&
+            (identical(other.isLoadingRestaurants, isLoadingRestaurants) ||
+                other.isLoadingRestaurants == isLoadingRestaurants) &&
+            (identical(other.openWithRestaurantId, openWithRestaurantId) ||
+                other.openWithRestaurantId == openWithRestaurantId) &&
+            (identical(other.openWithRestaurantName, openWithRestaurantName) ||
+                other.openWithRestaurantName == openWithRestaurantName));
   }
 
   @override
@@ -277,8 +322,10 @@ class _$MessagesStateImpl implements _MessagesState {
       const DeepCollectionEquality().hash(_messages),
       conversationId,
       errorMessage,
-      openWithUserUID,
-      openWithUserName);
+      const DeepCollectionEquality().hash(_restaurants),
+      isLoadingRestaurants,
+      openWithRestaurantId,
+      openWithRestaurantName);
 
   /// Create a copy of MessagesState
   /// with the given fields replaced by the non-null parameter values.
@@ -297,8 +344,10 @@ abstract class _MessagesState implements MessagesState {
       final List<Message> messages,
       final String conversationId,
       final String? errorMessage,
-      final String? openWithUserUID,
-      final String? openWithUserName}) = _$MessagesStateImpl;
+      final List<Restaurant> restaurants,
+      final bool isLoadingRestaurants,
+      final String? openWithRestaurantId,
+      final String? openWithRestaurantName}) = _$MessagesStateImpl;
 
   @override
   bool get isLoading;
@@ -312,12 +361,16 @@ abstract class _MessagesState implements MessagesState {
   String get conversationId;
   @override
   String? get errorMessage;
+  @override
+  List<Restaurant> get restaurants;
+  @override
+  bool get isLoadingRestaurants;
 
-  /// When opening conversation from profile (new or existing)
+  /// When opening a restaurant conversation (new or existing)
   @override
-  String? get openWithUserUID;
+  String? get openWithRestaurantId;
   @override
-  String? get openWithUserName;
+  String? get openWithRestaurantName;
 
   /// Create a copy of MessagesState
   /// with the given fields replaced by the non-null parameter values.

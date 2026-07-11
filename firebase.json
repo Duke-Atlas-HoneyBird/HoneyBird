@@ -1,1 +1,34 @@
-{"firestore":{"rules":"firestore.rules"},"flutter":{"platforms":{"android":{"default":{"projectId":"honeybird-ccaf2","appId":"1:772553510834:android:1c0d2deec0651bad571eab","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"honeybird-ccaf2","appId":"1:772553510834:ios:92202cf74a15da42571eab","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"honeybird-ccaf2","configurations":{"android":"1:772553510834:android:1c0d2deec0651bad571eab","ios":"1:772553510834:ios:92202cf74a15da42571eab"}}}}}}
+{
+    "firestore": {
+        "rules": "firestore.rules",
+        "indexes": "firestore.indexes.json"
+    },
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "honeybird-ccaf2",
+                    "appId": "1:772553510834:android:1c0d2deec0651bad571eab",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "honeybird-ccaf2",
+                    "appId": "1:772553510834:ios:92202cf74a15da42571eab",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "honeybird-ccaf2",
+                    "configurations": {
+                        "android": "1:772553510834:android:1c0d2deec0651bad571eab",
+                        "ios": "1:772553510834:ios:92202cf74a15da42571eab"
+                    }
+                }
+            }
+        }
+    }
+}

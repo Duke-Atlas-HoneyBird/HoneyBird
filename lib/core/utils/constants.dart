@@ -9,6 +9,7 @@ class FirebaseCollections {
   static const String conversations = 'conversations';
   static const String comments = 'comments';
   static const String blocked = 'blocked';
+  static const String restaurants = 'restaurants';
 }
 
 /// Firebase storage paths
