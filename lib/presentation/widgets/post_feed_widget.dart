@@ -157,9 +157,9 @@ class _PostFeedWidgetState extends State<PostFeedWidget> {
         .map((p) => p.id ?? '')
         .where((id) => id.isNotEmpty)
         .toList();
+    final lastRequested = _lastRequestedPostIds;
     final needCounts = postIds.isNotEmpty &&
-        (_lastRequestedPostIds == null ||
-            !_setEquals(_lastRequestedPostIds!, postIds));
+        (lastRequested == null || !_setEquals(lastRequested, postIds));
     if (needCounts) {
       _lastRequestedPostIds = List.from(postIds);
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -187,19 +187,21 @@ class _PostFeedWidgetState extends State<PostFeedWidget> {
               final commentCount = postId.isEmpty
                   ? 0
                   : (countState.counts[postId] ?? 0);
+              final onCommentTap = widget.onCommentTap;
+              final onContactRestaurant = widget.onContactRestaurant;
               return PostCard(
                 post: post,
                 onLike: () => widget.onLike(
                   postId,
                   widget.currentUserUID ?? '',
                 ),
-                onComment: widget.onCommentTap != null
-                    ? () => widget.onCommentTap!(postId)
+                onComment: onCommentTap != null
+                    ? () => onCommentTap(postId)
                     : null,
                 onAuthorTap: widget.onAuthorTap,
                 onContactRestaurant: post.hasLinkedRestaurant &&
-                        widget.onContactRestaurant != null
-                    ? () => widget.onContactRestaurant!(post)
+                        onContactRestaurant != null
+                    ? () => onContactRestaurant(post)
                     : null,
                 currentUserUID: widget.currentUserUID,
                 commentCount: commentCount,

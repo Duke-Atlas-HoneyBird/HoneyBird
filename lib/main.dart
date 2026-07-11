@@ -64,10 +64,10 @@ class HoneyBirdApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
-          create: (context) => di.sl<AuthBloc>()..add(const AuthEvent.checkRequested()),
+          create: (_) => di.sl<AuthBloc>()..add(const AuthEvent.checkRequested()),
         ),
         BlocProvider<FeedBloc>(
-          create: (context) => FeedBloc(
+          create: (_) => FeedBloc(
             di.sl<GetPosts>(),
             postRepository: di.sl<PostRepository>(),
             favoriteRepository: di.sl<FavoriteRepository>(),
@@ -75,19 +75,19 @@ class HoneyBirdApp extends StatelessWidget {
           ),
         ),
         BlocProvider<FavoritesBloc>(
-          create: (context) => FavoritesBloc(
+          create: (_) => FavoritesBloc(
             favoriteRepository: di.sl<FavoriteRepository>(),
             postRepository: di.sl<PostRepository>(),
           ),
         ),
         BlocProvider<AccountBloc>(
-          create: (context) => di.sl<AccountBloc>(),
+          create: (_) => di.sl<AccountBloc>(),
         ),
         BlocProvider<MessagesBloc>(
-          create: (context) => di.sl<MessagesBloc>(),
+          create: (_) => di.sl<MessagesBloc>(),
         ),
         BlocProvider<TimelineBloc>(
-          create: (context) => TimelineBloc(
+          create: (_) => TimelineBloc(
             di.sl<GetPosts>(),
             postRepository: di.sl<PostRepository>(),
             favoriteRepository: di.sl<FavoriteRepository>(),
@@ -95,10 +95,10 @@ class HoneyBirdApp extends StatelessWidget {
           ),
         ),
         BlocProvider<PostBloc>(
-          create: (context) => di.sl<PostBloc>(),
+          create: (_) => di.sl<PostBloc>(),
         ),
         BlocProvider<ProfileBloc>(
-          create: (context) => di.sl<ProfileBloc>(),
+          create: (_) => di.sl<ProfileBloc>(),
         ),
       ],
       child: MaterialApp(
@@ -110,7 +110,7 @@ class HoneyBirdApp extends StatelessWidget {
         home: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {},
           buildWhen: (prev, curr) =>
-              prev?.user != curr.user || prev?.errorMessage != curr.errorMessage,
+              prev.user != curr.user || prev.errorMessage != curr.errorMessage,
           builder: (context, state) {
             if (state.user != null) {
               return const PostAuthGate();
@@ -126,24 +126,26 @@ class HoneyBirdApp extends StatelessWidget {
           },
         ),
         routes: {
-          '/auth': (context) => const AuthScreen(),
-          '/home': (context) => const HomeScreen(),
-          '/favorites': (context) => const FavoritesScreen(),
-          '/messages': (context) => MessagesScreen(key: messagesScreenGlobalKey),
-          '/account': (context) => const AccountScreen(),
-          '/manage': (context) => const ManageScreen(),
-          '/timeline': (context) => const TimelineScreen(),
-          '/feed': (context) => const FeedScreen(),
+          '/auth': (_) => const AuthScreen(),
+          '/home': (_) => const HomeScreen(),
+          '/favorites': (_) => const FavoritesScreen(),
+          '/messages': (_) => MessagesScreen(key: messagesScreenGlobalKey),
+          '/account': (_) => const AccountScreen(),
+          '/manage': (_) => const ManageScreen(),
+          '/timeline': (_) => const TimelineScreen(),
+          '/feed': (_) => const FeedScreen(),
           '/profile': (context) {
             final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
-            if (args == null || args['userUID'] == null || args['userName'] == null) {
+            final userUID = args?['userUID'];
+            final userName = args?['userName'] ?? '';
+            if (userUID == null || userName.isEmpty) {
               return const Scaffold(body: Center(child: Text('Invalid profile')));
             }
             return BlocProvider(
               create: (_) => di.sl<ProfileBloc>(),
               child: UserProfileScreen(
-                targetUserUID: args['userUID']!,
-                targetUserName: args['userName']!,
+                targetUserUID: userUID,
+                targetUserName: userName,
               ),
             );
           },

@@ -213,7 +213,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           Text(
             'What cuisines do you enjoy?',
-            style: Theme.of(context).textTheme.titleMedium!.copyWith(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: primaryColor,
                   fontWeight: FontWeight.w600,
                 ),
@@ -258,7 +258,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           Text(
             'Any dietary preferences?',
-            style: Theme.of(context).textTheme.titleMedium!.copyWith(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: primaryColor,
                   fontWeight: FontWeight.w600,
                 ),
@@ -301,7 +301,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           Text(
             'What experiences do you like?',
-            style: Theme.of(context).textTheme.titleMedium!.copyWith(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: primaryColor,
                   fontWeight: FontWeight.w600,
                 ),

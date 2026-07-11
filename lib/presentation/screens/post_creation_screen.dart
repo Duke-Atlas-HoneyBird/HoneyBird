@@ -92,7 +92,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
 
   void _handleSubmit() {
     HapticFeedback.mediumImpact();
-    if (!_formKey.currentState!.validate()) {
+    if (!(_formKey.currentState?.validate() ?? false)) {
       HapticFeedback.heavyImpact();
       return;
     }
@@ -115,10 +115,13 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
     return BlocConsumer<PostBloc, PostState>(
       listener: (context, state) {
         if (state.errorMessage != null) {
-          SnackBarUtils.showError(
-            context,
-            state.errorMessage!,
-          );
+          final errorMessage = state.errorMessage;
+          if (errorMessage != null) {
+            SnackBarUtils.showError(
+              context,
+              errorMessage,
+            );
+          }
         }
         if (state.lastCreatedPost != null) {
           SnackBarUtils.showSuccess(context, 'Post created!');
@@ -306,7 +309,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                             ),
                           ),
                         ),
-                        if (_pickedImage != null) ...[
+                        if (_pickedImage case final pickedImage?) ...[
                           const SizedBox(height: spacingS),
                           ClipRRect(
                             borderRadius:
@@ -314,7 +317,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                             child: AspectRatio(
                               aspectRatio: 4 / 5,
                               child: Image.file(
-                                _pickedImage!,
+                                pickedImage,
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -337,7 +340,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                             },
                           ),
                         ],
-                        if (_pickedVideo != null) ...[
+                        if (_pickedVideo case final pickedVideo?) ...[
                           const SizedBox(height: spacingS),
                     AspectRatio(
                               aspectRatio: 4 / 5,
@@ -354,7 +357,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                                       ),
                                       const SizedBox(height: spacingS),
                                       Text(
-                                        _pickedVideo!.path.split(RegExp(r'[/\\]')).last,
+                                        pickedVideo.path.split(RegExp(r'[/\\]')).last,
                                         style: bodyMedium.copyWith(
                                           color: textSecondary,
                                         ),

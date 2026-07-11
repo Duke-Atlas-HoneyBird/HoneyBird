@@ -63,8 +63,9 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final authUser = userModel.toDomain();
       final userUID = authUser.uid;
-      final userName = displayName?.trim().isNotEmpty == true
-          ? displayName!.trim()
+      final trimmedDisplayName = displayName?.trim();
+      final userName = (trimmedDisplayName != null && trimmedDisplayName.isNotEmpty)
+          ? trimmedDisplayName
           : email.split('@').first;
 
       // Create User document in Firestore (doc ID = auth UID)

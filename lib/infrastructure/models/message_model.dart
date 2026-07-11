@@ -110,6 +110,7 @@ class ConversationModel extends Conversation {
   }
 
   Map<String, dynamic> toJson() {
+    final message = lastMessage;
     return {
       'id': id,
       'conversationType': conversationType.firestoreValue,
@@ -117,8 +118,8 @@ class ConversationModel extends Conversation {
       'userName': userName,
       'restaurantId': restaurantId,
       'restaurantName': restaurantName,
-      'lastMessage': lastMessage != null
-          ? MessageModel.fromEntity(lastMessage!).toJson()
+      'lastMessage': message != null
+          ? MessageModel.fromEntity(message).toJson()
           : null,
       'lastUpdated': Timestamp.fromDate(lastUpdated),
       'unreadCount': unreadCount,

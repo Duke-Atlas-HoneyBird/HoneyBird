@@ -83,7 +83,7 @@ class SideMenuDrawer extends StatelessWidget {
                   future: PackageInfo.fromPlatform(),
                   builder: (context, snapshot) {
                     final version = snapshot.hasData
-                        ? snapshot.data!.version
+                        ? snapshot.data?.version ?? '...'
                         : '...';
                     return Text(
                       'HoneyBird v$version',

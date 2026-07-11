@@ -80,7 +80,7 @@ class FirebaseMessageDataSourceImpl implements FirebaseMessageDataSource {
 
       return snapshot.docs
           .map((doc) =>
-              MessageModel.fromJson(doc.data() as Map<String, dynamic>))
+              MessageModel.fromJson(doc.data()))
           .toList();
     } catch (e) {
       final errStr = e.toString();

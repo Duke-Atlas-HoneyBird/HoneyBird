@@ -88,9 +88,6 @@ class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
 
       final doc = query.docs.first;
       final data = doc.data();
-      if (data == null) {
-        throw ServerException('User data is null for UID: $userUID');
-      }
 
       return UserModel.fromJson({...data, 'id': doc.id});
     } on ServerException {
@@ -150,10 +147,6 @@ class FirebaseUserDataSourceImpl implements FirebaseUserDataSource {
   @override
   Future<UserModel> updateUser(UserModel user) async {
     try {
-      if (user.id == null) {
-        throw ServerException('Cannot update user without ID');
-      }
-
       await _firestore
           .collection(FirebaseCollections.users)
           .doc(user.id)

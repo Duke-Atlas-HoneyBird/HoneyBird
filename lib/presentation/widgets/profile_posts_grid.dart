@@ -125,7 +125,7 @@ class _PostThumbnail extends StatelessWidget {
             children: [
               if (hasImage)
                 Image.network(
-                  post.imageURL!.toString(),
+                  post.imageURL?.toString() ?? '',
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => _textFallback(post),
                   loadingBuilder: (context, child, progress) {

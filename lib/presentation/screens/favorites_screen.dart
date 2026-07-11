@@ -115,7 +115,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           Navigator.of(context).popUntil((route) => route.isFirst);
         },
         child: BlocListener<AuthBloc, AuthState>(
-          listenWhen: (prev, curr) => prev?.user?.uid != curr.user?.uid,
+          listenWhen: (prev, curr) => prev.user?.uid != curr.user?.uid,
           listener: (context, authState) {
             _onAuthUserChanged(authState.user?.uid);
           },
@@ -130,19 +130,20 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             body: SafeArea(
               child: BlocConsumer<FavoritesBloc, FavoritesState>(
                 listenWhen: (prev, curr) =>
-                    curr.errorMessage != prev?.errorMessage,
+                    curr.errorMessage != prev.errorMessage,
                 listener: (context, state) {
-                  if (state.errorMessage != null) {
+                  final errorMessage = state.errorMessage;
+                  if (errorMessage != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.errorMessage!)),
+                      SnackBar(content: Text(errorMessage)),
                     );
                   }
                 },
                 buildWhen: (prev, curr) =>
-                    prev?.posts != curr.posts ||
-                    prev?.isLoading != curr.isLoading ||
-                    prev?.errorMessage != curr.errorMessage ||
-                    prev?.userUID != curr.userUID,
+                    prev.posts != curr.posts ||
+                    prev.isLoading != curr.isLoading ||
+                    prev.errorMessage != curr.errorMessage ||
+                    prev.userUID != curr.userUID,
                 builder: (context, state) {
                   final isSegregated =
                       userUID.isNotEmpty && state.userUID == userUID;
@@ -170,9 +171,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     );
                   }
 
-                  if (state.errorMessage != null && visiblePosts.isEmpty) {
+                  final errorMessage = state.errorMessage;
+                  if (errorMessage != null && visiblePosts.isEmpty) {
                     return _FavoritesErrorWidget(
-                      message: state.errorMessage!,
+                      message: errorMessage,
                       onRetry: () => _loadFavoritesForUser(userUID),
                     );
                   }
@@ -228,7 +230,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
             bottomNavigationBar: BlocBuilder<MessagesBloc, MessagesState>(
               buildWhen: (prev, curr) =>
-                  prev?.unreadCount != curr.unreadCount,
+                  prev.unreadCount != curr.unreadCount,
               builder: (context, messagesState) => BottomNavigationWidget(
                 currentIndex: _currentTabIndex,
                 onTabSelected: _handleTabSelected,
@@ -259,7 +261,7 @@ class _FavoritesErrorWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
               color: textPrimary,

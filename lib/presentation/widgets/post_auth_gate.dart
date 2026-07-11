@@ -25,11 +25,12 @@ class _PostAuthGateState extends State<PostAuthGate> {
     super.didChangeDependencies();
     if (!_hasRequestedCheck) {
       final authState = context.read<AuthBloc>().state;
-      if (authState.user != null) {
+      final user = authState.user;
+      if (user != null) {
         _hasRequestedCheck = true;
         context
             .read<AccountBloc>()
-            .add(AccountEvent.checkOnboardingStatus(authState.user!.uid));
+            .add(AccountEvent.checkOnboardingStatus(user.uid));
       }
     }
   }
@@ -37,7 +38,8 @@ class _PostAuthGateState extends State<PostAuthGate> {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
-    if (authState.user == null) {
+    final user = authState.user;
+    if (user == null) {
       return const SizedBox.shrink();
     }
 
@@ -60,7 +62,7 @@ class _PostAuthGateState extends State<PostAuthGate> {
           return const HomeScreen();
         }
 
-        return OnboardingScreen(userId: authState.user!.uid);
+        return OnboardingScreen(userId: user.uid);
       },
     );
   }

@@ -13,7 +13,6 @@ import '../bloc/messages/messages_bloc.dart';
 import '../bloc/messages/messages_state.dart';
 
 import '../bloc/auth/auth_bloc.dart';
-import '../bloc/auth/auth_state.dart';
 
 /// Manage screen for managing user preferences
 class ManageScreen extends StatefulWidget {
@@ -96,9 +95,10 @@ class _ManageScreenState extends State<ManageScreen> {
           child: BlocConsumer<AccountBloc, AccountState>(
             listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
             listener: (context, state) {
-              if (state.errorMessage != null) {
+              final errorMessage = state.errorMessage;
+              if (errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage!)),
+                  SnackBar(content: Text(errorMessage)),
                 );
               }
             },
@@ -116,7 +116,8 @@ class _ManageScreenState extends State<ManageScreen> {
                 );
               }
 
-              if (state.errorMessage != null && state.preferences == null) {
+              final errorMessage = state.errorMessage;
+              if (errorMessage != null && state.preferences == null) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(spacingL),
@@ -137,7 +138,7 @@ class _ManageScreenState extends State<ManageScreen> {
                         ),
                         const SizedBox(height: spacingS),
                         Text(
-                          state.errorMessage!,
+                          errorMessage,
                           style: bodyLarge.copyWith(
                             color: textSecondary,
                           ),
@@ -166,8 +167,8 @@ class _ManageScreenState extends State<ManageScreen> {
                 );
               }
 
-              if (state.preferences != null) {
-                final preferences = state.preferences!;
+              final preferences = state.preferences;
+              if (preferences != null) {
                 final isSaving = state.isSaving;
 
                 return RefreshIndicator(

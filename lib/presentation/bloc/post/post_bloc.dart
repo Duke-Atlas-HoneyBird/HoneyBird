@@ -65,17 +65,20 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         String videoRefId = '';
 
         try {
-          if (event.imageFile != null) {
+          final imageFile = event.imageFile;
+          final imageUrl = event.imageUrl;
+          final videoFile = event.videoFile;
+          if (imageFile != null) {
             imageURL =
-                await _storageRepository.uploadPostImage(event.imageFile!, user.uid);
+                await _storageRepository.uploadPostImage(imageFile, user.uid);
             imageRefId = imageURL.toString();
-          } else if (event.imageUrl != null) {
-            imageURL = Uri.parse(event.imageUrl!);
-            imageRefId = event.imageUrl!;
+          } else if (imageUrl != null) {
+            imageURL = Uri.parse(imageUrl);
+            imageRefId = imageUrl;
           }
-          if (event.videoFile != null) {
+          if (videoFile != null) {
             videoURL =
-                await _storageRepository.uploadPostVideo(event.videoFile!, user.uid);
+                await _storageRepository.uploadPostVideo(videoFile, user.uid);
             videoRefId = videoURL.toString();
           }
         } catch (e) {

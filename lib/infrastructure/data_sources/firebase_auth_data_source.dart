@@ -45,11 +45,12 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
         password: password,
       );
       
-      if (credential.user == null) {
+      final user = credential.user;
+      if (user == null) {
         throw Exception('Sign in failed: No user returned');
       }
-      
-      return AuthUserModel.fromFirebaseUser(credential.user!);
+
+      return AuthUserModel.fromFirebaseUser(user);
     } on FirebaseAuthException catch (e) {
       throw Exception('Sign in failed: ${e.message}');
     } catch (e) {
@@ -69,17 +70,18 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
         password: password,
       );
       
-      if (credential.user == null) {
+      final user = credential.user;
+      if (user == null) {
         throw Exception('Sign up failed: No user returned');
       }
 
       // Update display name if provided
       if (displayName != null) {
-        await credential.user!.updateDisplayName(displayName);
-        await credential.user!.reload();
+        await user.updateDisplayName(displayName);
+        await user.reload();
       }
-      
-      return AuthUserModel.fromFirebaseUser(credential.user!);
+
+      return AuthUserModel.fromFirebaseUser(user);
     } on FirebaseAuthException catch (e) {
       throw Exception('Sign up failed: ${e.message}');
     } catch (e) {
@@ -122,7 +124,7 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
 
   @override
   Stream<AuthUserModel?> get authStateChanges {
-    return _firebaseAuth.authStateChanges().map((user) {
+    return _firebaseAuth.authStateChanges().map((User? user) {
       return user != null ? AuthUserModel.fromFirebaseUser(user) : null;
     });
   }

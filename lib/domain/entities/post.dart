@@ -38,10 +38,8 @@ class Post extends Equatable {
   }) : id = id ?? UuidUtils.generate();
 
   bool get hasLinkedRestaurant =>
-      restaurantId != null &&
-      restaurantId!.isNotEmpty &&
-      restaurantName != null &&
-      restaurantName!.isNotEmpty;
+      (restaurantId?.isNotEmpty ?? false) &&
+      (restaurantName?.isNotEmpty ?? false);
 
   @override
   List<Object?> get props => [

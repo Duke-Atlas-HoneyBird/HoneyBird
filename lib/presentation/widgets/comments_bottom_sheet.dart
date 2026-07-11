@@ -87,17 +87,17 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
 
   void _submitComment() {
     final text = _controller.text.trim();
-    if (text.isEmpty ||
-        widget.currentUserUID == null ||
-        widget.currentUserName == null) {
+    final currentUserUID = widget.currentUserUID;
+    final currentUserName = widget.currentUserName;
+    if (text.isEmpty || currentUserUID == null || currentUserName == null) {
       return;
     }
 
     context.read<CommentBloc>().add(CommentEvent.createRequested(
           postId: widget.postId,
           text: text,
-          userName: widget.currentUserName!,
-          userUID: widget.currentUserUID!,
+          userName: currentUserName,
+          userUID: currentUserUID,
         ));
     _controller.clear();
   }
@@ -145,10 +145,11 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                       curr.errorMessage != prev?.errorMessage ||
                       curr.comments.length != prev?.comments.length,
                   listener: (context, state) {
-                    if (state.errorMessage != null) {
+                    final errorMessage = state.errorMessage;
+                    if (errorMessage != null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(state.errorMessage!),
+                          content: Text(errorMessage),
                           backgroundColor: errorColor,
                         ),
                       );
@@ -164,7 +165,8 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                     if (state.isLoading && state.comments.isEmpty) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    if (state.errorMessage != null && state.comments.isEmpty) {
+                    final errorMessage = state.errorMessage;
+                    if (errorMessage != null && state.comments.isEmpty) {
                       return Center(
                         child: Padding(
                           padding: const EdgeInsets.all(spacingL),
@@ -172,7 +174,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                state.errorMessage!,
+                                errorMessage,
                                 style: bodyMedium,
                                 textAlign: TextAlign.center,
                               ),

@@ -9,11 +9,30 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  errors:
+    # Promote null-safety diagnostics so unsafe patterns fail analysis.
+    unchecked_use_of_nullable_value: error
+    invalid_use_of_null_value: error
+    # Flag leftover / redundant bang (`!`) usage after null promotion.
+    unnecessary_non_null_assertion: error
+    cast_from_nullable_always_fails: error
+    cast_from_null_always_fails: error
+    invalid_null_aware_operator: warning
+  exclude:
+    - "**/*.freezed.dart"
+    - "**/*.g.dart"
+    - "**/*.mocks.dart"
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
   # included above or to enable additional rules. A list of all available lints
   # and their documentation is published at https://dart.dev/lints.
+  #
+  # Project null-safety convention: prefer `?.` / `??` / local null checks.
+  # Do not use the null-assertion operator (`!`) — e.g. prefer
+  # `post.imageURL?.toString() ?? ''` over `post.imageURL!.toString()`.
   #
   # Instead of disabling a lint rule for the entire project in the
   # section below, it can also be suppressed for a single line of code
@@ -21,8 +40,14 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    # Prefer null-aware code over force-unwrap / fragile patterns.
+    prefer_null_aware_operators: true
+    prefer_null_aware_method_calls: true
+    unnecessary_null_checks: true
+    unnecessary_null_aware_assignments: true
+    unnecessary_null_in_if_null_operators: true
+    null_check_on_nullable_type_parameter: true
+    cast_nullable_to_non_nullable: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

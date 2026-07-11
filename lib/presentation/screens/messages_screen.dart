@@ -95,7 +95,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     final user = authState.user;
     if (user == null) return;
 
-    final userName = user.displayName ?? user.email?.split('@').first ?? 'You';
+    final userName = user.displayName ?? user.email.split('@').first;
 
     context.read<MessagesBloc>().add(
           MessagesEvent.openConversationWithRestaurant(
@@ -208,9 +208,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   curr.restaurants != prev.restaurants ||
                   curr.isLoadingRestaurants != prev.isLoadingRestaurants,
               listener: (context, state) {
-                if (state.errorMessage != null) {
+                final errorMessage = state.errorMessage;
+                if (errorMessage != null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.errorMessage!)),
+                    SnackBar(content: Text(errorMessage)),
                   );
                 }
               },
@@ -246,9 +247,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   );
                 }
 
-                if (state.errorMessage != null && state.conversations.isEmpty) {
+                final errorMessage = state.errorMessage;
+                if (errorMessage != null && state.conversations.isEmpty) {
                   return _ErrorState(
-                    message: state.errorMessage!,
+                    message: errorMessage,
                     onRetry: () => context.read<MessagesBloc>().add(
                           MessagesEvent.loadConversations(userUID),
                         ),
@@ -550,7 +552,7 @@ class _NoInquiriesYetWidget extends StatelessWidget {
                       const SizedBox(height: spacingM),
                       TextButton.icon(
                         onPressed: onRetry,
-                        icon: Icon(Icons.refresh, color: textSecondary),
+                        icon: const Icon(Icons.refresh, color: textSecondary),
                         label: const Text('Refresh'),
                         style: TextButton.styleFrom(
                           foregroundColor: textSecondary,
@@ -581,7 +583,7 @@ class _TypeFirstInquiryWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long_outlined, size: 64, color: textSecondary),
+            const Icon(Icons.receipt_long_outlined, size: 64, color: textSecondary),
             const SizedBox(height: spacingL),
             Text(
               'Send your first inquiry',
@@ -658,7 +660,7 @@ void openRestaurantConversation(
   final user = authState.user;
   if (user == null) return;
 
-  final userName = user.displayName ?? user.email?.split('@').first ?? 'You';
+  final userName = user.displayName ?? user.email.split('@').first;
 
   context.read<MessagesBloc>().add(
         MessagesEvent.openConversationWithRestaurant(

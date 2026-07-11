@@ -15,7 +15,6 @@ import '../bloc/messages/messages_event.dart';
 import '../bloc/messages/messages_state.dart';
 import '../theme/colours.dart';
 import '../theme/constants.dart';
-import '../theme/spacing.dart';
 import '../widgets/post_feed_widget.dart';
 import '../widgets/comments_bottom_sheet.dart';
 import 'messages_screen.dart';
@@ -123,18 +122,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       listener: (context, state) {},
                       buildWhen: (prev, curr) => prev.user != curr.user,
                       builder: (context, authState) {
-                        final currentUserUID = authState.user?.uid;
-                        final currentUserName = authState.user != null
-                            ? (authState.user!.displayName ??
-                                authState.user!.email.split('@').first)
+                        final authUser = authState.user;
+                        final currentUserUID = authUser?.uid;
+                        final currentUserName = authUser != null
+                            ? (authUser.displayName ??
+                                authUser.email.split('@').first)
                             : null;
                         return BlocConsumer<FeedBloc, FeedState>(
                           listenWhen: (prev, curr) =>
                               prev.errorMessage != curr.errorMessage,
                           listener: (context, state) {
-                            if (state.errorMessage != null) {
+                            final errorMessage = state.errorMessage;
+                            if (errorMessage != null) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(state.errorMessage!)),
+                                SnackBar(content: Text(errorMessage)),
                               );
                             }
                           },
@@ -183,10 +184,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                 );
                               },
                               onContactRestaurant: (post) {
+                                final restaurantId = post.restaurantId;
+                                final restaurantName = post.restaurantName;
+                                if (restaurantId == null ||
+                                    restaurantName == null) {
+                                  return;
+                                }
                                 openRestaurantConversation(
                                   context,
-                                  restaurantId: post.restaurantId!,
-                                  restaurantName: post.restaurantName!,
+                                  restaurantId: restaurantId,
+                                  restaurantName: restaurantName,
                                 );
                               },
                               currentUserUID: currentUserUID,
@@ -226,10 +233,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Handler methods (to be implemented in next subtask)
-  void _handleSearch(String query) {
-    debugPrint('Search query: $query');
-  }
 
   void _handleTabSelected(int index) async {
     // Don't update state if already on the selected tab
@@ -237,7 +240,6 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    final previousIndex = _currentTabIndex;
     setState(() {
       _currentTabIndex = index;
     });
@@ -278,9 +280,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _handleSideMenuNavigation(String route) {
-    Navigator.pushNamed(context, route);
-  }
 
   void _onMenuItemSelected(_HomeMenuAction action) {
     HapticFeedback.selectionClick();
