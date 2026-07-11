@@ -131,6 +131,28 @@ Or delete the `_meta/seed` document in Firestore and run again.
 
 **Note:** B2C restaurant messages always use **your signed-in Firebase Auth UID**, not demo post author IDs. Demo posts use `seed_author_*` IDs for display only — they are not login accounts.
 
+#### Seed test data for all real users
+
+To populate **every** Firebase Auth / Firestore user with profile prefs and sample posts (useful for testing Account / profile post history):
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/serviceAccountKey.json
+cd scripts
+npm install
+npm run seed:users
+```
+
+Options:
+
+| Env | Default | Meaning |
+|-----|---------|---------|
+| `POSTS_PER_USER` | `3` | How many posts to create per user |
+| `FORCE=1` | off | Overwrite existing seeded posts |
+| `DRY_RUN=1` | off | Log actions without writing |
+| `ONLY_UID=<uid>` | — | Seed a single user |
+
+Seeded post IDs are deterministic (`seed_user_<uid>_post_<n>`), so re-runs update instead of duplicating.
+
 #### 3. Run the app
 
 After rules are deployed and seeding completes, start the app as usual:
