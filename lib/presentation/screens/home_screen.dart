@@ -18,6 +18,7 @@ import '../theme/constants.dart';
 import '../theme/spacing.dart';
 import '../widgets/post_feed_widget.dart';
 import '../widgets/comments_bottom_sheet.dart';
+import 'messages_screen.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import 'post_creation_screen.dart';
 
@@ -179,6 +180,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                     'userUID': userUID,
                                     'userName': userName,
                                   },
+                                );
+                              },
+                              onContactRestaurant: (post) {
+                                openRestaurantConversation(
+                                  context,
+                                  restaurantId: post.restaurantId!,
+                                  restaurantName: post.restaurantName!,
                                 );
                               },
                               currentUserUID: currentUserUID,

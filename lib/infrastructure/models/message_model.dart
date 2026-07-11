@@ -5,6 +5,7 @@ import '../../domain/entities/message.dart';
 class MessageModel extends Message {
   MessageModel({
     super.id,
+    super.senderType = MessageSenderType.user,
     required super.senderUID,
     required super.senderName,
     required super.receiverUID,
@@ -17,6 +18,7 @@ class MessageModel extends Message {
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
       id: json['id'] as String?,
+      senderType: MessageSenderType.fromFirestore(json['senderType'] as String?),
       senderUID: json['senderUID'] as String,
       senderName: json['senderName'] as String,
       receiverUID: json['receiverUID'] as String,
@@ -30,6 +32,7 @@ class MessageModel extends Message {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'senderType': senderType.firestoreValue,
       'senderUID': senderUID,
       'senderName': senderName,
       'receiverUID': receiverUID,
@@ -43,6 +46,7 @@ class MessageModel extends Message {
   factory MessageModel.fromEntity(Message message) {
     return MessageModel(
       id: message.id,
+      senderType: message.senderType,
       senderUID: message.senderUID,
       senderName: message.senderName,
       receiverUID: message.receiverUID,
@@ -52,17 +56,37 @@ class MessageModel extends Message {
       isRead: message.isRead,
     );
   }
+
+  /// System notice shown when a user opens a new merchant conversation.
+  factory MessageModel.merchantChannelNotice({
+    required String restaurantName,
+    required DateTime timestamp,
+  }) {
+    return MessageModel(
+      senderType: MessageSenderType.system,
+      senderUID: 'platform',
+      senderName: 'Honey Bird',
+      receiverUID: '',
+      receiverName: '',
+      content:
+          'You are contacting $restaurantName through Honey Bird. '
+          'Messages are routed to the restaurant for order-related inquiries — '
+          'not to other users.',
+      timestamp: timestamp,
+      isRead: true,
+    );
+  }
 }
 
 /// Infrastructure model for Conversation entity with Firestore serialization.
 class ConversationModel extends Conversation {
   ConversationModel({
     super.id,
-    required super.participant1UID,
-    required super.participant1Name,
-    required super.participant2UID,
-    required super.participant2Name,
-    super.participants,
+    super.conversationType = ConversationType.userRestaurant,
+    required super.userUID,
+    required super.userName,
+    required super.restaurantId,
+    required super.restaurantName,
     super.lastMessage,
     required super.lastUpdated,
     super.unreadCount = 0,
@@ -71,14 +95,13 @@ class ConversationModel extends Conversation {
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
     return ConversationModel(
       id: json['id'] as String?,
-      participant1UID: json['participant1UID'] as String,
-      participant1Name: json['participant1Name'] as String,
-      participant2UID: json['participant2UID'] as String,
-      participant2Name: json['participant2Name'] as String,
-      participants: (json['participants'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-      lastMessage: json['lastMessage'] != null 
+      conversationType:
+          ConversationType.fromFirestore(json['conversationType'] as String?),
+      userUID: json['userUID'] as String? ?? '',
+      userName: json['userName'] as String? ?? '',
+      restaurantId: json['restaurantId'] as String? ?? '',
+      restaurantName: json['restaurantName'] as String? ?? 'Restaurant',
+      lastMessage: json['lastMessage'] != null
           ? MessageModel.fromJson(json['lastMessage'] as Map<String, dynamic>)
           : null,
       lastUpdated: (json['lastUpdated'] as Timestamp).toDate(),
@@ -89,12 +112,12 @@ class ConversationModel extends Conversation {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'participant1UID': participant1UID,
-      'participant1Name': participant1Name,
-      'participant2UID': participant2UID,
-      'participant2Name': participant2Name,
-      'participants': participants,
-      'lastMessage': lastMessage != null 
+      'conversationType': conversationType.firestoreValue,
+      'userUID': userUID,
+      'userName': userName,
+      'restaurantId': restaurantId,
+      'restaurantName': restaurantName,
+      'lastMessage': lastMessage != null
           ? MessageModel.fromEntity(lastMessage!).toJson()
           : null,
       'lastUpdated': Timestamp.fromDate(lastUpdated),
@@ -105,11 +128,11 @@ class ConversationModel extends Conversation {
   factory ConversationModel.fromEntity(Conversation conversation) {
     return ConversationModel(
       id: conversation.id,
-      participant1UID: conversation.participant1UID,
-      participant1Name: conversation.participant1Name,
-      participant2UID: conversation.participant2UID,
-      participant2Name: conversation.participant2Name,
-      participants: conversation.participants,
+      conversationType: conversation.conversationType,
+      userUID: conversation.userUID,
+      userName: conversation.userName,
+      restaurantId: conversation.restaurantId,
+      restaurantName: conversation.restaurantName,
       lastMessage: conversation.lastMessage,
       lastUpdated: conversation.lastUpdated,
       unreadCount: conversation.unreadCount,

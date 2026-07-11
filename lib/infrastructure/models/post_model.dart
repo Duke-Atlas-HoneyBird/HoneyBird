@@ -17,6 +17,8 @@ class PostModel extends Post {
     super.likeIDs = const [],
     required super.userName,
     required super.userUID,
+    super.restaurantId,
+    super.restaurantName,
   });
 
   /// Parses Firestore publishedDate: ISO8601 string or Timestamp.
@@ -61,6 +63,8 @@ class PostModel extends Post {
       likeIDs: likeIDs,
       userName: json['userName'] as String? ?? '',
       userUID: json['userUID'] as String? ?? '',
+      restaurantId: json['restaurantId'] as String?,
+      restaurantName: json['restaurantName'] as String?,
     );
   }
 
@@ -73,10 +77,12 @@ class PostModel extends Post {
       'imageReferenceID': imageReferenceID,
       'videoURL': videoURL?.toString(),
       'videoReferenceID': videoReferenceID,
-      'publishedDate': DateTime.now().toIso8601String(),
+      'publishedDate': publishedDate.toIso8601String(),
       'likeIDs': likeIDs,
       'userName': userName,
       'userUID': userUID,
+      'restaurantId': restaurantId,
+      'restaurantName': restaurantName,
     };
   }
 
@@ -93,6 +99,8 @@ class PostModel extends Post {
       likeIDs: post.likeIDs,
       userName: post.userName,
       userUID: post.userUID,
+      restaurantId: post.restaurantId,
+      restaurantName: post.restaurantName,
     );
   }
 
@@ -109,6 +117,8 @@ class PostModel extends Post {
       likeIDs: likeIDs,
       userName: userName,
       userUID: userUID,
+      restaurantId: restaurantId,
+      restaurantName: restaurantName,
     );
   }
 }

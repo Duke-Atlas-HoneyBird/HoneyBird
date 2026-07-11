@@ -13,6 +13,7 @@ import '../../infrastructure/data_sources/firebase_favorite_data_source.dart';
 import '../../infrastructure/data_sources/firebase_task_data_source.dart';
 import '../../infrastructure/data_sources/firebase_preference_data_source.dart';
 import '../../infrastructure/data_sources/firebase_message_data_source.dart';
+import '../../infrastructure/data_sources/firebase_restaurant_data_source.dart';
 import '../../infrastructure/data_sources/firebase_block_data_source.dart';
 import '../../infrastructure/data_sources/local_preference_data_source.dart';
 import '../../infrastructure/data_sources/local_task_data_source.dart';
@@ -23,6 +24,7 @@ import '../../infrastructure/repositories/task_repository_impl.dart';
 import '../../infrastructure/repositories/user_preference_repository_impl.dart';
 import '../../infrastructure/repositories/user_repository_impl.dart';
 import '../../infrastructure/repositories/message_repository_impl.dart';
+import '../../infrastructure/repositories/restaurant_repository_impl.dart';
 import '../../infrastructure/repositories/favorite_repository_impl.dart';
 import '../../infrastructure/repositories/block_repository_impl.dart';
 import '../../infrastructure/repositories/storage_repository_impl.dart';
@@ -36,6 +38,7 @@ import '../../domain/repositories/message_repository.dart';
 import '../../domain/repositories/favorite_repository.dart';
 import '../../domain/repositories/storage_repository.dart';
 import '../../domain/repositories/block_repository.dart';
+import '../../domain/repositories/restaurant_repository.dart';
 import '../../application/use_cases/auth/sign_in_use_case.dart';
 import '../../application/use_cases/auth/sign_up_use_case.dart';
 import '../../application/use_cases/auth/sign_out_use_case.dart';
@@ -105,6 +108,9 @@ Future<void> init() async {
   sl.registerLazySingleton<FirebaseMessageDataSource>(
     () => FirebaseMessageDataSourceImpl(firestore: sl()),
   );
+  sl.registerLazySingleton<FirebaseRestaurantDataSource>(
+    () => FirebaseRestaurantDataSourceImpl(firestore: sl()),
+  );
   sl.registerLazySingleton<FirebaseBlockDataSource>(
     () => FirebaseBlockDataSourceImpl(firestore: sl()),
   );
@@ -141,6 +147,9 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<MessageRepository>(
     () => MessageRepositoryImpl(dataSource: sl<FirebaseMessageDataSource>()),
+  );
+  sl.registerLazySingleton<RestaurantRepository>(
+    () => RestaurantRepositoryImpl(dataSource: sl<FirebaseRestaurantDataSource>()),
   );
   sl.registerLazySingleton<FavoriteRepository>(
     () => FavoriteRepositoryImpl(firebaseDataSource: sl()),
@@ -211,6 +220,7 @@ Future<void> init() async {
       ));
   sl.registerFactory(() => MessagesBloc(
         messageRepository: sl(),
+        restaurantRepository: sl(),
       ));
   sl.registerFactory(() => ProfileBloc(
         userRepository: sl(),

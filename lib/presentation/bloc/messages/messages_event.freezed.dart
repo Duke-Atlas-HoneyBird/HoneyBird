@@ -25,9 +25,10 @@ mixin _$MessagesEvent {
     required TResult Function(String conversationId, String userUID) markAsRead,
     required TResult Function(String userUID) refreshConversations,
     required TResult Function(String userUID) loadUnreadCount,
-    required TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)
-        openConversationWith,
+    required TResult Function() loadRestaurants,
+    required TResult Function(String userUID, String userName,
+            String restaurantId, String restaurantName)
+        openConversationWithRestaurant,
     required TResult Function() clearOpenConversation,
   }) =>
       throw _privateConstructorUsedError;
@@ -39,9 +40,10 @@ mixin _$MessagesEvent {
     TResult? Function(String conversationId, String userUID)? markAsRead,
     TResult? Function(String userUID)? refreshConversations,
     TResult? Function(String userUID)? loadUnreadCount,
-    TResult? Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult? Function()? loadRestaurants,
+    TResult? Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult? Function()? clearOpenConversation,
   }) =>
       throw _privateConstructorUsedError;
@@ -53,9 +55,10 @@ mixin _$MessagesEvent {
     TResult Function(String conversationId, String userUID)? markAsRead,
     TResult Function(String userUID)? refreshConversations,
     TResult Function(String userUID)? loadUnreadCount,
-    TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult Function()? loadRestaurants,
+    TResult Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult Function()? clearOpenConversation,
     required TResult orElse(),
   }) =>
@@ -68,7 +71,9 @@ mixin _$MessagesEvent {
     required TResult Function(MarkAsRead value) markAsRead,
     required TResult Function(RefreshConversations value) refreshConversations,
     required TResult Function(LoadUnreadCount value) loadUnreadCount,
-    required TResult Function(OpenConversationWith value) openConversationWith,
+    required TResult Function(LoadRestaurants value) loadRestaurants,
+    required TResult Function(OpenConversationWithRestaurant value)
+        openConversationWithRestaurant,
     required TResult Function(ClearOpenConversation value)
         clearOpenConversation,
   }) =>
@@ -81,7 +86,9 @@ mixin _$MessagesEvent {
     TResult? Function(MarkAsRead value)? markAsRead,
     TResult? Function(RefreshConversations value)? refreshConversations,
     TResult? Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult? Function(OpenConversationWith value)? openConversationWith,
+    TResult? Function(LoadRestaurants value)? loadRestaurants,
+    TResult? Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult? Function(ClearOpenConversation value)? clearOpenConversation,
   }) =>
       throw _privateConstructorUsedError;
@@ -93,7 +100,9 @@ mixin _$MessagesEvent {
     TResult Function(MarkAsRead value)? markAsRead,
     TResult Function(RefreshConversations value)? refreshConversations,
     TResult Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult Function(OpenConversationWith value)? openConversationWith,
+    TResult Function(LoadRestaurants value)? loadRestaurants,
+    TResult Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult Function(ClearOpenConversation value)? clearOpenConversation,
     required TResult orElse(),
   }) =>
@@ -197,9 +206,10 @@ class _$LoadConversationsImpl implements LoadConversations {
     required TResult Function(String conversationId, String userUID) markAsRead,
     required TResult Function(String userUID) refreshConversations,
     required TResult Function(String userUID) loadUnreadCount,
-    required TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)
-        openConversationWith,
+    required TResult Function() loadRestaurants,
+    required TResult Function(String userUID, String userName,
+            String restaurantId, String restaurantName)
+        openConversationWithRestaurant,
     required TResult Function() clearOpenConversation,
   }) {
     return loadConversations(userUID);
@@ -214,9 +224,10 @@ class _$LoadConversationsImpl implements LoadConversations {
     TResult? Function(String conversationId, String userUID)? markAsRead,
     TResult? Function(String userUID)? refreshConversations,
     TResult? Function(String userUID)? loadUnreadCount,
-    TResult? Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult? Function()? loadRestaurants,
+    TResult? Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult? Function()? clearOpenConversation,
   }) {
     return loadConversations?.call(userUID);
@@ -231,9 +242,10 @@ class _$LoadConversationsImpl implements LoadConversations {
     TResult Function(String conversationId, String userUID)? markAsRead,
     TResult Function(String userUID)? refreshConversations,
     TResult Function(String userUID)? loadUnreadCount,
-    TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult Function()? loadRestaurants,
+    TResult Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult Function()? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -252,7 +264,9 @@ class _$LoadConversationsImpl implements LoadConversations {
     required TResult Function(MarkAsRead value) markAsRead,
     required TResult Function(RefreshConversations value) refreshConversations,
     required TResult Function(LoadUnreadCount value) loadUnreadCount,
-    required TResult Function(OpenConversationWith value) openConversationWith,
+    required TResult Function(LoadRestaurants value) loadRestaurants,
+    required TResult Function(OpenConversationWithRestaurant value)
+        openConversationWithRestaurant,
     required TResult Function(ClearOpenConversation value)
         clearOpenConversation,
   }) {
@@ -268,7 +282,9 @@ class _$LoadConversationsImpl implements LoadConversations {
     TResult? Function(MarkAsRead value)? markAsRead,
     TResult? Function(RefreshConversations value)? refreshConversations,
     TResult? Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult? Function(OpenConversationWith value)? openConversationWith,
+    TResult? Function(LoadRestaurants value)? loadRestaurants,
+    TResult? Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult? Function(ClearOpenConversation value)? clearOpenConversation,
   }) {
     return loadConversations?.call(this);
@@ -283,7 +299,9 @@ class _$LoadConversationsImpl implements LoadConversations {
     TResult Function(MarkAsRead value)? markAsRead,
     TResult Function(RefreshConversations value)? refreshConversations,
     TResult Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult Function(OpenConversationWith value)? openConversationWith,
+    TResult Function(LoadRestaurants value)? loadRestaurants,
+    TResult Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult Function(ClearOpenConversation value)? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -383,9 +401,10 @@ class _$LoadMessagesImpl implements LoadMessages {
     required TResult Function(String conversationId, String userUID) markAsRead,
     required TResult Function(String userUID) refreshConversations,
     required TResult Function(String userUID) loadUnreadCount,
-    required TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)
-        openConversationWith,
+    required TResult Function() loadRestaurants,
+    required TResult Function(String userUID, String userName,
+            String restaurantId, String restaurantName)
+        openConversationWithRestaurant,
     required TResult Function() clearOpenConversation,
   }) {
     return loadMessages(conversationId);
@@ -400,9 +419,10 @@ class _$LoadMessagesImpl implements LoadMessages {
     TResult? Function(String conversationId, String userUID)? markAsRead,
     TResult? Function(String userUID)? refreshConversations,
     TResult? Function(String userUID)? loadUnreadCount,
-    TResult? Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult? Function()? loadRestaurants,
+    TResult? Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult? Function()? clearOpenConversation,
   }) {
     return loadMessages?.call(conversationId);
@@ -417,9 +437,10 @@ class _$LoadMessagesImpl implements LoadMessages {
     TResult Function(String conversationId, String userUID)? markAsRead,
     TResult Function(String userUID)? refreshConversations,
     TResult Function(String userUID)? loadUnreadCount,
-    TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult Function()? loadRestaurants,
+    TResult Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult Function()? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -438,7 +459,9 @@ class _$LoadMessagesImpl implements LoadMessages {
     required TResult Function(MarkAsRead value) markAsRead,
     required TResult Function(RefreshConversations value) refreshConversations,
     required TResult Function(LoadUnreadCount value) loadUnreadCount,
-    required TResult Function(OpenConversationWith value) openConversationWith,
+    required TResult Function(LoadRestaurants value) loadRestaurants,
+    required TResult Function(OpenConversationWithRestaurant value)
+        openConversationWithRestaurant,
     required TResult Function(ClearOpenConversation value)
         clearOpenConversation,
   }) {
@@ -454,7 +477,9 @@ class _$LoadMessagesImpl implements LoadMessages {
     TResult? Function(MarkAsRead value)? markAsRead,
     TResult? Function(RefreshConversations value)? refreshConversations,
     TResult? Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult? Function(OpenConversationWith value)? openConversationWith,
+    TResult? Function(LoadRestaurants value)? loadRestaurants,
+    TResult? Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult? Function(ClearOpenConversation value)? clearOpenConversation,
   }) {
     return loadMessages?.call(this);
@@ -469,7 +494,9 @@ class _$LoadMessagesImpl implements LoadMessages {
     TResult Function(MarkAsRead value)? markAsRead,
     TResult Function(RefreshConversations value)? refreshConversations,
     TResult Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult Function(OpenConversationWith value)? openConversationWith,
+    TResult Function(LoadRestaurants value)? loadRestaurants,
+    TResult Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult Function(ClearOpenConversation value)? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -576,9 +603,10 @@ class _$SendMessageImpl implements SendMessage {
     required TResult Function(String conversationId, String userUID) markAsRead,
     required TResult Function(String userUID) refreshConversations,
     required TResult Function(String userUID) loadUnreadCount,
-    required TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)
-        openConversationWith,
+    required TResult Function() loadRestaurants,
+    required TResult Function(String userUID, String userName,
+            String restaurantId, String restaurantName)
+        openConversationWithRestaurant,
     required TResult Function() clearOpenConversation,
   }) {
     return sendMessage(message, conversationId);
@@ -593,9 +621,10 @@ class _$SendMessageImpl implements SendMessage {
     TResult? Function(String conversationId, String userUID)? markAsRead,
     TResult? Function(String userUID)? refreshConversations,
     TResult? Function(String userUID)? loadUnreadCount,
-    TResult? Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult? Function()? loadRestaurants,
+    TResult? Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult? Function()? clearOpenConversation,
   }) {
     return sendMessage?.call(message, conversationId);
@@ -610,9 +639,10 @@ class _$SendMessageImpl implements SendMessage {
     TResult Function(String conversationId, String userUID)? markAsRead,
     TResult Function(String userUID)? refreshConversations,
     TResult Function(String userUID)? loadUnreadCount,
-    TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult Function()? loadRestaurants,
+    TResult Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult Function()? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -631,7 +661,9 @@ class _$SendMessageImpl implements SendMessage {
     required TResult Function(MarkAsRead value) markAsRead,
     required TResult Function(RefreshConversations value) refreshConversations,
     required TResult Function(LoadUnreadCount value) loadUnreadCount,
-    required TResult Function(OpenConversationWith value) openConversationWith,
+    required TResult Function(LoadRestaurants value) loadRestaurants,
+    required TResult Function(OpenConversationWithRestaurant value)
+        openConversationWithRestaurant,
     required TResult Function(ClearOpenConversation value)
         clearOpenConversation,
   }) {
@@ -647,7 +679,9 @@ class _$SendMessageImpl implements SendMessage {
     TResult? Function(MarkAsRead value)? markAsRead,
     TResult? Function(RefreshConversations value)? refreshConversations,
     TResult? Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult? Function(OpenConversationWith value)? openConversationWith,
+    TResult? Function(LoadRestaurants value)? loadRestaurants,
+    TResult? Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult? Function(ClearOpenConversation value)? clearOpenConversation,
   }) {
     return sendMessage?.call(this);
@@ -662,7 +696,9 @@ class _$SendMessageImpl implements SendMessage {
     TResult Function(MarkAsRead value)? markAsRead,
     TResult Function(RefreshConversations value)? refreshConversations,
     TResult Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult Function(OpenConversationWith value)? openConversationWith,
+    TResult Function(LoadRestaurants value)? loadRestaurants,
+    TResult Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult Function(ClearOpenConversation value)? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -771,9 +807,10 @@ class _$MarkAsReadImpl implements MarkAsRead {
     required TResult Function(String conversationId, String userUID) markAsRead,
     required TResult Function(String userUID) refreshConversations,
     required TResult Function(String userUID) loadUnreadCount,
-    required TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)
-        openConversationWith,
+    required TResult Function() loadRestaurants,
+    required TResult Function(String userUID, String userName,
+            String restaurantId, String restaurantName)
+        openConversationWithRestaurant,
     required TResult Function() clearOpenConversation,
   }) {
     return markAsRead(conversationId, userUID);
@@ -788,9 +825,10 @@ class _$MarkAsReadImpl implements MarkAsRead {
     TResult? Function(String conversationId, String userUID)? markAsRead,
     TResult? Function(String userUID)? refreshConversations,
     TResult? Function(String userUID)? loadUnreadCount,
-    TResult? Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult? Function()? loadRestaurants,
+    TResult? Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult? Function()? clearOpenConversation,
   }) {
     return markAsRead?.call(conversationId, userUID);
@@ -805,9 +843,10 @@ class _$MarkAsReadImpl implements MarkAsRead {
     TResult Function(String conversationId, String userUID)? markAsRead,
     TResult Function(String userUID)? refreshConversations,
     TResult Function(String userUID)? loadUnreadCount,
-    TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult Function()? loadRestaurants,
+    TResult Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult Function()? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -826,7 +865,9 @@ class _$MarkAsReadImpl implements MarkAsRead {
     required TResult Function(MarkAsRead value) markAsRead,
     required TResult Function(RefreshConversations value) refreshConversations,
     required TResult Function(LoadUnreadCount value) loadUnreadCount,
-    required TResult Function(OpenConversationWith value) openConversationWith,
+    required TResult Function(LoadRestaurants value) loadRestaurants,
+    required TResult Function(OpenConversationWithRestaurant value)
+        openConversationWithRestaurant,
     required TResult Function(ClearOpenConversation value)
         clearOpenConversation,
   }) {
@@ -842,7 +883,9 @@ class _$MarkAsReadImpl implements MarkAsRead {
     TResult? Function(MarkAsRead value)? markAsRead,
     TResult? Function(RefreshConversations value)? refreshConversations,
     TResult? Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult? Function(OpenConversationWith value)? openConversationWith,
+    TResult? Function(LoadRestaurants value)? loadRestaurants,
+    TResult? Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult? Function(ClearOpenConversation value)? clearOpenConversation,
   }) {
     return markAsRead?.call(this);
@@ -857,7 +900,9 @@ class _$MarkAsReadImpl implements MarkAsRead {
     TResult Function(MarkAsRead value)? markAsRead,
     TResult Function(RefreshConversations value)? refreshConversations,
     TResult Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult Function(OpenConversationWith value)? openConversationWith,
+    TResult Function(LoadRestaurants value)? loadRestaurants,
+    TResult Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult Function(ClearOpenConversation value)? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -960,9 +1005,10 @@ class _$RefreshConversationsImpl implements RefreshConversations {
     required TResult Function(String conversationId, String userUID) markAsRead,
     required TResult Function(String userUID) refreshConversations,
     required TResult Function(String userUID) loadUnreadCount,
-    required TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)
-        openConversationWith,
+    required TResult Function() loadRestaurants,
+    required TResult Function(String userUID, String userName,
+            String restaurantId, String restaurantName)
+        openConversationWithRestaurant,
     required TResult Function() clearOpenConversation,
   }) {
     return refreshConversations(userUID);
@@ -977,9 +1023,10 @@ class _$RefreshConversationsImpl implements RefreshConversations {
     TResult? Function(String conversationId, String userUID)? markAsRead,
     TResult? Function(String userUID)? refreshConversations,
     TResult? Function(String userUID)? loadUnreadCount,
-    TResult? Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult? Function()? loadRestaurants,
+    TResult? Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult? Function()? clearOpenConversation,
   }) {
     return refreshConversations?.call(userUID);
@@ -994,9 +1041,10 @@ class _$RefreshConversationsImpl implements RefreshConversations {
     TResult Function(String conversationId, String userUID)? markAsRead,
     TResult Function(String userUID)? refreshConversations,
     TResult Function(String userUID)? loadUnreadCount,
-    TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult Function()? loadRestaurants,
+    TResult Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult Function()? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -1015,7 +1063,9 @@ class _$RefreshConversationsImpl implements RefreshConversations {
     required TResult Function(MarkAsRead value) markAsRead,
     required TResult Function(RefreshConversations value) refreshConversations,
     required TResult Function(LoadUnreadCount value) loadUnreadCount,
-    required TResult Function(OpenConversationWith value) openConversationWith,
+    required TResult Function(LoadRestaurants value) loadRestaurants,
+    required TResult Function(OpenConversationWithRestaurant value)
+        openConversationWithRestaurant,
     required TResult Function(ClearOpenConversation value)
         clearOpenConversation,
   }) {
@@ -1031,7 +1081,9 @@ class _$RefreshConversationsImpl implements RefreshConversations {
     TResult? Function(MarkAsRead value)? markAsRead,
     TResult? Function(RefreshConversations value)? refreshConversations,
     TResult? Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult? Function(OpenConversationWith value)? openConversationWith,
+    TResult? Function(LoadRestaurants value)? loadRestaurants,
+    TResult? Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult? Function(ClearOpenConversation value)? clearOpenConversation,
   }) {
     return refreshConversations?.call(this);
@@ -1046,7 +1098,9 @@ class _$RefreshConversationsImpl implements RefreshConversations {
     TResult Function(MarkAsRead value)? markAsRead,
     TResult Function(RefreshConversations value)? refreshConversations,
     TResult Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult Function(OpenConversationWith value)? openConversationWith,
+    TResult Function(LoadRestaurants value)? loadRestaurants,
+    TResult Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult Function(ClearOpenConversation value)? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -1146,9 +1200,10 @@ class _$LoadUnreadCountImpl implements LoadUnreadCount {
     required TResult Function(String conversationId, String userUID) markAsRead,
     required TResult Function(String userUID) refreshConversations,
     required TResult Function(String userUID) loadUnreadCount,
-    required TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)
-        openConversationWith,
+    required TResult Function() loadRestaurants,
+    required TResult Function(String userUID, String userName,
+            String restaurantId, String restaurantName)
+        openConversationWithRestaurant,
     required TResult Function() clearOpenConversation,
   }) {
     return loadUnreadCount(userUID);
@@ -1163,9 +1218,10 @@ class _$LoadUnreadCountImpl implements LoadUnreadCount {
     TResult? Function(String conversationId, String userUID)? markAsRead,
     TResult? Function(String userUID)? refreshConversations,
     TResult? Function(String userUID)? loadUnreadCount,
-    TResult? Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult? Function()? loadRestaurants,
+    TResult? Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult? Function()? clearOpenConversation,
   }) {
     return loadUnreadCount?.call(userUID);
@@ -1180,9 +1236,10 @@ class _$LoadUnreadCountImpl implements LoadUnreadCount {
     TResult Function(String conversationId, String userUID)? markAsRead,
     TResult Function(String userUID)? refreshConversations,
     TResult Function(String userUID)? loadUnreadCount,
-    TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult Function()? loadRestaurants,
+    TResult Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult Function()? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -1201,7 +1258,9 @@ class _$LoadUnreadCountImpl implements LoadUnreadCount {
     required TResult Function(MarkAsRead value) markAsRead,
     required TResult Function(RefreshConversations value) refreshConversations,
     required TResult Function(LoadUnreadCount value) loadUnreadCount,
-    required TResult Function(OpenConversationWith value) openConversationWith,
+    required TResult Function(LoadRestaurants value) loadRestaurants,
+    required TResult Function(OpenConversationWithRestaurant value)
+        openConversationWithRestaurant,
     required TResult Function(ClearOpenConversation value)
         clearOpenConversation,
   }) {
@@ -1217,7 +1276,9 @@ class _$LoadUnreadCountImpl implements LoadUnreadCount {
     TResult? Function(MarkAsRead value)? markAsRead,
     TResult? Function(RefreshConversations value)? refreshConversations,
     TResult? Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult? Function(OpenConversationWith value)? openConversationWith,
+    TResult? Function(LoadRestaurants value)? loadRestaurants,
+    TResult? Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult? Function(ClearOpenConversation value)? clearOpenConversation,
   }) {
     return loadUnreadCount?.call(this);
@@ -1232,7 +1293,9 @@ class _$LoadUnreadCountImpl implements LoadUnreadCount {
     TResult Function(MarkAsRead value)? markAsRead,
     TResult Function(RefreshConversations value)? refreshConversations,
     TResult Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult Function(OpenConversationWith value)? openConversationWith,
+    TResult Function(LoadRestaurants value)? loadRestaurants,
+    TResult Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult Function(ClearOpenConversation value)? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -1256,108 +1319,42 @@ abstract class LoadUnreadCount implements MessagesEvent {
 }
 
 /// @nodoc
-abstract class _$$OpenConversationWithImplCopyWith<$Res> {
-  factory _$$OpenConversationWithImplCopyWith(_$OpenConversationWithImpl value,
-          $Res Function(_$OpenConversationWithImpl) then) =
-      __$$OpenConversationWithImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call(
-      {String currentUserUID,
-      String currentUserName,
-      String otherUserUID,
-      String otherUserName});
+abstract class _$$LoadRestaurantsImplCopyWith<$Res> {
+  factory _$$LoadRestaurantsImplCopyWith(_$LoadRestaurantsImpl value,
+          $Res Function(_$LoadRestaurantsImpl) then) =
+      __$$LoadRestaurantsImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$OpenConversationWithImplCopyWithImpl<$Res>
-    extends _$MessagesEventCopyWithImpl<$Res, _$OpenConversationWithImpl>
-    implements _$$OpenConversationWithImplCopyWith<$Res> {
-  __$$OpenConversationWithImplCopyWithImpl(_$OpenConversationWithImpl _value,
-      $Res Function(_$OpenConversationWithImpl) _then)
+class __$$LoadRestaurantsImplCopyWithImpl<$Res>
+    extends _$MessagesEventCopyWithImpl<$Res, _$LoadRestaurantsImpl>
+    implements _$$LoadRestaurantsImplCopyWith<$Res> {
+  __$$LoadRestaurantsImplCopyWithImpl(
+      _$LoadRestaurantsImpl _value, $Res Function(_$LoadRestaurantsImpl) _then)
       : super(_value, _then);
 
   /// Create a copy of MessagesEvent
   /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? currentUserUID = null,
-    Object? currentUserName = null,
-    Object? otherUserUID = null,
-    Object? otherUserName = null,
-  }) {
-    return _then(_$OpenConversationWithImpl(
-      currentUserUID: null == currentUserUID
-          ? _value.currentUserUID
-          : currentUserUID // ignore: cast_nullable_to_non_nullable
-              as String,
-      currentUserName: null == currentUserName
-          ? _value.currentUserName
-          : currentUserName // ignore: cast_nullable_to_non_nullable
-              as String,
-      otherUserUID: null == otherUserUID
-          ? _value.otherUserUID
-          : otherUserUID // ignore: cast_nullable_to_non_nullable
-              as String,
-      otherUserName: null == otherUserName
-          ? _value.otherUserName
-          : otherUserName // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
 }
 
 /// @nodoc
 
-class _$OpenConversationWithImpl implements OpenConversationWith {
-  const _$OpenConversationWithImpl(
-      {required this.currentUserUID,
-      required this.currentUserName,
-      required this.otherUserUID,
-      required this.otherUserName});
-
-  @override
-  final String currentUserUID;
-  @override
-  final String currentUserName;
-  @override
-  final String otherUserUID;
-  @override
-  final String otherUserName;
+class _$LoadRestaurantsImpl implements LoadRestaurants {
+  const _$LoadRestaurantsImpl();
 
   @override
   String toString() {
-    return 'MessagesEvent.openConversationWith(currentUserUID: $currentUserUID, currentUserName: $currentUserName, otherUserUID: $otherUserUID, otherUserName: $otherUserName)';
+    return 'MessagesEvent.loadRestaurants()';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$OpenConversationWithImpl &&
-            (identical(other.currentUserUID, currentUserUID) ||
-                other.currentUserUID == currentUserUID) &&
-            (identical(other.currentUserName, currentUserName) ||
-                other.currentUserName == currentUserName) &&
-            (identical(other.otherUserUID, otherUserUID) ||
-                other.otherUserUID == otherUserUID) &&
-            (identical(other.otherUserName, otherUserName) ||
-                other.otherUserName == otherUserName));
+        (other.runtimeType == runtimeType && other is _$LoadRestaurantsImpl);
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, currentUserUID, currentUserName,
-      otherUserUID, otherUserName);
-
-  /// Create a copy of MessagesEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$OpenConversationWithImplCopyWith<_$OpenConversationWithImpl>
-      get copyWith =>
-          __$$OpenConversationWithImplCopyWithImpl<_$OpenConversationWithImpl>(
-              this, _$identity);
+  int get hashCode => runtimeType.hashCode;
 
   @override
   @optionalTypeArgs
@@ -1369,13 +1366,13 @@ class _$OpenConversationWithImpl implements OpenConversationWith {
     required TResult Function(String conversationId, String userUID) markAsRead,
     required TResult Function(String userUID) refreshConversations,
     required TResult Function(String userUID) loadUnreadCount,
-    required TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)
-        openConversationWith,
+    required TResult Function() loadRestaurants,
+    required TResult Function(String userUID, String userName,
+            String restaurantId, String restaurantName)
+        openConversationWithRestaurant,
     required TResult Function() clearOpenConversation,
   }) {
-    return openConversationWith(
-        currentUserUID, currentUserName, otherUserUID, otherUserName);
+    return loadRestaurants();
   }
 
   @override
@@ -1387,13 +1384,13 @@ class _$OpenConversationWithImpl implements OpenConversationWith {
     TResult? Function(String conversationId, String userUID)? markAsRead,
     TResult? Function(String userUID)? refreshConversations,
     TResult? Function(String userUID)? loadUnreadCount,
-    TResult? Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult? Function()? loadRestaurants,
+    TResult? Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult? Function()? clearOpenConversation,
   }) {
-    return openConversationWith?.call(
-        currentUserUID, currentUserName, otherUserUID, otherUserName);
+    return loadRestaurants?.call();
   }
 
   @override
@@ -1405,15 +1402,15 @@ class _$OpenConversationWithImpl implements OpenConversationWith {
     TResult Function(String conversationId, String userUID)? markAsRead,
     TResult Function(String userUID)? refreshConversations,
     TResult Function(String userUID)? loadUnreadCount,
-    TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult Function()? loadRestaurants,
+    TResult Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult Function()? clearOpenConversation,
     required TResult orElse(),
   }) {
-    if (openConversationWith != null) {
-      return openConversationWith(
-          currentUserUID, currentUserName, otherUserUID, otherUserName);
+    if (loadRestaurants != null) {
+      return loadRestaurants();
     }
     return orElse();
   }
@@ -1427,11 +1424,13 @@ class _$OpenConversationWithImpl implements OpenConversationWith {
     required TResult Function(MarkAsRead value) markAsRead,
     required TResult Function(RefreshConversations value) refreshConversations,
     required TResult Function(LoadUnreadCount value) loadUnreadCount,
-    required TResult Function(OpenConversationWith value) openConversationWith,
+    required TResult Function(LoadRestaurants value) loadRestaurants,
+    required TResult Function(OpenConversationWithRestaurant value)
+        openConversationWithRestaurant,
     required TResult Function(ClearOpenConversation value)
         clearOpenConversation,
   }) {
-    return openConversationWith(this);
+    return loadRestaurants(this);
   }
 
   @override
@@ -1443,10 +1442,12 @@ class _$OpenConversationWithImpl implements OpenConversationWith {
     TResult? Function(MarkAsRead value)? markAsRead,
     TResult? Function(RefreshConversations value)? refreshConversations,
     TResult? Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult? Function(OpenConversationWith value)? openConversationWith,
+    TResult? Function(LoadRestaurants value)? loadRestaurants,
+    TResult? Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult? Function(ClearOpenConversation value)? clearOpenConversation,
   }) {
-    return openConversationWith?.call(this);
+    return loadRestaurants?.call(this);
   }
 
   @override
@@ -1458,33 +1459,267 @@ class _$OpenConversationWithImpl implements OpenConversationWith {
     TResult Function(MarkAsRead value)? markAsRead,
     TResult Function(RefreshConversations value)? refreshConversations,
     TResult Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult Function(OpenConversationWith value)? openConversationWith,
+    TResult Function(LoadRestaurants value)? loadRestaurants,
+    TResult Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult Function(ClearOpenConversation value)? clearOpenConversation,
     required TResult orElse(),
   }) {
-    if (openConversationWith != null) {
-      return openConversationWith(this);
+    if (loadRestaurants != null) {
+      return loadRestaurants(this);
     }
     return orElse();
   }
 }
 
-abstract class OpenConversationWith implements MessagesEvent {
-  const factory OpenConversationWith(
-      {required final String currentUserUID,
-      required final String currentUserName,
-      required final String otherUserUID,
-      required final String otherUserName}) = _$OpenConversationWithImpl;
+abstract class LoadRestaurants implements MessagesEvent {
+  const factory LoadRestaurants() = _$LoadRestaurantsImpl;
+}
 
-  String get currentUserUID;
-  String get currentUserName;
-  String get otherUserUID;
-  String get otherUserName;
+/// @nodoc
+abstract class _$$OpenConversationWithRestaurantImplCopyWith<$Res> {
+  factory _$$OpenConversationWithRestaurantImplCopyWith(
+          _$OpenConversationWithRestaurantImpl value,
+          $Res Function(_$OpenConversationWithRestaurantImpl) then) =
+      __$$OpenConversationWithRestaurantImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call(
+      {String userUID,
+      String userName,
+      String restaurantId,
+      String restaurantName});
+}
+
+/// @nodoc
+class __$$OpenConversationWithRestaurantImplCopyWithImpl<$Res>
+    extends _$MessagesEventCopyWithImpl<$Res,
+        _$OpenConversationWithRestaurantImpl>
+    implements _$$OpenConversationWithRestaurantImplCopyWith<$Res> {
+  __$$OpenConversationWithRestaurantImplCopyWithImpl(
+      _$OpenConversationWithRestaurantImpl _value,
+      $Res Function(_$OpenConversationWithRestaurantImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of MessagesEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? userUID = null,
+    Object? userName = null,
+    Object? restaurantId = null,
+    Object? restaurantName = null,
+  }) {
+    return _then(_$OpenConversationWithRestaurantImpl(
+      userUID: null == userUID
+          ? _value.userUID
+          : userUID // ignore: cast_nullable_to_non_nullable
+              as String,
+      userName: null == userName
+          ? _value.userName
+          : userName // ignore: cast_nullable_to_non_nullable
+              as String,
+      restaurantId: null == restaurantId
+          ? _value.restaurantId
+          : restaurantId // ignore: cast_nullable_to_non_nullable
+              as String,
+      restaurantName: null == restaurantName
+          ? _value.restaurantName
+          : restaurantName // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$OpenConversationWithRestaurantImpl
+    implements OpenConversationWithRestaurant {
+  const _$OpenConversationWithRestaurantImpl(
+      {required this.userUID,
+      required this.userName,
+      required this.restaurantId,
+      required this.restaurantName});
+
+  @override
+  final String userUID;
+  @override
+  final String userName;
+  @override
+  final String restaurantId;
+  @override
+  final String restaurantName;
+
+  @override
+  String toString() {
+    return 'MessagesEvent.openConversationWithRestaurant(userUID: $userUID, userName: $userName, restaurantId: $restaurantId, restaurantName: $restaurantName)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$OpenConversationWithRestaurantImpl &&
+            (identical(other.userUID, userUID) || other.userUID == userUID) &&
+            (identical(other.userName, userName) ||
+                other.userName == userName) &&
+            (identical(other.restaurantId, restaurantId) ||
+                other.restaurantId == restaurantId) &&
+            (identical(other.restaurantName, restaurantName) ||
+                other.restaurantName == restaurantName));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, userUID, userName, restaurantId, restaurantName);
 
   /// Create a copy of MessagesEvent
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$OpenConversationWithImplCopyWith<_$OpenConversationWithImpl>
+  @override
+  @pragma('vm:prefer-inline')
+  _$$OpenConversationWithRestaurantImplCopyWith<
+          _$OpenConversationWithRestaurantImpl>
+      get copyWith => __$$OpenConversationWithRestaurantImplCopyWithImpl<
+          _$OpenConversationWithRestaurantImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String userUID) loadConversations,
+    required TResult Function(String conversationId) loadMessages,
+    required TResult Function(Message message, String? conversationId)
+        sendMessage,
+    required TResult Function(String conversationId, String userUID) markAsRead,
+    required TResult Function(String userUID) refreshConversations,
+    required TResult Function(String userUID) loadUnreadCount,
+    required TResult Function() loadRestaurants,
+    required TResult Function(String userUID, String userName,
+            String restaurantId, String restaurantName)
+        openConversationWithRestaurant,
+    required TResult Function() clearOpenConversation,
+  }) {
+    return openConversationWithRestaurant(
+        userUID, userName, restaurantId, restaurantName);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String userUID)? loadConversations,
+    TResult? Function(String conversationId)? loadMessages,
+    TResult? Function(Message message, String? conversationId)? sendMessage,
+    TResult? Function(String conversationId, String userUID)? markAsRead,
+    TResult? Function(String userUID)? refreshConversations,
+    TResult? Function(String userUID)? loadUnreadCount,
+    TResult? Function()? loadRestaurants,
+    TResult? Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
+    TResult? Function()? clearOpenConversation,
+  }) {
+    return openConversationWithRestaurant?.call(
+        userUID, userName, restaurantId, restaurantName);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String userUID)? loadConversations,
+    TResult Function(String conversationId)? loadMessages,
+    TResult Function(Message message, String? conversationId)? sendMessage,
+    TResult Function(String conversationId, String userUID)? markAsRead,
+    TResult Function(String userUID)? refreshConversations,
+    TResult Function(String userUID)? loadUnreadCount,
+    TResult Function()? loadRestaurants,
+    TResult Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
+    TResult Function()? clearOpenConversation,
+    required TResult orElse(),
+  }) {
+    if (openConversationWithRestaurant != null) {
+      return openConversationWithRestaurant(
+          userUID, userName, restaurantId, restaurantName);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(LoadConversations value) loadConversations,
+    required TResult Function(LoadMessages value) loadMessages,
+    required TResult Function(SendMessage value) sendMessage,
+    required TResult Function(MarkAsRead value) markAsRead,
+    required TResult Function(RefreshConversations value) refreshConversations,
+    required TResult Function(LoadUnreadCount value) loadUnreadCount,
+    required TResult Function(LoadRestaurants value) loadRestaurants,
+    required TResult Function(OpenConversationWithRestaurant value)
+        openConversationWithRestaurant,
+    required TResult Function(ClearOpenConversation value)
+        clearOpenConversation,
+  }) {
+    return openConversationWithRestaurant(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(LoadConversations value)? loadConversations,
+    TResult? Function(LoadMessages value)? loadMessages,
+    TResult? Function(SendMessage value)? sendMessage,
+    TResult? Function(MarkAsRead value)? markAsRead,
+    TResult? Function(RefreshConversations value)? refreshConversations,
+    TResult? Function(LoadUnreadCount value)? loadUnreadCount,
+    TResult? Function(LoadRestaurants value)? loadRestaurants,
+    TResult? Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
+    TResult? Function(ClearOpenConversation value)? clearOpenConversation,
+  }) {
+    return openConversationWithRestaurant?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(LoadConversations value)? loadConversations,
+    TResult Function(LoadMessages value)? loadMessages,
+    TResult Function(SendMessage value)? sendMessage,
+    TResult Function(MarkAsRead value)? markAsRead,
+    TResult Function(RefreshConversations value)? refreshConversations,
+    TResult Function(LoadUnreadCount value)? loadUnreadCount,
+    TResult Function(LoadRestaurants value)? loadRestaurants,
+    TResult Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
+    TResult Function(ClearOpenConversation value)? clearOpenConversation,
+    required TResult orElse(),
+  }) {
+    if (openConversationWithRestaurant != null) {
+      return openConversationWithRestaurant(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class OpenConversationWithRestaurant implements MessagesEvent {
+  const factory OpenConversationWithRestaurant(
+          {required final String userUID,
+          required final String userName,
+          required final String restaurantId,
+          required final String restaurantName}) =
+      _$OpenConversationWithRestaurantImpl;
+
+  String get userUID;
+  String get userName;
+  String get restaurantId;
+  String get restaurantName;
+
+  /// Create a copy of MessagesEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$OpenConversationWithRestaurantImplCopyWith<
+          _$OpenConversationWithRestaurantImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -1538,9 +1773,10 @@ class _$ClearOpenConversationImpl implements ClearOpenConversation {
     required TResult Function(String conversationId, String userUID) markAsRead,
     required TResult Function(String userUID) refreshConversations,
     required TResult Function(String userUID) loadUnreadCount,
-    required TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)
-        openConversationWith,
+    required TResult Function() loadRestaurants,
+    required TResult Function(String userUID, String userName,
+            String restaurantId, String restaurantName)
+        openConversationWithRestaurant,
     required TResult Function() clearOpenConversation,
   }) {
     return clearOpenConversation();
@@ -1555,9 +1791,10 @@ class _$ClearOpenConversationImpl implements ClearOpenConversation {
     TResult? Function(String conversationId, String userUID)? markAsRead,
     TResult? Function(String userUID)? refreshConversations,
     TResult? Function(String userUID)? loadUnreadCount,
-    TResult? Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult? Function()? loadRestaurants,
+    TResult? Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult? Function()? clearOpenConversation,
   }) {
     return clearOpenConversation?.call();
@@ -1572,9 +1809,10 @@ class _$ClearOpenConversationImpl implements ClearOpenConversation {
     TResult Function(String conversationId, String userUID)? markAsRead,
     TResult Function(String userUID)? refreshConversations,
     TResult Function(String userUID)? loadUnreadCount,
-    TResult Function(String currentUserUID, String currentUserName,
-            String otherUserUID, String otherUserName)?
-        openConversationWith,
+    TResult Function()? loadRestaurants,
+    TResult Function(String userUID, String userName, String restaurantId,
+            String restaurantName)?
+        openConversationWithRestaurant,
     TResult Function()? clearOpenConversation,
     required TResult orElse(),
   }) {
@@ -1593,7 +1831,9 @@ class _$ClearOpenConversationImpl implements ClearOpenConversation {
     required TResult Function(MarkAsRead value) markAsRead,
     required TResult Function(RefreshConversations value) refreshConversations,
     required TResult Function(LoadUnreadCount value) loadUnreadCount,
-    required TResult Function(OpenConversationWith value) openConversationWith,
+    required TResult Function(LoadRestaurants value) loadRestaurants,
+    required TResult Function(OpenConversationWithRestaurant value)
+        openConversationWithRestaurant,
     required TResult Function(ClearOpenConversation value)
         clearOpenConversation,
   }) {
@@ -1609,7 +1849,9 @@ class _$ClearOpenConversationImpl implements ClearOpenConversation {
     TResult? Function(MarkAsRead value)? markAsRead,
     TResult? Function(RefreshConversations value)? refreshConversations,
     TResult? Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult? Function(OpenConversationWith value)? openConversationWith,
+    TResult? Function(LoadRestaurants value)? loadRestaurants,
+    TResult? Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult? Function(ClearOpenConversation value)? clearOpenConversation,
   }) {
     return clearOpenConversation?.call(this);
@@ -1624,7 +1866,9 @@ class _$ClearOpenConversationImpl implements ClearOpenConversation {
     TResult Function(MarkAsRead value)? markAsRead,
     TResult Function(RefreshConversations value)? refreshConversations,
     TResult Function(LoadUnreadCount value)? loadUnreadCount,
-    TResult Function(OpenConversationWith value)? openConversationWith,
+    TResult Function(LoadRestaurants value)? loadRestaurants,
+    TResult Function(OpenConversationWithRestaurant value)?
+        openConversationWithRestaurant,
     TResult Function(ClearOpenConversation value)? clearOpenConversation,
     required TResult orElse(),
   }) {

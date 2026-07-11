@@ -24,6 +24,8 @@ class PostFeedWidget extends StatefulWidget {
   final void Function(String postId)? onCommentTap;
   /// Called when user taps author name/avatar to view their profile.
   final void Function(String userUID, String userName)? onAuthorTap;
+  /// Called when user taps contact restaurant on a linked post.
+  final void Function(Post post)? onContactRestaurant;
   final String? currentUserUID;
   final String? errorMessage;
 
@@ -36,6 +38,7 @@ class PostFeedWidget extends StatefulWidget {
     required this.onLike,
     this.onCommentTap,
     this.onAuthorTap,
+    this.onContactRestaurant,
     this.currentUserUID,
     this.errorMessage,
   });
@@ -194,6 +197,10 @@ class _PostFeedWidgetState extends State<PostFeedWidget> {
                     ? () => widget.onCommentTap!(postId)
                     : null,
                 onAuthorTap: widget.onAuthorTap,
+                onContactRestaurant: post.hasLinkedRestaurant &&
+                        widget.onContactRestaurant != null
+                    ? () => widget.onContactRestaurant!(post)
+                    : null,
                 currentUserUID: widget.currentUserUID,
                 commentCount: commentCount,
               );

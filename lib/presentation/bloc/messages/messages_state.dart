@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../domain/entities/message.dart';
+import '../../../domain/entities/restaurant.dart';
 
 part 'messages_state.freezed.dart';
 
@@ -12,8 +13,10 @@ class MessagesState with _$MessagesState {
     @Default([]) List<Message> messages,
     @Default('') String conversationId,
     String? errorMessage,
-    /// When opening conversation from profile (new or existing)
-    String? openWithUserUID,
-    String? openWithUserName,
+    @Default([]) List<Restaurant> restaurants,
+    @Default(false) bool isLoadingRestaurants,
+    /// When opening a restaurant conversation (new or existing)
+    String? openWithRestaurantId,
+    String? openWithRestaurantName,
   }) = _MessagesState;
 }
