@@ -69,10 +69,16 @@ class ProfilePostDetailScreen extends StatelessWidget {
                       },
                       onContactRestaurant: post.hasLinkedRestaurant
                           ? () {
+                              final restaurantId = post.restaurantId;
+                              final restaurantName = post.restaurantName;
+                              if (restaurantId == null ||
+                                  restaurantName == null) {
+                                return;
+                              }
                               openRestaurantConversation(
                                 context,
-                                restaurantId: post.restaurantId!,
-                                restaurantName: post.restaurantName!,
+                                restaurantId: restaurantId,
+                                restaurantName: restaurantName,
                               );
                             }
                           : null,

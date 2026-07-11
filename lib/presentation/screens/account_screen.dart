@@ -149,9 +149,10 @@ class _AccountScreenState extends State<AccountScreen> {
             child: BlocConsumer<AccountBloc, AccountState>(
             listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
             listener: (context, state) {
-              if (state.errorMessage != null) {
+              final errorMessage = state.errorMessage;
+              if (errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage!)),
+                  SnackBar(content: Text(errorMessage)),
                 );
               }
             },
@@ -172,14 +173,15 @@ class _AccountScreenState extends State<AccountScreen> {
                 );
               }
 
-              if (state.errorMessage != null && state.user == null) {
+              final errorMessage = state.errorMessage;
+              if (errorMessage != null && state.user == null) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(spacingL),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.error_outline,
                           size: 64,
                           color: textPrimary,
@@ -193,7 +195,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         ),
                         const SizedBox(height: spacingS),
                         Text(
-                          state.errorMessage!,
+                          errorMessage,
                           style: bodyLarge.copyWith(
                             color: textSecondary,
                           ),
@@ -222,9 +224,9 @@ class _AccountScreenState extends State<AccountScreen> {
                 );
               }
 
-              if (state.user != null && state.preferences != null) {
-                final user = state.user!;
-                final preferences = state.preferences!;
+              final user = state.user;
+              final preferences = state.preferences;
+              if (user != null && preferences != null) {
                 final isSaving = state.isSaving;
 
                 return SingleChildScrollView(

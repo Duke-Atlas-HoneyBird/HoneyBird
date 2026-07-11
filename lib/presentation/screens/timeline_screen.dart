@@ -116,9 +116,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: BlocConsumer<TimelineBloc, TimelineState>(
             listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
             listener: (context, state) {
-              if (state.errorMessage != null) {
+              final errorMessage = state.errorMessage;
+              if (errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage!)),
+                  SnackBar(content: Text(errorMessage)),
                 );
               }
             },
@@ -135,7 +136,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 );
               }
 
-              if (state.errorMessage != null && state.posts.isEmpty) {
+              final errorMessage = state.errorMessage;
+              if (errorMessage != null && state.posts.isEmpty) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(spacingL),
@@ -156,7 +158,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         ),
                         const SizedBox(height: spacingS),
                         Text(
-                          state.errorMessage!,
+                          errorMessage,
                           style: bodyLarge.copyWith(
                             color: textSecondary,
                           ),

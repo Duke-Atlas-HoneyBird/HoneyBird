@@ -42,9 +42,10 @@ class PostCard extends StatelessWidget {
   });
 
   Widget _wrapHero(bool enabled, Widget child) {
-    if (!enabled || heroTag == null) return child;
+    final tag = heroTag;
+    if (!enabled || tag == null) return child;
     return Hero(
-      tag: heroTag!,
+      tag: tag,
       child: Material(
         type: MaterialType.transparency,
         child: child,
@@ -94,7 +95,7 @@ class PostCard extends StatelessWidget {
               onTap: onAuthorTap != null && post.userUID.isNotEmpty
                   ? () {
                       HapticFeedback.lightImpact();
-                      onAuthorTap!(post.userUID, post.userName);
+                      onAuthorTap?.call(post.userUID, post.userName);
                     }
                   : null,
               borderRadius: BorderRadius.circular(buttonBorderRadius),
@@ -188,7 +189,7 @@ class PostCard extends StatelessWidget {
                   child: AspectRatio(
                     aspectRatio: _feedImageAspectRatio,
                     child: Image.network(
-                      post.imageURL!.toString(),
+                      post.imageURL?.toString() ?? '',
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
@@ -204,13 +205,15 @@ class PostCard extends StatelessWidget {
                       },
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
+                        final expectedTotalBytes =
+                            loadingProgress.expectedTotalBytes;
                         return Container(
                           color: textSecondary.withOpacity(0.1),
                           child: Center(
                             child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
+                              value: expectedTotalBytes != null
                                   ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
+                                      expectedTotalBytes
                                   : null,
                             ),
                           ),
@@ -247,7 +250,7 @@ class PostCard extends StatelessWidget {
                     ? null
                     : () {
                         HapticFeedback.lightImpact();
-                        onContactRestaurant!();
+                        onContactRestaurant?.call();
                       },
                 icon: const Icon(Icons.storefront_outlined, size: 18),
                 label: Text('Contact ${post.restaurantName}'),
@@ -311,7 +314,7 @@ class PostCard extends StatelessWidget {
                   InkWell(
                     onTap: () {
                       HapticFeedback.lightImpact();
-                      onComment!();
+                      onComment?.call();
                     },
                     borderRadius: BorderRadius.circular(buttonBorderRadius),
                     child: Container(

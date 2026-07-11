@@ -41,10 +41,11 @@ class _AuthScreenState extends State<AuthScreen> {
             curr.passwordResetEmail != null ||
             curr.emailVerificationSent,
         listener: (context, state) {
-          if (state.errorMessage != null) {
+          final errorMessage = state.errorMessage;
+          if (errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.errorMessage!),
+                content: Text(errorMessage),
                 backgroundColor: Colors.red,
               ),
             );
@@ -71,7 +72,7 @@ class _AuthScreenState extends State<AuthScreen> {
           }
         },
         buildWhen: (prev, curr) =>
-            prev?.isLoading != curr.isLoading || prev?.user != curr.user,
+            prev.isLoading != curr.isLoading || prev.user != curr.user,
         builder: (context, state) {
             return Padding(
               padding: const EdgeInsets.all(16.0),
@@ -165,7 +166,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void _submitForm() {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState?.validate() ?? false) {
       final email = _emailController.text.trim();
       final password = _passwordController.text;
       final displayName = _displayNameController.text.trim();

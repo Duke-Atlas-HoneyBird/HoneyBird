@@ -63,7 +63,7 @@ class _TermsScreen extends StatelessWidget {
 }
 
 class _CommunityGuidelinesBody extends StatelessWidget {
-  const _CommunityGuidelinesBody({super.key});
+  const _CommunityGuidelinesBody();
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +96,7 @@ class _PrivacyScreen extends StatelessWidget {
 }
 
 class _MarkdownPageBody extends StatefulWidget {
-  const _MarkdownPageBody({super.key, required this.future});
+  const _MarkdownPageBody({required this.future});
 
   final Future<String> future;
 
@@ -105,7 +105,7 @@ class _MarkdownPageBody extends StatefulWidget {
 }
 
 class _MarkdownPageBodyState extends State<_MarkdownPageBody> {
-  late final _scrollController;
+  late final ScrollController _scrollController;
 
   @override
   void initState() {

@@ -126,10 +126,6 @@ class FirebasePostDataSourceImpl implements FirebasePostDataSource {
   @override
   Future<PostModel> updatePost(PostModel post) async {
     try {
-      if (post.id == null) {
-        throw ServerException('Cannot update post without ID');
-      }
-
       await _firestore
           .collection(FirebaseCollections.posts)
           .doc(post.id)

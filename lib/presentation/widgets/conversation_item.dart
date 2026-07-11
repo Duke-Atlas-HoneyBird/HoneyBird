@@ -38,6 +38,7 @@ class ConversationItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final restaurantName = conversation.restaurantName;
     final hasUnread = conversation.unreadCount > 0;
+    final lastMessage = conversation.lastMessage;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -83,23 +84,23 @@ class ConversationItem extends StatelessWidget {
                 ],
               ),
             ),
-            if (conversation.lastMessage != null)
+            if (lastMessage != null)
               Text(
-                _formatTimestamp(conversation.lastMessage!.timestamp),
+                _formatTimestamp(lastMessage.timestamp),
                 style: bodyMedium.copyWith(
                   color: textSecondary,
                 ),
               ),
           ],
         ),
-        subtitle: conversation.lastMessage != null
+        subtitle: lastMessage != null
             ? Row(
                 children: [
                   Expanded(
                     child: Text(
-                      conversation.lastMessage!.isSystemMessage
+                      lastMessage.isSystemMessage
                           ? 'Merchant channel opened'
-                          : conversation.lastMessage!.content,
+                          : lastMessage.content,
                       style: bodyMedium.copyWith(
                         fontWeight:
                             hasUnread ? FontWeight.w500 : FontWeight.normal,

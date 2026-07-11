@@ -149,9 +149,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           child: BlocConsumer<ProfileBloc, ProfileState>(
             listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
             listener: (context, state) {
-              if (state.errorMessage != null) {
+              final errorMessage = state.errorMessage;
+              if (errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage!)),
+                  SnackBar(content: Text(errorMessage)),
                 );
               }
             },
@@ -164,7 +165,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 );
               }
 
-              if (state.errorMessage != null && state.user == null) {
+              final errorMessage = state.errorMessage;
+              if (errorMessage != null && state.user == null) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(spacingL),
@@ -174,7 +176,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         Icon(Icons.error_outline, size: 64, color: textPrimary),
                         const SizedBox(height: spacingM),
                         Text(
-                          state.errorMessage!,
+                          errorMessage,
                           style: bodyLarge.copyWith(color: textSecondary),
                           textAlign: TextAlign.center,
                         ),

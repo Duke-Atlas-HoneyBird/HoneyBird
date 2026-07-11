@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
-import '../bloc/auth/auth_state.dart';
 import '../bloc/feed/feed_bloc.dart';
 import '../bloc/feed/feed_event.dart';
 import '../bloc/feed/feed_state.dart';
@@ -96,9 +95,10 @@ class _FeedScreenState extends State<FeedScreen> {
           child: BlocConsumer<FeedBloc, FeedState>(
             listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
             listener: (context, state) {
-              if (state.errorMessage != null) {
+              final errorMessage = state.errorMessage;
+              if (errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage!)),
+                  SnackBar(content: Text(errorMessage)),
                 );
               }
             },
@@ -107,14 +107,15 @@ class _FeedScreenState extends State<FeedScreen> {
                 prev.isLoading != curr.isLoading ||
                 prev.errorMessage != curr.errorMessage,
             builder: (context, state) {
-              if (state.errorMessage != null && state.posts.isEmpty) {
+              final errorMessage = state.errorMessage;
+              if (errorMessage != null && state.posts.isEmpty) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(spacingL),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.error_outline,
                           size: 64,
                           color: textPrimary,
@@ -128,7 +129,7 @@ class _FeedScreenState extends State<FeedScreen> {
                         ),
                         const SizedBox(height: spacingS),
                         Text(
-                          state.errorMessage!,
+                          errorMessage,
                           style: bodyLarge.copyWith(
                             color: textSecondary,
                           ),
@@ -167,7 +168,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.rss_feed_outlined,
                           size: 64,
                           color: textSecondary,
@@ -210,7 +211,7 @@ class _FeedScreenState extends State<FeedScreen> {
                         post: post,
                         onLike: () => _handleLike(
                           context,
-                          post.id ?? '',
+                          post.id,
                           currentUserUID,
                         ),
                         onAuthorTap: (userUID, userName) {
