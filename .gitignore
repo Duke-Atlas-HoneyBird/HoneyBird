@@ -52,9 +52,12 @@ ios/Runner/GoogleService-Info.plist
 lib/firebase_options.dart
 
 # Firebase rules (can contain security policy; inject in CI or deploy from Console)
-firestore.rules
+# Firebase local config (optional; firebase.json is tracked)
+# firestore.rules and firestore.indexes.json are tracked for deploy
 storage.rules
-
+*.json
 # Android release signing (injected in CI from secrets; use key.properties + keystore locally)
 android/key.properties
 android/app/release.keystore
+./*.json
+*.json

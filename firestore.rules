@@ -1,50 +1,196 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Posts collection: Anyone can read, anyone can create (for seeding), only owner can update/delete
-    match /posts/{postId} {
-      allow read: if true;
-      allow create: if true;
-      allow update, delete: if isAuthenticated(); // Simplified for now to allow seeder to update if needed
+    function onlyUpdatingFields(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
     }
 
-    // Users collection: Anyone can read, anyone can write (for seeding)
+    // -------------------------------------------------------------------------
+    // Restaurants — merchant catalogue (read-only from the client)
+    // -------------------------------------------------------------------------
+
+    match /restaurants/{restaurantId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // B2C conversations — mediated user ↔ restaurant channel
+    // Document ID: user_{userUID}_restaurant_{restaurantId}
+    // -------------------------------------------------------------------------
+
+    match /conversations/{conversationId} {
+      function isConversationOwner() {
+        return isAuthenticated()
+          && resource != null
+          && resource.data.userUID == request.auth.uid;
+      }
+
+      function isCreatingOwnConversation() {
+        return isAuthenticated()
+          && request.resource.data.userUID == request.auth.uid
+          && request.resource.data.conversationType == 'user_restaurant'
+          && conversationId == 'user_' + request.auth.uid + '_restaurant_' + request.resource.data.restaurantId
+          && request.resource.data.restaurantId is string
+          && request.resource.data.restaurantName is string
+          && request.resource.data.userName is string;
+      }
+
+      // Allow get on missing docs so the client can check existence before create.
+      allow get: if isAuthenticated()
+        && (resource == null || resource.data.userUID == request.auth.uid);
+      allow list: if isConversationOwner();
+      allow create: if isCreatingOwnConversation();
+      allow update: if isConversationOwner();
+      allow delete: if false;
+
+      // Messages subcollection — user sends to restaurant; system notices on open.
+      // Merchant replies are written by Admin SDK / Cloud Functions (not the client).
+      match /messages/{messageId} {
+        function parentConversationPath() {
+          return /databases/$(database)/documents/conversations/$(conversationId);
+        }
+
+        function parentConversationExists() {
+          return exists(parentConversationPath());
+        }
+
+        function parentConversation() {
+          return get(parentConversationPath());
+        }
+
+        function ownsParentConversation() {
+          return isAuthenticated()
+            && parentConversationExists()
+            && parentConversation().data.userUID == request.auth.uid;
+        }
+
+        function isOpeningOwnConversation() {
+          return isAuthenticated()
+            && conversationId.matches('user_' + request.auth.uid + '_restaurant_.*');
+        }
+
+        function isUserMessageToRestaurant() {
+          return request.resource.data.senderType == 'user'
+            && request.resource.data.senderUID == request.auth.uid
+            && request.resource.data.receiverUID is string
+            && request.resource.data.content is string
+            && request.resource.data.content.size() > 0
+            && request.resource.data.content.size() <= 2000
+            && (
+              (parentConversationExists()
+                && request.resource.data.receiverUID == parentConversation().data.restaurantId)
+              || conversationId == 'user_' + request.auth.uid + '_restaurant_' + request.resource.data.receiverUID
+            );
+        }
+
+        function isSystemChannelNotice() {
+          return request.resource.data.senderType == 'system'
+            && request.resource.data.senderUID == 'platform';
+        }
+
+        allow read: if ownsParentConversation();
+        allow create: if (
+          ownsParentConversation()
+          && (isUserMessageToRestaurant() || isSystemChannelNotice())
+        ) || (
+          isSystemChannelNotice()
+          && isOpeningOwnConversation()
+          && !parentConversationExists()
+        ) || (
+          isUserMessageToRestaurant()
+          && isOpeningOwnConversation()
+          && !parentConversationExists()
+        );
+        allow update: if ownsParentConversation()
+          && onlyUpdatingFields(['isRead'])
+          && resource.data.receiverUID == request.auth.uid;
+        allow delete: if false;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Seed marker — managed via Firebase Console or Admin SDK only
+    // -------------------------------------------------------------------------
+
+    match /_meta/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Users
+    // -------------------------------------------------------------------------
+
     match /users/{userId} {
-      allow read: if true;
-      allow write: if true;
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isOwner(userId);
+
+      match /blocked/{blockedUserId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // Favorites collection: each user may only access their own favorites doc
     match /favorites/{userId} {
       allow read, write: if isOwner(userId);
-    }
+    // -------------------------------------------------------------------------
+    // Posts & comments
+    // -------------------------------------------------------------------------
 
-    // Preferences collection: Anyone can read/write (for seeding/preferences)
-    match /preferences/{userId} {
-      allow read, write: if true;
-    }
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.userUID == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.userUID
+        || onlyUpdatingFields(['likeIDs'])
+      );
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.userUID;
 
-    // Tasks collection: Anyone can read/write (for seeding/tasks)
-    match /tasks/{taskId} {
-      allow read, write: if true;
-    }
-    
-    // Conversations collection: Anyone can read/write (for seeding)
-    match /conversations/{conversationId} {
-      allow read, write: if true;
-      
-      match /messages/{messageId} {
-        allow read, write: if true;
+      match /comments/{commentId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated()
+          && request.resource.data.userUID == request.auth.uid;
+        allow update, delete: if isAuthenticated()
+          && resource.data.userUID == request.auth.uid;
       }
+    }
+
+    // -------------------------------------------------------------------------
+    // User-scoped collections
+    // -------------------------------------------------------------------------
+
+    match /preferences/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /favorites/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /tasks/{taskId} {
+      allow read: if isAuthenticated()
+        && resource.data.userUID == request.auth.uid;
+      allow create: if isAuthenticated()
+        && request.resource.data.userUID == request.auth.uid;
+      allow update, delete: if isAuthenticated()
+        && resource.data.userUID == request.auth.uid;
     }
   }
 }

@@ -20,6 +20,8 @@ class PostCard extends StatelessWidget {
   final VoidCallback? onComment;
   /// Called when user taps author name/avatar — opens their profile.
   final void Function(String userUID, String userName)? onAuthorTap;
+  /// Called when user taps contact restaurant on a linked post.
+  final VoidCallback? onContactRestaurant;
   /// Current user's UID — if in [post.likeIDs], star is filled.
   final String? currentUserUID;
   /// Number of comments to show on the comment button (defaults to 0).
@@ -31,6 +33,7 @@ class PostCard extends StatelessWidget {
     required this.onLike,
     this.onComment,
     this.onAuthorTap,
+    this.onContactRestaurant,
     this.currentUserUID,
     this.commentCount = 0,
   });
@@ -190,7 +193,27 @@ class PostCard extends StatelessWidget {
                 ),
               ),
             ],
-            
+            if (post.hasLinkedRestaurant) ...[
+              const SizedBox(height: spacingM),
+              OutlinedButton.icon(
+                onPressed: onContactRestaurant == null
+                    ? null
+                    : () {
+                        HapticFeedback.lightImpact();
+                        onContactRestaurant!();
+                      },
+                icon: const Icon(Icons.storefront_outlined, size: 18),
+                label: Text('Contact ${post.restaurantName}'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: primaryPurple,
+                  side: BorderSide(color: primaryPurple.withValues(alpha: 0.5)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: spacingM,
+                    vertical: spacingS,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: spacingM),
             
             // Star (like) and comment actions

@@ -20,11 +20,12 @@ class MessagesEvent with _$MessagesEvent {
   const factory MessagesEvent.refreshConversations(String userUID) =
       RefreshConversations;
   const factory MessagesEvent.loadUnreadCount(String userUID) = LoadUnreadCount;
-  const factory MessagesEvent.openConversationWith({
-    required String currentUserUID,
-    required String currentUserName,
-    required String otherUserUID,
-    required String otherUserName,
-  }) = OpenConversationWith;
+  const factory MessagesEvent.loadRestaurants() = LoadRestaurants;
+  const factory MessagesEvent.openConversationWithRestaurant({
+    required String userUID,
+    required String userName,
+    required String restaurantId,
+    required String restaurantName,
+  }) = OpenConversationWithRestaurant;
   const factory MessagesEvent.clearOpenConversation() = ClearOpenConversation;
 }

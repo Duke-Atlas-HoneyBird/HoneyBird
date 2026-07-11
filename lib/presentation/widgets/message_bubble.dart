@@ -5,7 +5,7 @@ import '../theme/spacing.dart';
 import '../theme/border_radius.dart';
 import '../theme/text_styles.dart';
 
-/// Widget for displaying a message bubble in a conversation
+/// Widget for displaying a message bubble in a B2C merchant conversation.
 class MessageBubble extends StatelessWidget {
   final Message message;
   final bool isCurrentUser;
@@ -16,10 +16,7 @@ class MessageBubble extends StatelessWidget {
     required this.isCurrentUser,
   });
 
-  Widget _buildAvatar() {
-    final initial = message.senderName.isNotEmpty
-        ? message.senderName[0].toUpperCase()
-        : '?';
+  Widget _buildMerchantAvatar() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(cardBorderRadius),
       child: Container(
@@ -27,13 +24,10 @@ class MessageBubble extends StatelessWidget {
         height: 32,
         color: primaryPurple,
         alignment: Alignment.center,
-        child: Text(
-          initial,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+        child: Icon(
+          message.isSystemMessage ? Icons.info_outline : Icons.storefront,
+          size: 16,
+          color: Colors.white,
         ),
       ),
     );
@@ -41,6 +35,41 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (message.isSystemMessage) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: spacingM,
+          vertical: spacingS,
+        ),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: spacingM,
+              vertical: spacingS,
+            ),
+            decoration: BoxDecoration(
+              color: primaryPurple.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(cardBorderRadius),
+              border: Border.all(color: primaryPurple.withValues(alpha: 0.2)),
+            ),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.85,
+            ),
+            child: Text(
+              message.content,
+              style: bodyMedium.copyWith(color: textSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final isMerchantReply = message.isFromMerchant;
+    final bubbleColor =
+        isCurrentUser ? accentPink : (isMerchantReply ? cardBackground : cardBackground);
+    final textColor = isCurrentUser ? Colors.white : textPrimary;
+
     final bubble = Container(
       margin: const EdgeInsets.symmetric(
         horizontal: spacingM,
@@ -51,8 +80,11 @@ class MessageBubble extends StatelessWidget {
         vertical: spacingS,
       ),
       decoration: BoxDecoration(
-        color: isCurrentUser ? accentPink : cardBackground,
+        color: bubbleColor,
         borderRadius: BorderRadius.circular(cardBorderRadius),
+        border: isMerchantReply
+            ? Border.all(color: primaryPurple.withValues(alpha: 0.25))
+            : null,
       ),
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * 0.75,
@@ -60,11 +92,21 @@ class MessageBubble extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (isMerchantReply)
+            Padding(
+              padding: const EdgeInsets.only(bottom: spacingXs),
+              child: Text(
+                message.senderName,
+                style: bodyMedium.copyWith(
+                  color: primaryPurple,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ),
           Text(
             message.content,
-            style: bodyMedium.copyWith(
-              color: isCurrentUser ? Colors.white : textPrimary,
-            ),
+            style: bodyMedium.copyWith(color: textColor),
             maxLines: 20,
             overflow: TextOverflow.ellipsis,
           ),
@@ -97,7 +139,7 @@ class MessageBubble extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            _buildAvatar(),
+            _buildMerchantAvatar(),
             const SizedBox(width: spacingS),
             Flexible(child: bubble),
           ],
@@ -114,4 +156,3 @@ class MessageBubble extends StatelessWidget {
     return '$displayHour:$minute $period';
   }
 }
-

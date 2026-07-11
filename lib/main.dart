@@ -32,7 +32,6 @@ import 'domain/repositories/favorite_repository.dart';
 import 'domain/repositories/post_repository.dart';
 import 'domain/repositories/block_repository.dart';
 import 'presentation/screens/auth_screen.dart';
-import 'core/utils/data_seeder.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,12 +51,6 @@ void main() async {
     await FirebaseAuth.instance.signOut();
     await prefs.setBool(StorageKeys.appHasLaunchedBefore, true);
   }
-
-  // Seed conversations from existing users (runs in background; safe to call every launch)
-  // DataSeeder().seedConversationsFromUsers();
-
-  // Uncomment the line below to seed Firestore with full dummy data
-  // await DataSeeder().seedFirestore();
 
   runApp(const HoneyBirdApp());
 }

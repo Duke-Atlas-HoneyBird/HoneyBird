@@ -1,27 +1,28 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/utils/error_message_utils.dart';
+import '../../../domain/entities/message.dart';
 import '../../../domain/repositories/message_repository.dart';
+import '../../../domain/repositories/restaurant_repository.dart';
 import 'messages_event.dart';
 import 'messages_state.dart';
 
 class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
   final MessageRepository messageRepository;
+  final RestaurantRepository restaurantRepository;
 
-  MessagesBloc({required this.messageRepository})
-      : super(const MessagesState()) {
+  MessagesBloc({
+    required this.messageRepository,
+    required this.restaurantRepository,
+  }) : super(const MessagesState()) {
     on<LoadConversations>(_onLoadConversations);
     on<LoadMessages>(_onLoadMessages);
     on<SendMessage>(_onSendMessage);
     on<MarkAsRead>(_onMarkAsRead);
     on<RefreshConversations>(_onRefreshConversations);
     on<LoadUnreadCount>(_onLoadUnreadCount);
-    on<OpenConversationWith>(_onOpenConversationWith);
+    on<LoadRestaurants>(_onLoadRestaurants);
+    on<OpenConversationWithRestaurant>(_onOpenConversationWithRestaurant);
     on<ClearOpenConversation>(_onClearOpenConversation);
-  }
-
-  String _conversationId(String uid1, String uid2) {
-    final ids = [uid1, uid2]..sort();
-    return ids.join('_');
   }
 
   Future<void> _onLoadConversations(
@@ -34,14 +35,16 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
 
     result.fold(
       (failure) => emit(state.copyWith(
-          isLoading: false,
-          errorMessage: ErrorMessageUtils.forUi('load_conversations'),
-          conversations: [])),
+        isLoading: false,
+        errorMessage: ErrorMessageUtils.forUi('load_conversations'),
+        conversations: [],
+      )),
       (conversations) => emit(state.copyWith(
-          isLoading: false,
-          conversations: conversations,
-          unreadCount: conversations.fold(
-              0, (sum, chat) => sum + chat.unreadCount))),
+        isLoading: false,
+        conversations: conversations,
+        unreadCount:
+            conversations.fold(0, (sum, chat) => sum + chat.unreadCount),
+      )),
     );
   }
 
@@ -55,13 +58,15 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
 
     result.fold(
       (failure) => emit(state.copyWith(
-          isLoading: false,
-          errorMessage: ErrorMessageUtils.forUi('load_messages'),
-          messages: [])),
+        isLoading: false,
+        errorMessage: ErrorMessageUtils.forUi('load_messages'),
+        messages: [],
+      )),
       (messages) => emit(state.copyWith(
-          isLoading: false,
-          messages: messages,
-          conversationId: event.conversationId)),
+        isLoading: false,
+        messages: messages,
+        conversationId: event.conversationId,
+      )),
     );
   }
 
@@ -69,15 +74,19 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
     SendMessage event,
     Emitter<MessagesState> emit,
   ) async {
-    final result = await messageRepository.sendMessage(event.message,
-        conversationId: event.conversationId);
+    final result = await messageRepository.sendMessage(
+      event.message,
+      conversationId: event.conversationId,
+    );
 
     result.fold(
       (failure) => emit(state.copyWith(
-          errorMessage: ErrorMessageUtils.forUi('send_message'))),
+        errorMessage: ErrorMessageUtils.forUi('send_message'),
+      )),
       (sentMessage) => emit(state.copyWith(
-          messages: [...state.messages, sentMessage],
-          conversationId: state.conversationId)),
+        messages: [...state.messages, sentMessage],
+        conversationId: state.conversationId,
+      )),
     );
   }
 
@@ -85,24 +94,40 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
     MarkAsRead event,
     Emitter<MessagesState> emit,
   ) async {
-    await messageRepository.markAsRead(
-        event.conversationId, event.userUID);
+    await messageRepository.markAsRead(event.conversationId, event.userUID);
     if (state.conversations.isNotEmpty) {
       add(MessagesEvent.refreshConversations(event.userUID));
     }
   }
 
-  Future<void> _onOpenConversationWith(
-    OpenConversationWith event,
+  Future<void> _onOpenConversationWithRestaurant(
+    OpenConversationWithRestaurant event,
     Emitter<MessagesState> emit,
   ) async {
-    final convId = _conversationId(event.currentUserUID, event.otherUserUID);
+    final convId =
+        Conversation.idFor(event.userUID, event.restaurantId);
+
+    final ensureResult = await messageRepository.ensureMerchantChannelNotice(
+      userUID: event.userUID,
+      userName: event.userName,
+      restaurantId: event.restaurantId,
+      restaurantName: event.restaurantName,
+    );
+
+    final ensureFailed = ensureResult.fold((_) => true, (_) => false);
+    if (ensureFailed) {
+      emit(state.copyWith(
+        errorMessage: ErrorMessageUtils.forUi('open_conversation'),
+      ));
+      return;
+    }
+
     emit(state.copyWith(
       conversationId: convId,
       messages: [],
       errorMessage: null,
-      openWithUserUID: event.otherUserUID,
-      openWithUserName: event.otherUserName,
+      openWithRestaurantId: event.restaurantId,
+      openWithRestaurantName: event.restaurantName,
     ));
     add(MessagesEvent.loadMessages(convId));
   }
@@ -114,8 +139,8 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
     emit(state.copyWith(
       conversationId: '',
       messages: [],
-      openWithUserUID: null,
-      openWithUserName: null,
+      openWithRestaurantId: null,
+      openWithRestaurantName: null,
     ));
   }
 
@@ -127,14 +152,17 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
 
     await result.fold(
       (failure) async => emit(state.copyWith(
-          errorMessage: ErrorMessageUtils.forUi('refresh_conversations'))),
+        errorMessage: ErrorMessageUtils.forUi('refresh_conversations'),
+      )),
       (conversations) async {
         final unreadResult =
             await messageRepository.getUnreadCount(event.userUID);
         final unreadCount =
             unreadResult.fold((failure) => 0, (count) => count);
         emit(state.copyWith(
-            conversations: conversations, unreadCount: unreadCount));
+          conversations: conversations,
+          unreadCount: unreadCount,
+        ));
       },
     );
   }
@@ -146,5 +174,25 @@ class MessagesBloc extends Bloc<MessagesEvent, MessagesState> {
     final result = await messageRepository.getUnreadCount(event.userUID);
     final count = result.fold((failure) => 0, (c) => c);
     emit(state.copyWith(unreadCount: count));
+  }
+
+  Future<void> _onLoadRestaurants(
+    LoadRestaurants event,
+    Emitter<MessagesState> emit,
+  ) async {
+    emit(state.copyWith(isLoadingRestaurants: true, errorMessage: null));
+
+    final result = await restaurantRepository.getRestaurants();
+
+    result.fold(
+      (failure) => emit(state.copyWith(
+        isLoadingRestaurants: false,
+        errorMessage: ErrorMessageUtils.forUi('load_restaurants'),
+      )),
+      (restaurants) => emit(state.copyWith(
+        isLoadingRestaurants: false,
+        restaurants: restaurants,
+      )),
+    );
   }
 }

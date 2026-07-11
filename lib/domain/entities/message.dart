@@ -1,11 +1,49 @@
 import 'package:equatable/equatable.dart';
 import '../../core/utils/uuid_utils.dart';
 
-/// Domain entity representing a message in the system.
-/// 
-/// This entity is immutable and uses value equality for comparison.
+/// B2C conversation channel — user to restaurant only.
+enum ConversationType {
+  userRestaurant('user_restaurant');
+
+  final String firestoreValue;
+  const ConversationType(this.firestoreValue);
+
+  static ConversationType fromFirestore(String? value) {
+    if (value == ConversationType.userRestaurant.firestoreValue) {
+      return ConversationType.userRestaurant;
+    }
+    return ConversationType.userRestaurant;
+  }
+}
+
+/// Who sent a message in a mediated B2C channel.
+enum MessageSenderType {
+  user('user'),
+  merchant('merchant'),
+  system('system');
+
+  final String firestoreValue;
+  const MessageSenderType(this.firestoreValue);
+
+  static MessageSenderType fromFirestore(String? value) {
+    switch (value) {
+      case 'merchant':
+        return MessageSenderType.merchant;
+      case 'system':
+        return MessageSenderType.system;
+      default:
+        return MessageSenderType.user;
+    }
+  }
+}
+
+/// Domain entity representing a message routed through the platform backend.
+///
+/// User messages are addressed to the restaurant entity; merchant replies
+/// are routed back to the user via the backend — never user-to-user.
 class Message extends Equatable {
   final String id;
+  final MessageSenderType senderType;
   final String senderUID;
   final String senderName;
   final String receiverUID;
@@ -16,6 +54,7 @@ class Message extends Equatable {
 
   Message({
     String? id,
+    this.senderType = MessageSenderType.user,
     required this.senderUID,
     required this.senderName,
     required this.receiverUID,
@@ -25,9 +64,13 @@ class Message extends Equatable {
     this.isRead = false,
   }) : id = id ?? UuidUtils.generate();
 
+  bool get isFromMerchant => senderType == MessageSenderType.merchant;
+  bool get isSystemMessage => senderType == MessageSenderType.system;
+
   @override
   List<Object?> get props => [
         id,
+        senderType,
         senderUID,
         senderName,
         receiverUID,
@@ -38,42 +81,44 @@ class Message extends Equatable {
       ];
 }
 
-/// Domain entity representing a conversation between users.
+/// Mediated B2C conversation between a user and a restaurant entity.
 class Conversation extends Equatable {
   final String id;
-  final String participant1UID;
-  final String participant1Name;
-  final String participant2UID;
-  final String participant2Name;
-  final List<String> participants;
+  final ConversationType conversationType;
+  final String userUID;
+  final String userName;
+  final String restaurantId;
+  final String restaurantName;
   final Message? lastMessage;
   final DateTime lastUpdated;
   final int unreadCount;
 
   Conversation({
     String? id,
-    required this.participant1UID,
-    required this.participant1Name,
-    required this.participant2UID,
-    required this.participant2Name,
-    List<String>? participants,
+    this.conversationType = ConversationType.userRestaurant,
+    required this.userUID,
+    required this.userName,
+    required this.restaurantId,
+    required this.restaurantName,
     this.lastMessage,
     required this.lastUpdated,
     this.unreadCount = 0,
-  })  : id = id ?? UuidUtils.generate(),
-        participants = participants ?? [participant1UID, participant2UID];
+  }) : id = id ?? UuidUtils.generate();
+
+  /// Consistent ID for a user–restaurant thread.
+  static String idFor(String userUID, String restaurantId) =>
+      'user_${userUID}_restaurant_$restaurantId';
 
   @override
   List<Object?> get props => [
         id,
-        participant1UID,
-        participant1Name,
-        participant2UID,
-        participant2Name,
-        participants,
+        conversationType,
+        userUID,
+        userName,
+        restaurantId,
+        restaurantName,
         lastMessage,
         lastUpdated,
         unreadCount,
       ];
 }
-
