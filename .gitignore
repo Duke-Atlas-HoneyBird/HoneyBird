@@ -59,3 +59,5 @@ storage.rules
 # Android release signing (injected in CI from secrets; use key.properties + keystore locally)
 android/key.properties
 android/app/release.keystore
+./*.json
+*.json
