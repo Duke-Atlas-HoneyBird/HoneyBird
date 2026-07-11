@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../domain/entities/post.dart';
 
 part 'profile_event.freezed.dart';
 
@@ -8,6 +9,12 @@ class ProfileEvent with _$ProfileEvent {
     required String targetUserUID,
     required String viewerUserUID,
   }) = LoadUserProfile;
+  const factory ProfileEvent.likePostInProfile({
+    required String postId,
+    required String userUID,
+  }) = LikePostInProfile;
+  const factory ProfileEvent.addOrUpdatePostInProfile(Post post) =
+      AddOrUpdatePostInProfile;
   const factory ProfileEvent.blockUser({
     required String currentUserUID,
     required String targetUserUID,

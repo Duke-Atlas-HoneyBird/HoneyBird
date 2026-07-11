@@ -17,8 +17,10 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$ProfileState {
   bool get isLoading => throw _privateConstructorUsedError;
+  bool get isLoadingPosts => throw _privateConstructorUsedError;
   User? get user => throw _privateConstructorUsedError;
   UserPreference? get preferences => throw _privateConstructorUsedError;
+  List<Post> get posts => throw _privateConstructorUsedError;
   bool get isBlocked => throw _privateConstructorUsedError;
   String? get errorMessage => throw _privateConstructorUsedError;
 
@@ -37,8 +39,10 @@ abstract class $ProfileStateCopyWith<$Res> {
   @useResult
   $Res call(
       {bool isLoading,
+      bool isLoadingPosts,
       User? user,
       UserPreference? preferences,
+      List<Post> posts,
       bool isBlocked,
       String? errorMessage});
 }
@@ -59,8 +63,10 @@ class _$ProfileStateCopyWithImpl<$Res, $Val extends ProfileState>
   @override
   $Res call({
     Object? isLoading = null,
+    Object? isLoadingPosts = null,
     Object? user = freezed,
     Object? preferences = freezed,
+    Object? posts = null,
     Object? isBlocked = null,
     Object? errorMessage = freezed,
   }) {
@@ -68,6 +74,10 @@ class _$ProfileStateCopyWithImpl<$Res, $Val extends ProfileState>
       isLoading: null == isLoading
           ? _value.isLoading
           : isLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isLoadingPosts: null == isLoadingPosts
+          ? _value.isLoadingPosts
+          : isLoadingPosts // ignore: cast_nullable_to_non_nullable
               as bool,
       user: freezed == user
           ? _value.user
@@ -77,6 +87,10 @@ class _$ProfileStateCopyWithImpl<$Res, $Val extends ProfileState>
           ? _value.preferences
           : preferences // ignore: cast_nullable_to_non_nullable
               as UserPreference?,
+      posts: null == posts
+          ? _value.posts
+          : posts // ignore: cast_nullable_to_non_nullable
+              as List<Post>,
       isBlocked: null == isBlocked
           ? _value.isBlocked
           : isBlocked // ignore: cast_nullable_to_non_nullable
@@ -99,8 +113,10 @@ abstract class _$$ProfileStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {bool isLoading,
+      bool isLoadingPosts,
       User? user,
       UserPreference? preferences,
+      List<Post> posts,
       bool isBlocked,
       String? errorMessage});
 }
@@ -119,8 +135,10 @@ class __$$ProfileStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? isLoading = null,
+    Object? isLoadingPosts = null,
     Object? user = freezed,
     Object? preferences = freezed,
+    Object? posts = null,
     Object? isBlocked = null,
     Object? errorMessage = freezed,
   }) {
@@ -128,6 +146,10 @@ class __$$ProfileStateImplCopyWithImpl<$Res>
       isLoading: null == isLoading
           ? _value.isLoading
           : isLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isLoadingPosts: null == isLoadingPosts
+          ? _value.isLoadingPosts
+          : isLoadingPosts // ignore: cast_nullable_to_non_nullable
               as bool,
       user: freezed == user
           ? _value.user
@@ -137,6 +159,10 @@ class __$$ProfileStateImplCopyWithImpl<$Res>
           ? _value.preferences
           : preferences // ignore: cast_nullable_to_non_nullable
               as UserPreference?,
+      posts: null == posts
+          ? _value._posts
+          : posts // ignore: cast_nullable_to_non_nullable
+              as List<Post>,
       isBlocked: null == isBlocked
           ? _value.isBlocked
           : isBlocked // ignore: cast_nullable_to_non_nullable
@@ -154,18 +180,33 @@ class __$$ProfileStateImplCopyWithImpl<$Res>
 class _$ProfileStateImpl implements _ProfileState {
   const _$ProfileStateImpl(
       {this.isLoading = false,
+      this.isLoadingPosts = false,
       this.user,
       this.preferences,
+      final List<Post> posts = const [],
       this.isBlocked = false,
-      this.errorMessage});
+      this.errorMessage})
+      : _posts = posts;
 
   @override
   @JsonKey()
   final bool isLoading;
   @override
+  @JsonKey()
+  final bool isLoadingPosts;
+  @override
   final User? user;
   @override
   final UserPreference? preferences;
+  final List<Post> _posts;
+  @override
+  @JsonKey()
+  List<Post> get posts {
+    if (_posts is EqualUnmodifiableListView) return _posts;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_posts);
+  }
+
   @override
   @JsonKey()
   final bool isBlocked;
@@ -174,7 +215,7 @@ class _$ProfileStateImpl implements _ProfileState {
 
   @override
   String toString() {
-    return 'ProfileState(isLoading: $isLoading, user: $user, preferences: $preferences, isBlocked: $isBlocked, errorMessage: $errorMessage)';
+    return 'ProfileState(isLoading: $isLoading, isLoadingPosts: $isLoadingPosts, user: $user, preferences: $preferences, posts: $posts, isBlocked: $isBlocked, errorMessage: $errorMessage)';
   }
 
   @override
@@ -184,9 +225,12 @@ class _$ProfileStateImpl implements _ProfileState {
             other is _$ProfileStateImpl &&
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
+            (identical(other.isLoadingPosts, isLoadingPosts) ||
+                other.isLoadingPosts == isLoadingPosts) &&
             (identical(other.user, user) || other.user == user) &&
             (identical(other.preferences, preferences) ||
                 other.preferences == preferences) &&
+            const DeepCollectionEquality().equals(other._posts, _posts) &&
             (identical(other.isBlocked, isBlocked) ||
                 other.isBlocked == isBlocked) &&
             (identical(other.errorMessage, errorMessage) ||
@@ -195,7 +239,14 @@ class _$ProfileStateImpl implements _ProfileState {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, isLoading, user, preferences, isBlocked, errorMessage);
+      runtimeType,
+      isLoading,
+      isLoadingPosts,
+      user,
+      preferences,
+      const DeepCollectionEquality().hash(_posts),
+      isBlocked,
+      errorMessage);
 
   /// Create a copy of ProfileState
   /// with the given fields replaced by the non-null parameter values.
@@ -209,17 +260,23 @@ class _$ProfileStateImpl implements _ProfileState {
 abstract class _ProfileState implements ProfileState {
   const factory _ProfileState(
       {final bool isLoading,
+      final bool isLoadingPosts,
       final User? user,
       final UserPreference? preferences,
+      final List<Post> posts,
       final bool isBlocked,
       final String? errorMessage}) = _$ProfileStateImpl;
 
   @override
   bool get isLoading;
   @override
+  bool get isLoadingPosts;
+  @override
   User? get user;
   @override
   UserPreference? get preferences;
+  @override
+  List<Post> get posts;
   @override
   bool get isBlocked;
   @override

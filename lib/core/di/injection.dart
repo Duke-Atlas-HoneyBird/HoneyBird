@@ -52,6 +52,7 @@ import '../../application/use_cases/post/create_post.dart';
 import '../../application/use_cases/post/delete_post.dart';
 import '../../application/use_cases/post/get_post.dart';
 import '../../application/use_cases/post/get_posts.dart';
+import '../../application/use_cases/post/get_posts_by_user_uid.dart';
 import '../../application/use_cases/post/like_post.dart';
 import '../../application/use_cases/post/update_post.dart';
 import '../../application/use_cases/preferences/get_preferences.dart';
@@ -178,6 +179,7 @@ Future<void> init() async {
 
   // Use cases - Post
   sl.registerFactory(() => GetPosts(sl()));
+  sl.registerFactory(() => GetPostsByUserUID(sl()));
   sl.registerFactory(() => GetPost(sl()));
   sl.registerFactory(() => CreatePost(sl()));
   sl.registerFactory(() => UpdatePost(sl()));
@@ -216,6 +218,8 @@ Future<void> init() async {
   sl.registerFactory(() => AccountBloc(
         userRepository: sl(),
         preferenceRepository: sl(),
+        postRepository: sl(),
+        favoriteRepository: sl(),
         sharedPreferences: sl(),
       ));
   sl.registerFactory(() => MessagesBloc(
@@ -226,5 +230,7 @@ Future<void> init() async {
         userRepository: sl(),
         preferenceRepository: sl(),
         blockRepository: sl(),
+        postRepository: sl(),
+        favoriteRepository: sl(),
       ));
 }

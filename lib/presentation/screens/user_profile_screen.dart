@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/di/injection.dart';
+import '../../domain/entities/post.dart';
 import '../theme/colours.dart';
 import '../theme/spacing.dart';
 import '../theme/text_styles.dart';
@@ -9,9 +11,12 @@ import '../bloc/profile/profile_bloc.dart';
 import '../bloc/profile/profile_event.dart';
 import '../bloc/profile/profile_state.dart';
 import '../bloc/auth/auth_bloc.dart';
+import '../bloc/comment/comment_bloc.dart';
+import '../widgets/profile_post_detail_screen.dart';
+import '../widgets/profile_posts_grid.dart';
 
 /// Screen for viewing another user's profile.
-/// Shows user details and preferences based on their visibility settings.
+/// Shows user details, preferences, and Instagram-style post history.
 /// Actions: Block/Unblock.
 class UserProfileScreen extends StatefulWidget {
   final String targetUserUID;
@@ -28,11 +33,22 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
+  bool _hasRequestedLoad = false;
+  late final CommentBloc _commentBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _commentBloc = sl<CommentBloc>();
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_hasRequestedLoad) return;
     final viewerUID = context.read<AuthBloc>().state.user?.uid ?? '';
     if (viewerUID.isNotEmpty) {
+      _hasRequestedLoad = true;
       context.read<ProfileBloc>().add(ProfileEvent.loadUserProfile(
             targetUserUID: widget.targetUserUID,
             viewerUserUID: viewerUID,
@@ -81,6 +97,40 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  void _openPostDetail(Post post) {
+    final profileBloc = context.read<ProfileBloc>();
+    final postId = post.id;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: profileBloc,
+          child: BlocBuilder<ProfileBloc, ProfileState>(
+            builder: (context, state) {
+              return ProfilePostDetailScreen(
+                postId: postId,
+                commentBloc: _commentBloc,
+                findPost: (_) {
+                  for (final p in state.posts) {
+                    if (p.id == postId) return p;
+                  }
+                  return null;
+                },
+                onLike: (likedPostId, userUID) {
+                  context.read<ProfileBloc>().add(
+                        ProfileEvent.likePostInProfile(
+                          postId: likedPostId,
+                          userUID: userUID,
+                        ),
+                      );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,13 +141,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             : 'Profile'),
         elevation: 0,
         iconTheme:
-            IconThemeData(color: Theme.of(context).colorScheme.onBackground),
+            IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: Container(
         decoration: const BoxDecoration(gradient: backgroundGradient),
         child: SafeArea(
           child: BlocConsumer<ProfileBloc, ProfileState>(
-            listenWhen: (prev, curr) => curr.errorMessage != prev?.errorMessage,
+            listenWhen: (prev, curr) => curr.errorMessage != prev.errorMessage,
             listener: (context, state) {
               if (state.errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -107,7 +157,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             },
             builder: (context, state) {
               if (state.isLoading && state.user == null) {
-                return Center(
+                return const Center(
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(textPrimary),
                   ),
@@ -283,6 +333,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         ),
                       ),
                     ],
+                    const SizedBox(height: spacingL),
+                    ProfilePostsGrid(
+                      posts: state.posts,
+                      isLoading: state.isLoadingPosts,
+                      onPostTap: _openPostDetail,
+                    ),
                     if (!isOwnProfile) ...[
                       const SizedBox(height: spacingL),
                       OutlinedButton.icon(

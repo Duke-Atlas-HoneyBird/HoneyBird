@@ -4,6 +4,7 @@ import '../../core/error/failures.dart';
 
 abstract class PostRepository {
   Future<Either<Failure, List<Post>>> getPosts();
+  Future<Either<Failure, List<Post>>> getPostsByUserUID(String userUID);
   Future<Either<Failure, Post>> getPost(String postId);
   Future<Either<Failure, Post>> createPost(Post post);
   Future<Either<Failure, Post>> updatePost(Post post);

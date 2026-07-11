@@ -5,16 +5,19 @@ import '../theme/colours.dart';
 import '../theme/text_styles.dart';
 import '../theme/spacing.dart';
 import '../widgets/bottom_navigation_widget.dart';
+import '../widgets/profile_post_detail_screen.dart';
+import '../widgets/profile_posts_grid.dart';
 import '../bloc/account/account_bloc.dart';
 import '../bloc/account/account_event.dart';
 import '../bloc/account/account_state.dart';
 import '../bloc/messages/messages_bloc.dart';
 import '../bloc/messages/messages_event.dart';
 import '../bloc/messages/messages_state.dart';
+import '../bloc/comment/comment_bloc.dart';
 
 import '../../core/di/injection.dart';
+import '../../domain/entities/post.dart';
 import '../bloc/auth/auth_bloc.dart';
-import '../bloc/auth/auth_state.dart';
 
 /// Account screen for managing user account settings
 class AccountScreen extends StatefulWidget {
@@ -28,6 +31,13 @@ class _AccountScreenState extends State<AccountScreen> {
   int _currentTabIndex = 2;
   bool _hasRequestedLoad = false;
   bool _hasRequestedUnreadCount = false;
+  late final CommentBloc _commentBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _commentBloc = sl<CommentBloc>();
+  }
 
   void _handleTabSelected(int index) {
     if (_currentTabIndex == index) {
@@ -79,6 +89,40 @@ class _AccountScreenState extends State<AccountScreen> {
     super.deactivate();
   }
 
+  void _openPostDetail(Post post) {
+    final accountBloc = context.read<AccountBloc>();
+    final postId = post.id;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: accountBloc,
+          child: BlocBuilder<AccountBloc, AccountState>(
+            builder: (context, state) {
+              return ProfilePostDetailScreen(
+                postId: postId,
+                commentBloc: _commentBloc,
+                findPost: (_) {
+                  for (final p in state.posts) {
+                    if (p.id == postId) return p;
+                  }
+                  return null;
+                },
+                onLike: (likedPostId, userUID) {
+                  context.read<AccountBloc>().add(
+                        AccountEvent.likePostInAccount(
+                          postId: likedPostId,
+                          userUID: userUID,
+                        ),
+                      );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
@@ -114,7 +158,9 @@ class _AccountScreenState extends State<AccountScreen> {
             buildWhen: (prev, curr) =>
                 prev.user != curr.user ||
                 prev.preferences != curr.preferences ||
+                prev.posts != curr.posts ||
                 prev.isLoading != curr.isLoading ||
+                prev.isLoadingPosts != curr.isLoadingPosts ||
                 prev.isSaving != curr.isSaving ||
                 prev.errorMessage != curr.errorMessage,
             builder: (context, state) {
@@ -535,6 +581,13 @@ class _AccountScreenState extends State<AccountScreen> {
                               ],
                             ),
                           ),
+                        ),
+
+                        const SizedBox(height: spacingL),
+                        ProfilePostsGrid(
+                          posts: state.posts,
+                          isLoading: state.isLoadingPosts,
+                          onPostTap: _openPostDetail,
                         ),
 
                         if (isSaving) ...[
