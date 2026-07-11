@@ -1,6 +1,6 @@
 name: honey_bird
 description: "a app for sharing and discovering recipes and cooking tips, allowing users to connect with a community of food enthusiasts and explore a wide range of culinary delights."
-version: 2.0.17+903
+version: 2.0.18+904
 
 environment:
   sdk: ^3.6.0
