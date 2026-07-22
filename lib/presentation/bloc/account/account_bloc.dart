@@ -84,9 +84,6 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     UpdateUserPreferences event,
     Emitter<AccountState> emit,
   ) async {
-    final user = state.user;
-    if (user == null) return;
-
     emit(state.copyWith(isSaving: true, errorMessage: null));
 
     // Only set hasCompletedOnboardingThisInstall in DB when user actually completes onboarding

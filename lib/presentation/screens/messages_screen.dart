@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../router/app_router.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../theme/border_radius.dart';
@@ -51,19 +53,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       _currentTabIndex = index;
     });
 
-    switch (index) {
-      case 0:
-        Navigator.of(context).popUntil((route) => route.isFirst);
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/favorites');
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/account');
-        break;
-      case 3:
-        break;
-    }
+    AppRoutes.goTab(context, index);
   }
 
   void _openRestaurantPicker() {
@@ -155,7 +145,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           if (_selectedConversationId != null) {
             reset();
           } else {
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            context.go(AppRoutes.home);
           }
         },
         child: Scaffold(
@@ -656,7 +646,15 @@ void openRestaurantConversation(
 }) {
   final authState = context.read<AuthBloc>().state;
   final user = authState.user;
-  if (user == null) return;
+  if (user == null) {
+    context.push(
+      Uri(
+        path: AppRoutes.auth,
+        queryParameters: {'from': AppRoutes.messages},
+      ).toString(),
+    );
+    return;
+  }
 
   final userName = user.displayName ?? user.email?.split('@').first ?? 'You';
 
@@ -669,5 +667,5 @@ void openRestaurantConversation(
         ),
       );
 
-  Navigator.pushNamed(context, '/messages');
+  context.go(AppRoutes.messages);
 }

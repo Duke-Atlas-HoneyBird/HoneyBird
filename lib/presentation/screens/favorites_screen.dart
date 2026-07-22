@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../router/app_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../theme/colours.dart';
 import '../theme/text_styles.dart';
@@ -36,19 +38,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       _currentTabIndex = index;
     });
 
-    switch (index) {
-      case 0:
-        Navigator.of(context).popUntil((route) => route.isFirst);
-        break;
-      case 1:
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/account');
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, '/messages');
-        break;
-    }
+    AppRoutes.goTab(context, index);
   }
 
   String? _currentUserUID(BuildContext context) {
@@ -112,7 +102,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         canPop: false,
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return;
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          context.go(AppRoutes.home);
         },
         child: BlocListener<AuthBloc, AuthState>(
           listenWhen: (prev, curr) => prev?.user?.uid != curr.user?.uid,
@@ -208,14 +198,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           onLike: () =>
                               _handleUnstar(context, post.id, userUID),
                           onAuthorTap: (authorUID, userName) {
-                            Navigator.pushNamed(
-                              context,
-                              '/profile',
-                              arguments: {
-                                'userUID': authorUID,
-                                'userName': userName,
-                              },
-                            );
+                            context.push(AppRoutes.profileLocation(authorUID, userName));
                           },
                           currentUserUID:
                               userUID.isNotEmpty ? userUID : null,
