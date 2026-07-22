@@ -69,6 +69,7 @@ import '../../presentation/bloc/manage/manage_bloc.dart';
 import '../../presentation/bloc/account/account_bloc.dart';
 import '../../presentation/bloc/messages/messages_bloc.dart';
 import '../../presentation/bloc/profile/profile_bloc.dart';
+import '../../presentation/router/onboarding_session.dart';
 
 final sl = GetIt.instance;
 
@@ -80,6 +81,9 @@ Future<void> init() async {
   
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
+  sl.registerLazySingleton<OnboardingSession>(
+    () => OnboardingSession(sharedPreferences),
+  );
   
   // Firebase data sources
   sl.registerLazySingleton<FirebaseAuthDataSource>(

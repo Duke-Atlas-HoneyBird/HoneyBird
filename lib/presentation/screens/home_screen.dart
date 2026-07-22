@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/di/injection.dart';
 import '../bloc/auth/auth_bloc.dart';
 import '../bloc/auth/auth_state.dart';
@@ -13,14 +14,13 @@ import '../bloc/feed/feed_state.dart';
 import '../bloc/messages/messages_bloc.dart';
 import '../bloc/messages/messages_event.dart';
 import '../bloc/messages/messages_state.dart';
+import '../router/app_router.dart';
 import '../theme/colours.dart';
 import '../theme/constants.dart';
-import '../theme/spacing.dart';
 import '../widgets/post_feed_widget.dart';
 import '../widgets/comments_bottom_sheet.dart';
-import 'messages_screen.dart';
 import '../widgets/bottom_navigation_widget.dart';
-import 'post_creation_screen.dart';
+import 'messages_screen.dart';
 
 /// The main home screen of the HoneyBird app
 ///
@@ -173,13 +173,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 currentUserName: currentUserName,
                               ),
                               onAuthorTap: (userUID, userName) {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/profile',
-                                  arguments: {
-                                    'userUID': userUID,
-                                    'userName': userName,
-                                  },
+                                context.push(
+                                  AppRoutes.profileLocation(userUID, userName),
                                 );
                               },
                               onContactRestaurant: (post) {
@@ -231,38 +226,19 @@ class _HomeScreenState extends State<HomeScreen> {
     debugPrint('Search query: $query');
   }
 
-  void _handleTabSelected(int index) async {
-    // Don't update state if already on the selected tab
+  void _handleTabSelected(int index) {
     if (_currentTabIndex == index) {
       return;
     }
 
-    final previousIndex = _currentTabIndex;
     setState(() {
       _currentTabIndex = index;
     });
 
-    // Navigate to different screens based on tab index
-    switch (index) {
-      case 0:
-        // Already on Home screen, just ensure state is 0
-        break;
-      case 1:
-        // Navigate to Favorites screen
-        await Navigator.pushNamed(context, '/favorites');
-        break;
-      case 2:
-        // Navigate to Account screen
-        await Navigator.pushNamed(context, '/account');
-        break;
-      case 3:
-        // Navigate to Messages screen
-        await Navigator.pushNamed(context, '/messages');
-        break;
-    }
+    AppRoutes.goTab(context, index);
 
-    // When returning to Home from any pushed screen, reset the tab index to 0
-    if (mounted) {
+    // Home tab stays selected when we remain on /home; other tabs navigate away.
+    if (index != 0 && mounted) {
       setState(() {
         _currentTabIndex = 0;
       });
@@ -270,33 +246,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToPostCreation() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const PostCreationScreen(),
-      ),
-    );
-  }
-
-  void _handleSideMenuNavigation(String route) {
-    Navigator.pushNamed(context, route);
+    context.push(AppRoutes.createPost);
   }
 
   void _onMenuItemSelected(_HomeMenuAction action) {
     HapticFeedback.selectionClick();
     switch (action) {
       case _HomeMenuAction.account:
-        Navigator.pushNamed(context, '/account');
-        break;
+        context.push(AppRoutes.account);
       case _HomeMenuAction.manage:
-        Navigator.pushNamed(context, '/manage');
-        break;
+        context.push(AppRoutes.manage);
       case _HomeMenuAction.timeline:
-        Navigator.pushNamed(context, '/timeline');
-        break;
+        context.push(AppRoutes.timeline);
       case _HomeMenuAction.feed:
-        Navigator.pushNamed(context, '/feed');
-        break;
+        context.push(AppRoutes.feed);
     }
   }
 

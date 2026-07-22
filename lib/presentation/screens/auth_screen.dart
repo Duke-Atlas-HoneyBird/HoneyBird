@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../bloc/auth/auth_bloc.dart';
 import '../bloc/auth/auth_event.dart';
 import '../bloc/auth/auth_state.dart';
+import '../router/app_router.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -26,12 +28,31 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
+  void _goAfterAuth() {
+    final from = GoRouterState.of(context).uri.queryParameters['from'];
+    if (from != null && from.isNotEmpty && from != AppRoutes.auth) {
+      context.go(from);
+    } else {
+      context.go(AppRoutes.home);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
         title: Text(_isSignUp ? 'Sign Up' : 'Sign In'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(AppRoutes.home);
+            }
+          },
+        ),
       ),
       body: SafeArea(
         child: BlocConsumer<AuthBloc, AuthState>(
@@ -50,7 +71,7 @@ class _AuthScreenState extends State<AuthScreen> {
             );
           }
           if (state.user != null) {
-            Navigator.of(context).pushNamed('/home');
+            _goAfterAuth();
           }
           if (state.passwordResetEmail != null) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -71,7 +92,7 @@ class _AuthScreenState extends State<AuthScreen> {
           }
         },
         buildWhen: (prev, curr) =>
-            prev?.isLoading != curr.isLoading || prev?.user != curr.user,
+            prev.isLoading != curr.isLoading || prev.user != curr.user,
         builder: (context, state) {
             return Padding(
               padding: const EdgeInsets.all(16.0),

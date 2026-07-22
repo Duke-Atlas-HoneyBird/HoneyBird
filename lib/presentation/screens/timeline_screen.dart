@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../router/app_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:honey_bird/presentation/bloc/auth/auth_bloc.dart';
 import 'package:honey_bird/presentation/bloc/auth/auth_state.dart';
@@ -70,20 +72,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _currentTabIndex = index;
     });
 
-    switch (index) {
-      case 0:
-        Navigator.of(context).popUntil((route) => route.isFirst);
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/favorites');
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/account');
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, '/messages');
-        break;
-    }
+    AppRoutes.goTab(context, index);
   }
 
   bool get _isBottom {
@@ -103,7 +92,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         canPop: false,
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return;
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          context.go(AppRoutes.home);
         },
         child: Scaffold(
           appBar: AppBar(
@@ -244,11 +233,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           currentUserUID,
                         ),
                         onAuthorTap: (userUID, userName) {
-                          Navigator.pushNamed(
-                            context,
-                            '/profile',
-                            arguments: {'userUID': userUID, 'userName': userName},
-                          );
+                          context.push(AppRoutes.profileLocation(userUID, userName));
                         },
                         currentUserUID: currentUserUID,
                       );

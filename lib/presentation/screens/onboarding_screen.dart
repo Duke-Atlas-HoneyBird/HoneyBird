@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/utils/snackbar_utils.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/di/injection.dart' as di;
 import '../../domain/entities/user_preference.dart';
 import '../bloc/account/account_bloc.dart';
 import '../bloc/account/account_event.dart';
-import '../bloc/account/account_state.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../router/app_router.dart';
+import '../router/onboarding_session.dart';
 import '../theme/colours.dart';
 import '../theme/spacing.dart';
 import '../theme/text_styles.dart';
 import '../theme/border_radius.dart';
 
-/// Spotify-style onboarding: food types, diets, and preferences.
-/// Shown after sign-up until user completes; then preferences are saved and user goes to Home.
+/// Install-time onboarding: food types, diets, and preferences.
+/// Shown on a fresh install before login; completion goes to Home with no back stack.
 class OnboardingScreen extends StatefulWidget {
-  final String userId;
-
-  const OnboardingScreen({
-    super.key,
-    required this.userId,
-  });
+  const OnboardingScreen({super.key});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -30,12 +28,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
 
   late UserPreference _prefs;
+  bool _isCompleting = false;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-    _prefs = UserPreference(id: widget.userId);
+    _prefs = UserPreference();
   }
 
   @override
@@ -59,37 +58,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  void _complete() {
+  Future<void> _complete() async {
+    if (_isCompleting) return;
+    setState(() => _isCompleting = true);
     HapticFeedback.mediumImpact();
-    context.read<AccountBloc>().add(
-          AccountEvent.updateUserPreferences(
-            _prefs,
-            markOnboardingComplete: true,
-          ),
-        );
 
-    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    final user = context.read<AuthBloc>().state.user;
+    if (user != null) {
+      // Best-effort cloud sync when already signed in.
+      context.read<AccountBloc>().add(
+            AccountEvent.updateUserPreferences(
+              _prefs.copyWith(
+                id: user.uid,
+                hasCompletedOnboardingThisInstall: true,
+              ),
+              markOnboardingComplete: true,
+            ),
+          );
+    }
+
+    // Local install flag + go_router replace → Home (no back to onboarding).
+    await di.sl<OnboardingSession>().markComplete();
+    if (!mounted) return;
+    context.go(AppRoutes.home);
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AccountBloc, AccountState>(
-      listenWhen: (prev, curr) =>
-          (prev.isSaving == true && curr.isSaving == false) ||
-          (prev.errorMessage != curr.errorMessage && curr.errorMessage != null),
-      listener: (context, state) {
-        if (state.errorMessage != null && !state.isSaving) {
-          SnackBarUtils.showError(
-            context,
-            'Could not save preferences. Try again.',
-          );
-          return;
-        }
-        // Save completed successfully (was saving, now done, no error)
-        if (!state.isSaving && state.errorMessage == null && state.hasCompletedOnboarding == true) {
-          Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
-        }
-      },
+    return PopScope(
+      canPop: false,
       child: Container(
         decoration: const BoxDecoration(
           gradient: backgroundGradient,
@@ -149,45 +146,39 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
                       spacingL, 0, spacingL, spacingL),
-                  child: BlocBuilder<AccountBloc, AccountState>(
-                    buildWhen: (prev, curr) => prev.isSaving != curr.isSaving,
-                    builder: (context, state) {
-                      final isSaving = state.isSaving;
-                      return SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: isSaving ? null : _next,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: accentPink,
-                            foregroundColor: Colors.white,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: spacingM),
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(buttonBorderRadius),
-                            ),
-                            minimumSize: const Size.fromHeight(48),
-                          ),
-                          child: isSaving
-                              ? const SizedBox(
-                                  height: 22,
-                                  width: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
-                                  ),
-                                )
-                              : Text(
-                                  _currentPage < 2 ? 'Next' : 'Get started',
-                                  style: labelLarge.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isCompleting ? null : _next,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accentPink,
+                        foregroundColor: Colors.white,
+                        padding:
+                            const EdgeInsets.symmetric(vertical: spacingM),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(buttonBorderRadius),
                         ),
-                      );
-                    },
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                      child: _isCompleting
+                          ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white),
+                              ),
+                            )
+                          : Text(
+                              _currentPage < 2 ? 'Next' : 'Get started',
+                              style: labelLarge.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
                   ),
                 ),
               ],

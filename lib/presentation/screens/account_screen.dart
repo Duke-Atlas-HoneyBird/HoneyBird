@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../router/app_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../theme/border_radius.dart';
 import '../theme/colours.dart';
@@ -48,21 +50,7 @@ class _AccountScreenState extends State<AccountScreen> {
       _currentTabIndex = index;
     });
 
-    switch (index) {
-      case 0:
-        // Pop back to Home instead of pushing a new Home
-        Navigator.of(context).popUntil((route) => route.isFirst);
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/favorites');
-        break;
-      case 2:
-        // Already on Account screen
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, '/messages');
-        break;
-    }
+    AppRoutes.goTab(context, index);
   }
 
   @override
@@ -137,7 +125,7 @@ class _AccountScreenState extends State<AccountScreen> {
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return;
           // Return to Home screen (root) instead of exiting app
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          context.go(AppRoutes.home);
         },
         child: Scaffold(
           appBar: AppBar(
