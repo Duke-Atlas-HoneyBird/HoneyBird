@@ -61,14 +61,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _complete() {
     HapticFeedback.mediumImpact();
+    // OnboardingRootGate swaps to the main navigator once this flag is set.
+    // Do not push /home — this screen sits above the navigator via MaterialApp.builder.
     context.read<AccountBloc>().add(
           AccountEvent.updateUserPreferences(
             _prefs,
             markOnboardingComplete: true,
           ),
         );
-
-    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
   }
 
   @override
@@ -83,12 +83,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             context,
             'Could not save preferences. Try again.',
           );
-          return;
         }
-        // Save completed successfully (was saving, now done, no error)
-        if (!state.isSaving && state.errorMessage == null && state.hasCompletedOnboarding == true) {
-          Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
-        }
+        // Success: OnboardingRootGate rebuilds and shows Home — no Navigator needed.
       },
       child: Container(
         decoration: const BoxDecoration(

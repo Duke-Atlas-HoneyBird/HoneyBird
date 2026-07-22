@@ -104,8 +104,14 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
         if (event.markOnboardingComplete) {
           await sharedPreferences.setBool(
               StorageKeys.hasCompletedOnboardingThisInstall, true);
+          emit(state.copyWith(
+            isSaving: false,
+            preferences: prefsToSave,
+            hasCompletedOnboarding: true,
+          ));
+        } else {
+          emit(state.copyWith(isSaving: false, preferences: prefsToSave));
         }
-        emit(state.copyWith(isSaving: false, preferences: prefsToSave));
       },
     );
   }
@@ -143,7 +149,12 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     CheckOnboardingStatus event,
     Emitter<AccountState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, errorMessage: null));
+    // Clear prior status so a previous session/user cannot unlock Home early.
+    emit(state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      hasCompletedOnboarding: null,
+    ));
 
     // DB is source of truth; sync local store to match
     final prefResult = await preferenceRepository.getPreferences(event.userUID);

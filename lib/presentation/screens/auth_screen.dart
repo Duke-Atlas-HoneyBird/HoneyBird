@@ -49,9 +49,8 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             );
           }
-          if (state.user != null) {
-            Navigator.of(context).pushNamed('/home');
-          }
+          // Do not push /home here. MaterialApp.home rebuilds on auth, and
+          // OnboardingRootGate (MaterialApp.builder) must decide onboarding first.
           if (state.passwordResetEmail != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

@@ -107,13 +107,16 @@ class HoneyBirdApp extends StatelessWidget {
         color: primaryColor,
         theme: buildBlackAndWhiteTheme(),
         themeMode: ThemeMode.light,
+        // Gate onboarding above the navigator so Home/routes cannot flash
+        // before the completion flag is known (fresh install / new user).
+        builder: (context, child) => OnboardingRootGate(child: child),
         home: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {},
           buildWhen: (prev, curr) =>
               prev?.user != curr.user || prev?.errorMessage != curr.errorMessage,
           builder: (context, state) {
             if (state.user != null) {
-              return const PostAuthGate();
+              return const HomeScreen();
             }
             if (state.user == null && !state.isLoading) {
               return const AuthScreen();

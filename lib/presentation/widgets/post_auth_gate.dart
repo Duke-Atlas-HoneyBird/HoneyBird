@@ -5,62 +5,82 @@ import '../bloc/auth/auth_state.dart';
 import '../bloc/account/account_bloc.dart';
 import '../bloc/account/account_event.dart';
 import '../bloc/account/account_state.dart';
-import '../screens/home_screen.dart';
 import '../screens/onboarding_screen.dart';
 
-/// After login, decides whether to show Onboarding (new user, no preferences)
-/// or Home (returning user with preferences).
-class PostAuthGate extends StatefulWidget {
-  const PostAuthGate({super.key});
+/// Root gate used via [MaterialApp.builder].
+///
+/// When the user is signed in and onboarding is incomplete (or still loading),
+/// this replaces the navigator entirely so Home and other routes cannot flash
+/// underneath. Once onboarding is complete, [child] (the app navigator) is shown.
+class OnboardingRootGate extends StatefulWidget {
+  final Widget? child;
+
+  const OnboardingRootGate({super.key, required this.child});
 
   @override
-  State<PostAuthGate> createState() => _PostAuthGateState();
+  State<OnboardingRootGate> createState() => _OnboardingRootGateState();
 }
 
-class _PostAuthGateState extends State<PostAuthGate> {
-  bool _hasRequestedCheck = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_hasRequestedCheck) {
-      final authState = context.read<AuthBloc>().state;
-      if (authState.user != null) {
-        _hasRequestedCheck = true;
-        context
-            .read<AccountBloc>()
-            .add(AccountEvent.checkOnboardingStatus(authState.user!.uid));
-      }
-    }
-  }
+class _OnboardingRootGateState extends State<OnboardingRootGate> {
+  String? _checkedUserId;
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.watch<AuthBloc>().state;
-    if (authState.user == null) {
-      return const SizedBox.shrink();
-    }
-
-    return BlocBuilder<AccountBloc, AccountState>(
-      buildWhen: (prev, curr) =>
-          prev?.hasCompletedOnboarding != curr.hasCompletedOnboarding ||
-          prev?.isLoading != curr.isLoading,
-      builder: (context, accountState) {
-        if (accountState.isLoading && accountState.hasCompletedOnboarding == null) {
-          return const Scaffold(
-            body: SafeArea(
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-          );
+    return BlocConsumer<AuthBloc, AuthState>(
+      listenWhen: (prev, curr) => prev.user?.uid != curr.user?.uid,
+      listener: (context, authState) {
+        final user = authState.user;
+        if (user == null) {
+          _checkedUserId = null;
+          return;
+        }
+        if (_checkedUserId == user.uid) return;
+        _checkedUserId = user.uid;
+        context
+            .read<AccountBloc>()
+            .add(AccountEvent.checkOnboardingStatus(user.uid));
+      },
+      buildWhen: (prev, curr) => prev.user?.uid != curr.user?.uid,
+      builder: (context, authState) {
+        final user = authState.user;
+        if (user == null) {
+          return widget.child ?? const SizedBox.shrink();
         }
 
-        if (accountState.hasCompletedOnboarding == true) {
-          return const HomeScreen();
+        // Cold start: user may already be set before the first listen.
+        if (_checkedUserId != user.uid) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted || _checkedUserId == user.uid) return;
+            _checkedUserId = user.uid;
+            context
+                .read<AccountBloc>()
+                .add(AccountEvent.checkOnboardingStatus(user.uid));
+          });
         }
 
-        return OnboardingScreen(userId: authState.user!.uid);
+        return BlocBuilder<AccountBloc, AccountState>(
+          buildWhen: (prev, curr) =>
+              prev.hasCompletedOnboarding != curr.hasCompletedOnboarding ||
+              prev.isLoading != curr.isLoading,
+          builder: (context, accountState) {
+            // Treat unknown status as loading so Home never mounts first.
+            if (accountState.hasCompletedOnboarding == null) {
+              return const Scaffold(
+                body: SafeArea(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              );
+            }
+
+            if (accountState.hasCompletedOnboarding == false) {
+              return OnboardingScreen(userId: user.uid);
+            }
+
+            return widget.child ?? const SizedBox.shrink();
+          },
+        );
       },
     );
   }
