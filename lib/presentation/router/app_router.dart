@@ -10,6 +10,7 @@ import '../screens/auth_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/feed_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/legal_document_screen.dart';
 import '../screens/manage_screen.dart';
 import '../screens/messages_screen.dart';
 import '../screens/onboarding_screen.dart';
@@ -33,6 +34,17 @@ abstract final class AppRoutes {
   static const timeline = '/timeline';
   static const feed = '/feed';
   static const profile = '/profile';
+  static const privacy = '/privacy';
+  static const terms = '/terms';
+  static const deleteAccount = '/delete';
+  static const communityGuidelines = '/community-guidelines';
+
+  static const publicDocuments = <String>{
+    privacy,
+    terms,
+    deleteAccount,
+    communityGuidelines,
+  };
 
   static void goTab(BuildContext context, int index) {
     switch (index) {
@@ -85,6 +97,11 @@ GoRouter createAppRouter({
       final loc = state.matchedLocation;
       final loggedIn = authBloc.state.user != null;
       final authLoading = authBloc.state.isLoading;
+
+      // Store and web links must open without an account.
+      if (AppRoutes.publicDocuments.contains(loc)) {
+        return null;
+      }
 
       // Preferences always come before the rest of the app.
       if (!onboarded) {
@@ -167,6 +184,30 @@ GoRouter createAppRouter({
       GoRoute(
         path: AppRoutes.feed,
         builder: (context, state) => const FeedScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.privacy,
+        builder: (context, state) => const LegalDocumentScreen(
+          assetPath: 'assets/docs/privacy.md',
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.terms,
+        builder: (context, state) => const LegalDocumentScreen(
+          assetPath: 'assets/docs/terms.md',
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.deleteAccount,
+        builder: (context, state) => const LegalDocumentScreen(
+          assetPath: 'assets/docs/delete.md',
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.communityGuidelines,
+        builder: (context, state) => const LegalDocumentScreen(
+          assetPath: 'assets/docs/community_guidelines.md',
+        ),
       ),
       GoRoute(
         path: '${AppRoutes.profile}/:userUID',

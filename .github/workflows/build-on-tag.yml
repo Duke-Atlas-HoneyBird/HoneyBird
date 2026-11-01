@@ -10,6 +10,8 @@ on:
 
 permissions:
   contents: write  # Required to create releases and upload assets
+  pages: write
+  id-token: write
 
 jobs:
   check-tag:
@@ -127,3 +129,53 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-web:
+    name: Build web
+    needs: check-tag
+    if: needs.check-tag.outputs.is_on_develop == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.2'
+          channel: 'stable'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Create Firebase config
+        env:
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+        run: |
+          if [ -f lib/firebase_options.dart ]; then
+            echo "lib/firebase_options.dart already exists (skip write)"
+          else
+            printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
+            echo "Created lib/firebase_options.dart ($(wc -c < lib/firebase_options.dart) bytes)"
+          fi
+
+      - name: Build web app
+        run: flutter build web --release --base-href=/${{ github.event.repository.name }}/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy-web:
+    name: Deploy web
+    needs: build-web
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
