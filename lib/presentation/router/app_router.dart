@@ -22,6 +22,7 @@ import 'router_refresh.dart';
 /// Route path constants.
 abstract final class AppRoutes {
   static const onboarding = '/onboarding';
+  static const boot = '/boot';
   static const home = '/home';
   static const auth = '/auth';
   static const createPost = '/create-post';
@@ -32,15 +33,6 @@ abstract final class AppRoutes {
   static const timeline = '/timeline';
   static const feed = '/feed';
   static const profile = '/profile';
-
-  /// Screens that require a signed-in user.
-  static const protected = <String>{
-    createPost,
-    favorites,
-    account,
-    messages,
-    manage,
-  };
 
   static void goTab(BuildContext context, int index) {
     switch (index) {
@@ -63,7 +55,18 @@ abstract final class AppRoutes {
   }
 }
 
-/// Builds the app [GoRouter] with onboarding + auth redirects.
+/// True when [from] is an in-app path we can return to after sign-in.
+bool _isSafeReturnPath(String from) {
+  return from.startsWith('/') &&
+      !from.startsWith('//') &&
+      !from.startsWith(AppRoutes.auth) &&
+      !from.startsWith(AppRoutes.boot) &&
+      !from.startsWith(AppRoutes.onboarding);
+}
+
+/// Builds the app [GoRouter].
+///
+/// Fresh install: preferences, then sign-in. Every other screen requires an account.
 GoRouter createAppRouter({
   required AuthBloc authBloc,
   required OnboardingSession onboardingSession,
@@ -74,52 +77,59 @@ GoRouter createAppRouter({
   ]);
 
   return GoRouter(
-    initialLocation: onboardingSession.completed
-        ? AppRoutes.home
-        : AppRoutes.onboarding,
+    initialLocation:
+        onboardingSession.completed ? AppRoutes.boot : AppRoutes.onboarding,
     refreshListenable: refresh,
     redirect: (context, state) {
       final onboarded = onboardingSession.completed;
       final loc = state.matchedLocation;
-      final loggingIn = loc == AppRoutes.auth;
-      final onOnboarding = loc == AppRoutes.onboarding;
       final loggedIn = authBloc.state.user != null;
       final authLoading = authBloc.state.isLoading;
 
-      // Fresh install: onboarding is the mandatory entry point.
-      if (!onboarded && !onOnboarding) {
-        return AppRoutes.onboarding;
-      }
-      if (onboarded && onOnboarding) {
-        return AppRoutes.home;
+      // Preferences always come before the rest of the app.
+      if (!onboarded) {
+        return loc == AppRoutes.onboarding ? null : AppRoutes.onboarding;
       }
 
-      // Wait for the initial auth check before bouncing to login.
-      if (authLoading) {
+      // Hold the splash until the session check finishes so taste choices
+      // saved before auth are applied before Home opens.
+      // Sign-in sets loading too, and that stays on the auth screen.
+      if (authLoading && loc != AppRoutes.auth) {
+        return loc == AppRoutes.boot ? null : AppRoutes.boot;
+      }
+
+      if (loggedIn) {
+        if (loc == AppRoutes.auth) {
+          final from = state.uri.queryParameters['from'];
+          if (from != null && _isSafeReturnPath(from)) return from;
+        }
+        if (loc == AppRoutes.auth ||
+            loc == AppRoutes.boot ||
+            loc == AppRoutes.onboarding) {
+          return AppRoutes.home;
+        }
         return null;
       }
 
-      if (!loggedIn && AppRoutes.protected.contains(loc)) {
-        return Uri(
-          path: AppRoutes.auth,
-          queryParameters: {'from': state.uri.toString()},
-        ).toString();
+      if (loc == AppRoutes.auth) return null;
+
+      if (loc == AppRoutes.boot || loc == AppRoutes.onboarding) {
+        return AppRoutes.auth;
       }
 
-      if (loggedIn && loggingIn) {
-        final from = state.uri.queryParameters['from'];
-        if (from != null && from.isNotEmpty && from != AppRoutes.auth) {
-          return from;
-        }
-        return AppRoutes.home;
-      }
-
-      return null;
+      return Uri(
+        path: AppRoutes.auth,
+        queryParameters: {'from': state.uri.toString()},
+      ).toString();
     },
     routes: [
       GoRoute(
         path: AppRoutes.onboarding,
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.boot,
+        builder: (context, state) => const _SessionGate(),
       ),
       GoRoute(
         path: AppRoutes.home,
@@ -179,4 +189,16 @@ GoRouter createAppRouter({
       ),
     ],
   );
+}
+
+/// Shown while the first auth check finishes, before home or sign-in.
+class _SessionGate extends StatelessWidget {
+  const _SessionGate();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
 }

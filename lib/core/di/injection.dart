@@ -78,13 +78,13 @@ Future<void> init() async {
   // External dependencies
   sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
   sl.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
-  
+
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
   sl.registerLazySingleton<OnboardingSession>(
     () => OnboardingSession(sharedPreferences),
   );
-  
+
   // Firebase data sources
   sl.registerLazySingleton<FirebaseAuthDataSource>(
     () => FirebaseAuthDataSourceImpl(firebaseAuth: sl()),
@@ -121,18 +121,20 @@ Future<void> init() async {
   );
 
   sl.registerLazySingleton<LocalPreferenceDataSource>(
-    () => LocalPreferenceDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
+    () => LocalPreferenceDataSourceImpl(
+        sharedPreferences: sl<SharedPreferences>()),
   );
   sl.registerLazySingleton<LocalTaskDataSource>(
     () => LocalTaskDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
   );
-  
+
   // Repositories - using Firebase data sources
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       authDataSource: sl(),
       userRepository: sl(),
       preferenceRepository: sl(),
+      sharedPreferences: sl<SharedPreferences>(),
     ),
   );
   sl.registerLazySingleton<UserRepository>(
@@ -145,7 +147,8 @@ Future<void> init() async {
     () => PostRepositoryImpl(firebaseDataSource: sl()),
   );
   sl.registerLazySingleton<UserPreferenceRepository>(
-    () => UserPreferenceRepositoryImpl(dataSource: sl<FirebasePreferenceDataSource>()),
+    () => UserPreferenceRepositoryImpl(
+        dataSource: sl<FirebasePreferenceDataSource>()),
   );
   sl.registerLazySingleton<TaskRepository>(
     () => TaskRepositoryImpl(dataSource: sl<FirebaseTaskDataSource>()),
@@ -154,7 +157,8 @@ Future<void> init() async {
     () => MessageRepositoryImpl(dataSource: sl<FirebaseMessageDataSource>()),
   );
   sl.registerLazySingleton<RestaurantRepository>(
-    () => RestaurantRepositoryImpl(dataSource: sl<FirebaseRestaurantDataSource>()),
+    () => RestaurantRepositoryImpl(
+        dataSource: sl<FirebaseRestaurantDataSource>()),
   );
   sl.registerLazySingleton<FavoriteRepository>(
     () => FavoriteRepositoryImpl(firebaseDataSource: sl()),
@@ -170,13 +174,13 @@ Future<void> init() async {
   sl.registerFactory(() => SignInUseCase(authRepository: sl()));
   sl.registerFactory(() => SignUpUseCase(authRepository: sl()));
   sl.registerFactory(() => SignOutUseCase(authRepository: sl()));
-  
+
   // Use cases - User
   sl.registerFactory(() => GetUser(sl()));
   sl.registerFactory(() => CreateUser(sl()));
   sl.registerFactory(() => UpdateUser(sl()));
   sl.registerFactory(() => DeleteUser(sl()));
-  
+
   // Use cases - Comment
   sl.registerFactory(() => GetCommentsForPost(sl()));
   sl.registerFactory(() => CreateComment(sl()));
@@ -189,17 +193,17 @@ Future<void> init() async {
   sl.registerFactory(() => UpdatePost(sl()));
   sl.registerFactory(() => DeletePost(sl()));
   sl.registerFactory(() => LikePost(sl()));
-  
+
   // Use cases - Preferences
   sl.registerFactory(() => GetPreferences(sl()));
   sl.registerFactory(() => SavePreferences(sl()));
-  
+
   // Use cases - Tasks
   sl.registerFactory(() => GetTasks(sl()));
   sl.registerFactory(() => CreateTask(sl()));
   sl.registerFactory(() => UpdateTask(sl()));
   sl.registerFactory(() => DeleteTask(sl()));
-  
+
   // BLoCs
   sl.registerFactory(() => AuthBloc(authRepository: sl()));
   sl.registerFactory(() => CommentBloc(

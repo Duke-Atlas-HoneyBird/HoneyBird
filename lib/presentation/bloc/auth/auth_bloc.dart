@@ -11,7 +11,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   AuthBloc({required AuthRepository authRepository})
       : _authRepository = authRepository,
-        super(const AuthState()) {
+        super(const AuthState(isLoading: true)) {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<AuthSignInRequested>(_onAuthSignInRequested);
     on<AuthSignUpRequested>(_onAuthSignUpRequested);
@@ -43,9 +43,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     result.fold(
       (failure) => emit(state.copyWith(
-          isLoading: false, errorMessage: ErrorMessageUtils.forUi('auth'), user: null)),
-      (user) => emit(state.copyWith(
-          isLoading: false, user: user, errorMessage: null)),
+          isLoading: false,
+          errorMessage: ErrorMessageUtils.forUi('auth'),
+          user: null)),
+      (user) => emit(
+          state.copyWith(isLoading: false, user: user, errorMessage: null)),
     );
   }
 
@@ -112,8 +114,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(state.copyWith(
           isLoading: false, errorMessage: ErrorMessageUtils.forUi('auth'))),
-      (_) => emit(state.copyWith(
-          isLoading: false, passwordResetEmail: event.email)),
+      (_) => emit(
+          state.copyWith(isLoading: false, passwordResetEmail: event.email)),
     );
   }
 
@@ -128,8 +130,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(state.copyWith(
           isLoading: false, errorMessage: ErrorMessageUtils.forUi('auth'))),
-      (_) => emit(state.copyWith(
-          isLoading: false, emailVerificationSent: true)),
+      (_) =>
+          emit(state.copyWith(isLoading: false, emailVerificationSent: true)),
     );
   }
 

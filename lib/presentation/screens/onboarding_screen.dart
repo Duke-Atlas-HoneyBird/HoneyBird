@@ -15,7 +15,7 @@ import '../theme/text_styles.dart';
 import '../theme/border_radius.dart';
 
 /// Install-time onboarding: food types, diets, and preferences.
-/// Shown on a fresh install before login; completion goes to Home with no back stack.
+/// Shown on a fresh install, then sign-in. The rest of the app stays locked until then.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -64,8 +64,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     HapticFeedback.mediumImpact();
 
     final user = context.read<AuthBloc>().state.user;
+    final session = di.sl<OnboardingSession>();
     if (user != null) {
-      // Best-effort cloud sync when already signed in.
       context.read<AccountBloc>().add(
             AccountEvent.updateUserPreferences(
               _prefs.copyWith(
@@ -75,12 +75,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               markOnboardingComplete: true,
             ),
           );
+    } else {
+      await session.savePendingPreferences(_prefs);
     }
 
-    // Local install flag + go_router replace → Home (no back to onboarding).
-    await di.sl<OnboardingSession>().markComplete();
+    await session.markComplete();
     if (!mounted) return;
-    context.go(AppRoutes.home);
+    context.go(user != null ? AppRoutes.home : AppRoutes.auth);
   }
 
   @override
@@ -153,8 +154,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: accentPink,
                         foregroundColor: Colors.white,
-                        padding:
-                            const EdgeInsets.symmetric(vertical: spacingM),
+                        padding: const EdgeInsets.symmetric(vertical: spacingM),
                         shape: RoundedRectangleBorder(
                           borderRadius:
                               BorderRadius.circular(buttonBorderRadius),
@@ -167,8 +167,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               width: 22,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : Text(

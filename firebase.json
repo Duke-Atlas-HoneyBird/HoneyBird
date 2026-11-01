@@ -20,12 +20,20 @@
                     "fileOutput": "ios/Runner/GoogleService-Info.plist"
                 }
             },
+            "web": {
+                "default": {
+                    "projectId": "honeybird-ccaf2",
+                    "appId": "1:772553510834:web:12e310d3171ba98d571eab",
+                    "fileOutput": "lib/firebase_options.dart"
+                }
+            },
             "dart": {
                 "lib/firebase_options.dart": {
                     "projectId": "honeybird-ccaf2",
                     "configurations": {
                         "android": "1:772553510834:android:1c0d2deec0651bad571eab",
-                        "ios": "1:772553510834:ios:92202cf74a15da42571eab"
+                        "ios": "1:772553510834:ios:92202cf74a15da42571eab",
+                        "web": "1:772553510834:web:12e310d3171ba98d571eab"
                     }
                 }
             }

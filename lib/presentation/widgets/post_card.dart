@@ -16,16 +16,22 @@ const double _feedImageAspectRatio = 4 / 5;
 class PostCard extends StatelessWidget {
   final Post post;
   final VoidCallback onLike;
+
   /// Called when user taps comment — opens comments sheet when provided.
   final VoidCallback? onComment;
+
   /// Called when user taps author name/avatar — opens their profile.
   final void Function(String userUID, String userName)? onAuthorTap;
+
   /// Called when user taps contact restaurant on a linked post.
   final VoidCallback? onContactRestaurant;
+
   /// Current user's UID — if in [post.likeIDs], star is filled.
   final String? currentUserUID;
+
   /// Number of comments to show on the comment button (defaults to 0).
   final int commentCount;
+
   /// When set, wraps the primary media in a [Hero] for shared-element transitions.
   final String? heroTag;
 
@@ -75,9 +81,8 @@ class PostCard extends StatelessWidget {
     final heroOnImage = heroTag != null && post.imageURL != null;
     final heroOnVideo =
         heroTag != null && post.imageURL == null && post.videoURL != null;
-    final heroOnText = heroTag != null &&
-        post.imageURL == null &&
-        post.videoURL == null;
+    final heroOnText =
+        heroTag != null && post.imageURL == null && post.videoURL == null;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -108,7 +113,9 @@ class PostCard extends StatelessWidget {
                       color: primaryPurple,
                       alignment: Alignment.center,
                       child: Text(
-                        post.userName.isNotEmpty ? post.userName[0].toUpperCase() : '?',
+                        post.userName.isNotEmpty
+                            ? post.userName[0].toUpperCase()
+                            : '?',
                         style: const TextStyle(
                           fontSize: 20,
                           color: Colors.white,
@@ -190,6 +197,9 @@ class PostCard extends StatelessWidget {
                     child: Image.network(
                       post.imageURL!.toString(),
                       fit: BoxFit.cover,
+                      // Browser canvas fetches are blocked by storage CORS.
+                      // An HTML image still paints the photo.
+                      webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: textSecondary.withOpacity(0.1),
@@ -262,7 +272,7 @@ class PostCard extends StatelessWidget {
               ),
             ],
             const SizedBox(height: spacingM),
-            
+
             // Star (like) and comment actions
             Row(
               children: [
@@ -289,7 +299,8 @@ class PostCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          (currentUserUID != null && post.likeIDs.contains(currentUserUID))
+                          (currentUserUID != null &&
+                                  post.likeIDs.contains(currentUserUID))
                               ? Icons.star
                               : Icons.star_border,
                           color: starGold,

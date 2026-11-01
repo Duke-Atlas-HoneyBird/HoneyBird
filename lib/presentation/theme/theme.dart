@@ -45,6 +45,11 @@ ThemeData buildBlackAndWhiteTheme() {
         ),
         titleMedium: const TextStyle(
             fontSize: 16.0, fontWeight: FontWeight.w500, color: kBlack),
+        bodyLarge: GoogleFonts.ibmPlexSans(
+          fontSize: 16.0,
+          fontWeight: FontWeight.w400,
+          color: kBlack,
+        ),
         bodyMedium: GoogleFonts.ibmPlexSans(
           fontSize: 14.0,
           fontWeight: FontWeight.w500,
@@ -85,7 +90,6 @@ ThemeData buildBlackAndWhiteTheme() {
         color: kBlack,
       ),
       elevation: 0,
-      
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -96,7 +100,6 @@ ThemeData buildBlackAndWhiteTheme() {
         ),
       ),
     ),
-    
     textSelectionTheme: const TextSelectionThemeData(
       cursorColor: kBlack,
       selectionColor: Colors.black12,
@@ -116,10 +119,17 @@ ThemeData buildBlackAndWhiteTheme() {
       floatingLabelStyle: GoogleFonts.ibmPlexSans(
           fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black45),
       filled: true,
-      fillColor: Colors.grey[200],
+      fillColor: const Color(0xFFF5F5F5),
       iconColor: kBlack,
       focusColor: kBlack,
-      hoverColor: kBlack,
+      // Opaque black is alpha-blended over the fill while the pointer is
+      // over the field, which hides the typed text on web.
+      hoverColor: const Color(0x14000000),
+      hintStyle: GoogleFonts.ibmPlexSans(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: const Color(0xFF757575),
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(50),
@@ -196,7 +206,7 @@ extension MorrenaThemeExtension on ThemeData {
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: kBlack,
-        foregroundColor: kWhite ,
+        foregroundColor: kWhite,
         titleTextStyle: GoogleFonts.ibmPlexSans(
           fontSize: 22.0,
           fontWeight: FontWeight.w600,
@@ -209,11 +219,13 @@ extension MorrenaThemeExtension on ThemeData {
         style: ElevatedButton.styleFrom(
           backgroundColor: kBlack,
           foregroundColor: kWhite,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(buttonBorderRadius)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(buttonBorderRadius)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(backgroundColor: kWhite, foregroundColor: kBlack),
+        style: TextButton.styleFrom(
+            backgroundColor: kWhite, foregroundColor: kBlack),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -229,23 +241,40 @@ extension MorrenaThemeExtension on ThemeData {
         foregroundColor: kWhite,
       ),
       inputDecorationTheme: InputDecorationTheme(
-        labelStyle: GoogleFonts.ibmPlexSans(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
-        helperStyle: GoogleFonts.ibmPlexSans(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black54),
-        prefixStyle: GoogleFonts.ibmPlexSans(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black54),
-        suffixStyle: GoogleFonts.ibmPlexSans(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black54),
-        errorStyle: GoogleFonts.ibmPlexSans(fontSize: 12, fontWeight: FontWeight.w500, color: kBlack),
-        floatingLabelStyle: GoogleFonts.ibmPlexSans(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
+        labelStyle: GoogleFonts.ibmPlexSans(
+            fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
+        helperStyle: GoogleFonts.ibmPlexSans(
+            fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black54),
+        prefixStyle: GoogleFonts.ibmPlexSans(
+            fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black54),
+        suffixStyle: GoogleFonts.ibmPlexSans(
+            fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black54),
+        errorStyle: GoogleFonts.ibmPlexSans(
+            fontSize: 12, fontWeight: FontWeight.w500, color: kBlack),
+        floatingLabelStyle: GoogleFonts.ibmPlexSans(
+            fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
         filled: true,
         fillColor: kWhite,
         iconColor: kBlack,
         focusColor: kBlack,
         hoverColor: kBlack,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: const BorderSide(color: Colors.black12)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: const BorderSide(color: Colors.black12)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: const BorderSide(color: kBlack)),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: const BorderSide(color: kBlack)),
-        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: const BorderSide(color: kBlack)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50),
+            borderSide: const BorderSide(color: Colors.black12)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50),
+            borderSide: const BorderSide(color: Colors.black12)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50),
+            borderSide: const BorderSide(color: kBlack)),
+        errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50),
+            borderSide: const BorderSide(color: kBlack)),
+        focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50),
+            borderSide: const BorderSide(color: kBlack)),
       ),
       // bottomAppBarColor: kWhite,
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -253,10 +282,12 @@ extension MorrenaThemeExtension on ThemeData {
         selectedItemColor: kBlack,
         unselectedItemColor: Colors.black54,
       ),
-      snackBarTheme: const SnackBarThemeData(backgroundColor: kBlack, contentTextStyle: TextStyle(color: kWhite)),
+      snackBarTheme: const SnackBarThemeData(
+          backgroundColor: kBlack, contentTextStyle: TextStyle(color: kWhite)),
       dialogTheme: DialogThemeData(
         backgroundColor: kWhite,
-        titleTextStyle: GoogleFonts.ibmPlexSans(fontSize: 16, fontWeight: FontWeight.w600, color: kBlack),
+        titleTextStyle: GoogleFonts.ibmPlexSans(
+            fontSize: 16, fontWeight: FontWeight.w600, color: kBlack),
         contentTextStyle: GoogleFonts.ibmPlexSans(fontSize: 14, color: kBlack),
       ),
       chipTheme: const ChipThemeData(
@@ -270,7 +301,10 @@ extension MorrenaThemeExtension on ThemeData {
         brightness: Brightness.light,
       ),
       // toggleableActiveColor: kBlack,
-      textSelectionTheme: const TextSelectionThemeData(cursorColor: kBlack, selectionColor: Colors.black12, selectionHandleColor: kBlack),
+      textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: kBlack,
+          selectionColor: Colors.black12,
+          selectionHandleColor: kBlack),
       // keep the existing icon/theme config but force monochrome colors
       // iconTheme: const IconThemeData(color: kBlack),
     );

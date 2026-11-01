@@ -30,8 +30,15 @@ class AppConstants {
 class StorageKeys {
   static const String tasks = 'tasks';
   static const String userPreferences = 'user_preferences';
+
   /// Set when user completes onboarding. Wiped on app uninstall = fresh start.
-  static const String hasCompletedOnboardingThisInstall = 'has_completed_onboarding_this_install';
+  static const String hasCompletedOnboardingThisInstall =
+      'has_completed_onboarding_this_install';
+
+  /// Taste choices collected before sign-in, applied to the account after auth.
+  static const String pendingOnboardingPreferences =
+      'pending_onboarding_preferences';
+
   /// Set on first app launch. If missing = fresh install → sign out to clear any Keychain-persisted auth.
   static const String appHasLaunchedBefore = 'app_has_launched_before';
 }

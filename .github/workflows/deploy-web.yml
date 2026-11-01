@@ -3,14 +3,13 @@ name: Deploy Flutter web to GitHub Pages
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+# Tag pushes do not honor a paths filter, so this workflow is tag-only.
+# It publishes the legal-pages web app (lib/main.web.dart): privacy, terms,
+# account deletion, and community guidelines.
 on:
   push:
     tags:
       - '*'
-    paths:
-      - 'lib/main.web.dart'
-      - 'assets/docs/**'
-      - '.github/workflows/deploy-web.yml'
 
 permissions:
   contents: read
@@ -56,4 +55,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
